@@ -1,6 +1,6 @@
 name:                  pagerduty
 version:               0.1.0
-synopsis:              Pending
+synopsis:              Pager Duty API Client
 license:               OtherLicense
 license-file:          LICENSE
 author:                Brendan Hay
