@@ -137,7 +137,7 @@ data Error
       , _errors  :: [Text]
       }
 
-$(deriveJSON jsonKey ''Error)
+$(deriveJSON defaultOptions { fieldLabelModifier = jsonKey } ''Error)
 
 data Env = Env
     { _host :: ByteString
