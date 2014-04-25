@@ -29,9 +29,11 @@ library
 
     exposed-modules:
         Network.PagerDuty
-
-    other-modules:
-        Network.PagerDuty.Internal
+      , Network.PagerDuty.API
+      , Network.PagerDuty.API.Integration
+      , Network.PagerDuty.IO
+      , Network.PagerDuty.Internal
+      , Network.PagerDuty.Types
 
     ghc-options:
         -Wall
@@ -39,13 +41,13 @@ library
         -funbox-strict-fields
 
     build-depends:
-        aeson                     == 0.7.*
-      , base                      >= 4 && < 5
+        aeson                     ==0.7.*
+      , base                      ==4.*
       , base64-bytestring
       , bytestring
-      , HsOpenSSL
-      , http-streams
-      , io-streams
-      , MonadCatchIO-transformers
+      , data-default
+      , http-client               ==0.3.*
+      , http-client-tls           ==0.2.*
+      , http-types
+      , mtl
       , text
-      , transformers

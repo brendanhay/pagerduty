@@ -5,6 +5,8 @@
 *.chi
 *.chs.h
 *.imports
+.cabal-sandbox
+cabal.sandbox.config
 
 # Dirs
 cabal-dev
@@ -23,7 +25,7 @@ tags
 *#
 .#*
 \#*#
-.*.sw[a-z]
+*.sw[a-z]
 *.un~
 *.org
 

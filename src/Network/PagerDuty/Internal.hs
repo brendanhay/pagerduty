@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 -- |
 -- Module      : Network.PagerDuty.Internal
 -- Copyright   : (c) 2013 Brendan Hay <brendan.g.hay@gmail.com>
@@ -10,10 +12,21 @@
 -- Portability : non-portable (GHC extensions)
 
 module Network.PagerDuty.Internal
-    ( jsonKey
+    ( gToJson
+    , gFromJson
+    , jsonKey
     ) where
 
-import Data.Char (toLower, isUpper)
+import Data.Aeson.Types
+import Data.Char        (isUpper, toLower)
+import GHC.Generics
+
+
+gToJson :: (Generic a, GToJSON (Rep a)) => a -> Value
+gToJson = genericToJSON defaultOptions { fieldLabelModifier = jsonKey }
+
+gFromJson :: (Generic a, GFromJSON (Rep a)) => Value -> Parser a
+gFromJson = genericParseJSON defaultOptions { fieldLabelModifier = jsonKey }
 
 jsonKey :: String -> String
 jsonKey str
