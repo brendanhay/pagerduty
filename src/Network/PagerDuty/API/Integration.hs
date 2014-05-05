@@ -17,7 +17,6 @@ where
 import Control.Applicative
 import Data.Aeson
 import Data.ByteString         (ByteString)
-import Data.Hashable
 import Data.Maybe              (catMaybes)
 import Data.String             (IsString)
 import Data.Text               (Text)
@@ -28,13 +27,13 @@ import Network.PagerDuty.Types
 
 
 newtype ServiceKey = ServiceKey Text
-    deriving (Eq, Show, Generic, IsString, Hashable)
+    deriving (Eq, Show, Generic, IsString, Ord)
 
 instance ToJSON ServiceKey
 instance FromJSON ServiceKey
 
 newtype IncidentKey = IncidentKey Text
-    deriving (Eq, Show, Generic, IsString, Hashable)
+    deriving (Eq, Show, Generic, IsString, Ord)
 
 instance ToJSON IncidentKey
 instance FromJSON IncidentKey

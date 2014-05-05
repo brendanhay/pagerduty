@@ -46,7 +46,6 @@ library
       , base64-bytestring
       , bytestring
       , data-default
-      , hashable
       , http-client               ==0.3.*
       , http-client-tls           ==0.2.*
       , http-types
