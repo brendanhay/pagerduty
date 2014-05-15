@@ -17,8 +17,8 @@ import Network.PagerDuty.Internal
 
 
 data Env a
-    = Env     !Host !Manager
-    | AuthEnv !Host !Auth   !Manager
+    = Env     !Manager
+    | AuthEnv !Host !Auth !Manager
 
 type PagerDuty a b = ReaderT (Env a) IO b
 

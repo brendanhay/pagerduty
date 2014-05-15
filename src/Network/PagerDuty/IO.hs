@@ -8,8 +8,7 @@ where
 import Control.Applicative
 import Control.Monad.Reader
 import Data.Aeson
-import Data.ByteString         (ByteString)
-import Data.Default
+import Data.Maybe
 import Data.Monoid
 import Network.HTTP.Client
 import Network.HTTP.Types
@@ -18,24 +17,20 @@ import Network.PagerDuty.Types
 import qualified Data.ByteString.Lazy as L
 
 
-request :: (ToJSON a, FromJSON b)
-        => Method
-        -> ByteString
-        -> a
-        -> PagerDuty c (Either Error b)
-request rqMeth rqPath rqBody = liftIO . go =<< ask
+request :: (ToJSON a, FromJSON b) => Request -> a -> PagerDuty x (Either Error b)
+request rq rqBody = liftIO . go =<< ask
   where
-    go (AuthEnv h auth mgr) = httpLbs (rq h (Just auth)) mgr >>= response
-    go (Env     h      mgr) = httpLbs (rq h Nothing)     mgr >>= response
+    go env = case env of
+        AuthEnv h auth mgr -> httpLbs (rq' (Just h) (Just auth)) mgr >>= response
+        Env            mgr -> httpLbs (rq' Nothing  Nothing)     mgr >>= response
 
-    rq h auth =
-        let req = def { method         = rqMeth
-                      , secure         = True
-                      , host           = h
-                      , path           = rqPath
-                      , requestBody    = RequestBodyLBS (encode rqBody)
-                      , requestHeaders = [("Accept", "application/json")]
-                      }
+    rq' h auth =
+        let req = rq { secure         = True
+                     , host           = fromMaybe (host rq) h
+                     , port           = 443
+                     , requestHeaders = [("Accept", "application/json")]
+                     , requestBody    = RequestBodyLBS $ encode rqBody
+                     }
          in case auth of
             Just (Token t) ->
                 req { requestHeaders = ("Authorization", "Token token=" <> t)
@@ -58,7 +53,8 @@ response res = case statusCode (responseStatus res) of
     failure = maybe (Left unknown) Left  <$> parse
 
     unknown = Internal
-        "Unable to parse response into a PagerDuty API compatible type: <body>"
+            $ "Unable to parse response into a PagerDuty API compatible type: "
+            ++ show (responseBody res)
 
     parse :: FromJSON a => IO (Maybe a)
     parse = pure . decode . responseBody $ res

@@ -29,12 +29,11 @@ import Network.PagerDuty.Types
 withAuth :: MonadIO m => SubDomain -> Auth -> PagerDuty Authenticated b -> m b
 withAuth sd auth pd = run pd (AuthEnv (addr sd) auth)
 
-noAuth :: MonadIO m => SubDomain -> PagerDuty UnAuthenticated b -> m b
-noAuth sd pd = run pd (Env (addr sd))
+noAuth :: MonadIO m => PagerDuty UnAuthenticated b -> m b
+noAuth pd = run pd Env
 
 run :: MonadIO m => PagerDuty a b -> (Manager -> Env a) -> m b
-run pd env = liftIO . withManager tlsManagerSettings $ \ mgr ->
-    runReaderT pd (env mgr)
+run pd env = liftIO . withManager tlsManagerSettings $ runReaderT pd . env
 
 addr :: SubDomain -> Host
 addr = (<> ".pagerduty.com") . subDomain

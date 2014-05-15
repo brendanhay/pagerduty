@@ -16,11 +16,12 @@ where
 
 import Control.Applicative
 import Data.Aeson
-import Data.ByteString         (ByteString)
+import Data.Default
 import Data.Maybe              (catMaybes)
 import Data.String             (IsString)
 import Data.Text               (Text)
 import GHC.Generics
+import Network.HTTP.Client
 import Network.HTTP.Types
 import Network.PagerDuty.IO
 import Network.PagerDuty.Types
@@ -66,9 +67,18 @@ jsonEvent typ skey ikey desc dets = object $ catMaybes
     , ("details"      .=) <$> dets
     ]
 
+data EventResponse = ER
+    { status       :: !Text
+    , incident_key :: !IncidentKey
+    , message      :: !Text
+    } deriving (Show, Generic)
 
-eVENTS_URI :: ByteString
-eVENTS_URI = "https://events.pagerduty.com/generic/2010-04-15/create_event.json"
+instance FromJSON EventResponse
+
 
 submitEvent :: Event -> PagerDuty a (Either Error IncidentKey)
-submitEvent = request methodPost eVENTS_URI
+submitEvent = fmap (fmap incident_key) . request def
+    { method = methodPost
+    , host   = "events.pagerduty.com"
+    , path   = "/generic/2010-04-15/create_event.json"
+    }
