@@ -1,4 +1,6 @@
+{-# LANGUAGE BangPatterns     #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ViewPatterns     #-}
 
 -- |
 -- Module      : Network.PagerDuty.Internal
@@ -19,21 +21,26 @@ module Network.PagerDuty.Internal
 
 import Data.Aeson.Types
 import Data.Char        (isUpper, toLower)
+import Data.List
 import GHC.Generics
 
 
-gToJson :: (Generic a, GToJSON (Rep a)) => a -> Value
-gToJson = genericToJSON defaultOptions { fieldLabelModifier = jsonKey }
+gToJson :: (Generic a, GToJSON (Rep a)) => String -> a -> Value
+gToJson prefix = genericToJSON defaultOptions
+    { fieldLabelModifier = jsonKey prefix
+    , omitNothingFields  = True
+    }
 
-gFromJson :: (Generic a, GFromJSON (Rep a)) => Value -> Parser a
-gFromJson = genericParseJSON defaultOptions { fieldLabelModifier = jsonKey }
+gFromJson :: (Generic a, GFromJSON (Rep a)) => String -> Value -> Parser a
+gFromJson prefix = genericParseJSON defaultOptions
+    { fieldLabelModifier = jsonKey prefix }
 
-jsonKey :: String -> String
-jsonKey str
-    | head str == '_' = tail str
-    | otherwise      = underscore str
+jsonKey :: String -> String -> String
+jsonKey prefix str = case str of
+    (stripPrefix prefix -> Just cs) -> underscore cs
+    _                               -> underscore str
   where
     underscore [] = []
-    underscore (c : cs)
+    underscore (!c : cs)
         | isUpper c = '_' : underscore (toLower c : cs)
         | otherwise =  c  : underscore cs

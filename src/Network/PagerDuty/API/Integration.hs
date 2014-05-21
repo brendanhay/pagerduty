@@ -16,28 +16,20 @@ where
 
 import Control.Applicative
 import Data.Aeson
-import Data.Default
 import Data.Maybe              (catMaybes)
-import Data.String             (IsString)
 import Data.Text               (Text)
 import GHC.Generics
-import Network.HTTP.Client
-import Network.HTTP.Types
 import Network.PagerDuty.IO
 import Network.PagerDuty.Types
 
 
-newtype ServiceKey = ServiceKey Text
-    deriving (Eq, Show, Generic, IsString, Ord)
+submitEvent :: Event -> PagerDuty a (Either Error IncidentKey)
+submitEvent = fmap (fmap incident_key) . request defaultRequest
+    { method = methodPost
+    , host   = "events.pagerduty.com"
+    , path   = "/generic/2010-04-15/create_event.json"
+    }
 
-instance ToJSON ServiceKey
-instance FromJSON ServiceKey
-
-newtype IncidentKey = IncidentKey Text
-    deriving (Eq, Show, Generic, IsString, Ord)
-
-instance ToJSON IncidentKey
-instance FromJSON IncidentKey
 
 data Event
     = Trigger     !ServiceKey !(Maybe IncidentKey) !Text !(Maybe Object)
@@ -74,11 +66,3 @@ data EventResponse = ER
     } deriving (Show, Generic)
 
 instance FromJSON EventResponse
-
-
-submitEvent :: Event -> PagerDuty a (Either Error IncidentKey)
-submitEvent = fmap (fmap incident_key) . request def
-    { method = methodPost
-    , host   = "events.pagerduty.com"
-    , path   = "/generic/2010-04-15/create_event.json"
-    }

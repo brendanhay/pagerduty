@@ -12,8 +12,9 @@
 -- Portability : non-portable (GHC extensions)
 
 module Network.PagerDuty
-    ( withAuth
-    , noAuth
+    ( withToken
+    , withBasicAuth
+    , unAuthenticated
     , module Network.PagerDuty.API
     )
 where
@@ -26,11 +27,22 @@ import Network.PagerDuty.API
 import Network.PagerDuty.Types
 
 
-withAuth :: MonadIO m => SubDomain -> Auth -> PagerDuty Authenticated b -> m b
-withAuth sd auth pd = run pd (AuthEnv (addr sd) auth)
+withToken :: MonadIO m
+          => Token
+          -> SubDomain
+          -> PagerDuty (Authenticated Token) b
+          -> m b
+withToken tok sd pd = run pd (TokenEnv (addr sd) tok)
 
-noAuth :: MonadIO m => PagerDuty UnAuthenticated b -> m b
-noAuth pd = run pd Env
+withBasicAuth :: MonadIO m
+              => BasicAuth
+              -> SubDomain
+              -> PagerDuty (Authenticated BasicAuth) b
+              -> m b
+withBasicAuth bas sd pd = run pd (BasicEnv (addr sd) bas)
+
+unAuthenticated :: MonadIO m => PagerDuty UnAuthenticated b -> m b
+unAuthenticated pd = run pd Env
 
 run :: MonadIO m => PagerDuty a b -> (Manager -> Env a) -> m b
 run pd env = liftIO . withManager tlsManagerSettings $ runReaderT pd . env

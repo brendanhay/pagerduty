@@ -2,43 +2,51 @@
 
 module Network.PagerDuty.IO
     ( request
+    , defaultRequest
+    , Request (..)
+    , module HTTPTypes
     )
 where
 
-import Control.Applicative
-import Control.Monad.Reader
-import Data.Aeson
-import Data.Maybe
-import Data.Monoid
-import Network.HTTP.Client
-import Network.HTTP.Types
-import Network.PagerDuty.Types
+import           Control.Applicative
+import           Control.Monad.Reader
+import           Data.Aeson
+import qualified Data.ByteString.Lazy    as L
+import           Data.Default
+import           Data.Maybe
+import           Data.Monoid
+import           Network.HTTP.Client
+import           Network.HTTP.Types      as HTTPTypes
+import           Network.PagerDuty.Types
 
-import qualified Data.ByteString.Lazy as L
 
+defaultRequest :: Request
+defaultRequest = def
 
 request :: (ToJSON a, FromJSON b) => Request -> a -> PagerDuty x (Either Error b)
 request rq rqBody = liftIO . go =<< ask
   where
-    go env = case env of
-        AuthEnv h auth mgr -> httpLbs (rq' (Just h) (Just auth)) mgr >>= response
-        Env            mgr -> httpLbs (rq' Nothing  Nothing)     mgr >>= response
+    go env = httpLbs req mgr >>= response
+      where
+        (req,mgr) = case env of
+            TokenEnv h tok m -> (authToken tok . rq' $ Just h, m)
+            BasicEnv h bas m -> (authBasic bas . rq' $ Just h, m)
+            Env            m -> (rq' Nothing, m)
 
-    rq' h auth =
-        let req = rq { secure         = True
-                     , host           = fromMaybe (host rq) h
-                     , port           = 443
-                     , requestHeaders = [("Accept", "application/json")]
-                     , requestBody    = RequestBodyLBS $ encode rqBody
-                     }
-         in case auth of
-            Just (Token t) ->
-                req { requestHeaders = ("Authorization", "Token token=" <> t)
-                                     : requestHeaders req }
-            Just (Basic u p) ->
-                applyBasicAuth u p $ req
+    rq' h = rq { secure         = True
+               , host           = fromMaybe (host rq) h
+               , port           = 443
+               , requestHeaders = [ ("Accept", "application/json")
+                                  , ("Content-Type", "application/json")
+                                  ]
+               , requestBody    = RequestBodyLBS $ encode rqBody
+               }
 
-            _ -> req
+    authToken (Token t) req =
+        req { requestHeaders = ("Authorization", "Token token=" <> t)
+                             : requestHeaders req }
+
+    authBasic (BasicAuth u p) = applyBasicAuth u p
 
 response :: FromJSON a => Response L.ByteString -> IO (Either Error a)
 response res = case statusCode (responseStatus res) of

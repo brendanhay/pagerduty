@@ -31,6 +31,7 @@ library
         Network.PagerDuty
       , Network.PagerDuty.API
       , Network.PagerDuty.API.Integration
+      , Network.PagerDuty.API.Services
       , Network.PagerDuty.IO
       , Network.PagerDuty.Internal
       , Network.PagerDuty.Types
@@ -51,3 +52,5 @@ library
       , http-types
       , mtl
       , text
+      , time
+      , unordered-containers
