@@ -82,18 +82,29 @@ instance ToJSON   Error where toJSON    = gToJson   "_"
 instance FromJSON Error where parseJSON = gFromJson "_"
 
 
-newtype ServiceKey = ServiceKey Text
-    deriving (Eq, Show, Generic, IsString, Ord)
+newtype Key a = Key Text
+    deriving (Eq, Show, Generic, IsString)
 
-instance ToJSON   ServiceKey
-instance FromJSON ServiceKey
+instance ToJSON   (Key a)
+instance FromJSON (Key a)
+
+data Service
+data Incident
+
+type ServiceKey  = Key Service
+type IncidentKey = Key Incident
 
 
-newtype IncidentKey = IncidentKey Text
-    deriving (Eq, Show, Generic, IsString, Ord)
+newtype Id a = Id Text
+    deriving (Eq, Show, Generic, IsString)
 
-instance ToJSON   IncidentKey
-instance FromJSON IncidentKey
+instance ToJSON   (Id a)
+instance FromJSON (Id a)
+
+data Requester
+
+type ServiceId   = Id Service
+type RequesterId = Id Requester
 
 
 data Empty = Empty

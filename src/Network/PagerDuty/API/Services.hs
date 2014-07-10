@@ -6,8 +6,6 @@ module Network.PagerDuty.API.Services
     ( ServiceDetails  (..)
     , CreateService   (..)
     , UpdateService   (..)
-    , ServiceId       (..)
-    , RequesterId     (..)
     , ServiceStatus   (..)
     , ServiceType     (..)
     , EmailFilterMode (..)
@@ -32,7 +30,6 @@ import           Control.Monad
 import           Data.Aeson
 import           Data.ByteString            (ByteString)
 import           Data.Monoid
-import           Data.String
 import           Data.Text                  (Text)
 import qualified Data.Text                  as T
 import           Data.Text.Encoding
@@ -44,14 +41,6 @@ import           Network.PagerDuty.Types
 
 
 type A a = Authenticated a
-
-
-newtype ServiceId = ServiceId Text
-    deriving (Eq, Show, Generic, IsString, Ord)
-
-instance ToJSON   ServiceId
-instance FromJSON ServiceId
-
 
 bASE_PATH :: ByteString
 bASE_PATH = "/api/v1/services/"
@@ -66,7 +55,7 @@ createService = fmap (fmap service) . request defaultRequest
 updateService :: ServiceId
               -> UpdateService
               -> PagerDuty (A a) (Either Error ServiceDetails)
-updateService (ServiceId sid) = fmap (fmap service) . request defaultRequest
+updateService (Id sid) = fmap (fmap service) . request defaultRequest
     { method = methodPut
     , path   = bASE_PATH <> encodeUtf8 sid
     }
@@ -80,14 +69,14 @@ listServices = fmap (fmap services) . request defaultRequest
     } $ T.empty
 
 getService :: ServiceId -> PagerDuty (A a) (Either Error ServiceDetails)
-getService (ServiceId sid) = fmap (fmap service) . request defaultRequest
+getService (Id sid) = fmap (fmap service) . request defaultRequest
     { method      = methodGet
     , path        = bASE_PATH <> encodeUtf8 sid
     , queryString = "?include[]=escalation_policy&include[]=email_filters"
     } $ T.empty
 
 deleteService :: ServiceId -> PagerDuty (A a) (Either Error Empty)
-deleteService (ServiceId sid) = request defaultRequest
+deleteService (Id sid) = request defaultRequest
     { method = methodDelete
     , path   = bASE_PATH <> encodeUtf8 sid
     } $ T.empty
@@ -95,14 +84,14 @@ deleteService (ServiceId sid) = request defaultRequest
 disableService :: ServiceId
                -> RequesterId
                -> PagerDuty (A Token) (Either Error Empty)
-disableService (ServiceId sid) (RequesterId rid) = request defaultRequest
+disableService (Id sid) (Id rid) = request defaultRequest
     { method      = methodPut
     , path        = bASE_PATH <> encodeUtf8 sid <> "/disable"
-    , queryString = "?requester_id=" <> rid
+    , queryString = "?requester_id=" <> encodeUtf8 rid
     } $ T.empty
 
 disableService' :: ServiceId -> PagerDuty (A BasicAuth) (Either Error Empty)
-disableService' (ServiceId sid) = request defaultRequest
+disableService' (Id sid) = request defaultRequest
     { method = methodPut
     , path   = bASE_PATH <> encodeUtf8 sid <> "/disable"
     } $ T.empty
@@ -110,20 +99,20 @@ disableService' (ServiceId sid) = request defaultRequest
 enableService :: ServiceId
               -> RequesterId
               -> PagerDuty (A Token) (Either Error Empty)
-enableService (ServiceId sid) (RequesterId rid) = request defaultRequest
+enableService (Id sid) (Id rid) = request defaultRequest
     { method      = methodPut
     , path        = bASE_PATH <> encodeUtf8 sid <> "/enable"
-    , queryString = "?requester_id=" <> rid
+    , queryString = "?requester_id=" <> encodeUtf8 rid
     } $ T.empty
 
 enableService' :: ServiceId -> PagerDuty (A BasicAuth) (Either Error Empty)
-enableService' (ServiceId sid) = request defaultRequest
+enableService' (Id sid) = request defaultRequest
     { method = methodPut
     , path   = bASE_PATH <> encodeUtf8 sid <> "/enable"
     } $ T.empty
 
 regenerateServiceKey :: ServiceId -> PagerDuty (A a) (Either Error ServiceKey)
-regenerateServiceKey (ServiceId sid) = fmap (fmap (sd_service_key . service)) . request defaultRequest
+regenerateServiceKey (Id sid) = fmap (fmap (sd_service_key . service)) . request defaultRequest
     { method = methodPost
     , path   = bASE_PATH <> encodeUtf8 sid <> "/regenerate_key"
     } $ T.empty
@@ -301,7 +290,3 @@ instance ToJSON ServiceType where
         Pingdom          -> "pingdom"
         ServerDensity    -> "server_density"
         SqlMonitor       -> "sql_monitor"
-
-
-newtype RequesterId = RequesterId ByteString
-    deriving (Eq, Show, IsString)

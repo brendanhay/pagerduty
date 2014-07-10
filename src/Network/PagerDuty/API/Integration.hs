@@ -7,10 +7,12 @@
 -- <http://developer.pagerduty.com/documentation/integration/events>
 --
 module Network.PagerDuty.API.Integration
-    ( ServiceKey  (..)
-    , IncidentKey (..)
-    , Event       (..)
+    ( Event       (..)
     , submitEvent
+
+    -- * re-exports
+    , ServiceKey
+    , IncidentKey
     )
 where
 
