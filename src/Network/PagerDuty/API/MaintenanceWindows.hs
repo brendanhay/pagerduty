@@ -28,8 +28,7 @@ module Network.PagerDuty.API.MaintenanceWindows
     , listMaintenanceWindows
     , getMaintenanceWindow
     , deleteMaintenaceWindow
-    )
-where
+    ) where
 
 import           Control.Applicative
 import           Data.Aeson
@@ -44,7 +43,6 @@ import           GHC.Generics
 import           Network.PagerDuty.Internal
 import           Network.PagerDuty.IO
 import           Network.PagerDuty.Types
-
 
 type A a = Authenticated a
 
@@ -65,7 +63,6 @@ createMaintenanceWindow mw rid =
           , cmwr_requester_id       = Just rid
           }
 
-
 createMaintenanceWindow' :: CreateMaintenanceWindow
                          -> PagerDuty (A BasicAuth) (Either Error MaintenanceWindowDetails)
 createMaintenanceWindow' mw =
@@ -79,7 +76,6 @@ createMaintenanceWindow' mw =
           , cmwr_requester_id       = Nothing
           }
 
-
 updateMaintenanceWindow :: MaintenanceWindowId
                         -> UpdateMaintenanceWindow
                         -> PagerDuty (A a) (Either Error MaintenanceWindowDetails)
@@ -89,7 +85,6 @@ updateMaintenanceWindow (Id mwid) =
           { method = methodPut
           , path   = bASE_PATH <> encodeUtf8 mwid
           }
-
 
 listMaintenanceWindows :: Maybe Text
                        -> [ServiceId]
@@ -133,7 +128,6 @@ data MaintenanceWindowCreator
 type MaintenanceWindowId        = Id MaintenanceWindow
 type MaintenanceWindowCreatorId = Id MaintenanceWindowCreator
 
-
 data CreateMaintenanceWindow = CreateMaintenanceWindow
     { cmw_start_time  :: !UTCTime
     , cmw_end_time    :: !UTCTime
@@ -141,8 +135,8 @@ data CreateMaintenanceWindow = CreateMaintenanceWindow
     , cmw_service_ids :: [ServiceId]
     } deriving (Show, Generic)
 
-instance ToJSON CreateMaintenanceWindow where toJSON = gToJson "cmw_"
-
+instance ToJSON CreateMaintenanceWindow where
+    toJSON = gToJson "cmw_"
 
 data UpdateMaintenanceWindow = UpdateMaintenanceWindow
     { umw_start_time  :: Maybe UTCTime
@@ -151,16 +145,16 @@ data UpdateMaintenanceWindow = UpdateMaintenanceWindow
     , umw_service_ids :: [ServiceId]
     } deriving (Show, Generic)
 
-instance ToJSON UpdateMaintenanceWindow where toJSON = gToJson "umw_"
-
+instance ToJSON UpdateMaintenanceWindow where
+    toJSON = gToJson "umw_"
 
 data CreateMaintenanceWindowRequest = CreateMaintenanceWindowRequest
     { cmwr_maintenance_window :: !CreateMaintenanceWindow
     , cmwr_requester_id       :: Maybe RequesterId
     } deriving (Show, Generic)
 
-instance ToJSON CreateMaintenanceWindowRequest where toJSON = gToJson "cmwr_"
-
+instance ToJSON CreateMaintenanceWindowRequest where
+    toJSON = gToJson "cmwr_"
 
 data MaintenanceWindowDetails = MaintenanceWindowDetails
     { mwd_id              :: !MaintenanceWindowId
@@ -172,8 +166,8 @@ data MaintenanceWindowDetails = MaintenanceWindowDetails
     , mwd_services        :: [ServiceInfo]
     } deriving (Show, Generic)
 
-instance FromJSON MaintenanceWindowDetails where parseJSON = gFromJson "mwd_"
-
+instance FromJSON MaintenanceWindowDetails where
+    parseJSON = gFromJson "mwd_"
 
 -- possibly used elsewhere (UserDetails or somesuch)
 data MaintenanceWindowCreatorDetails = MaintenanceWindowCreatorDetails
@@ -188,8 +182,8 @@ data MaintenanceWindowCreatorDetails = MaintenanceWindowCreatorDetails
     , mwcd_invitation_sent :: !Bool
     } deriving (Show, Generic)
 
-instance FromJSON MaintenanceWindowCreatorDetails where parseJSON = gFromJson "mwcd_"
-
+instance FromJSON MaintenanceWindowCreatorDetails where
+    parseJSON = gFromJson "mwcd_"
 
 data ServiceInfo = ServiceInfo
     { si_name :: !Text
@@ -197,8 +191,8 @@ data ServiceInfo = ServiceInfo
     , si_id   :: !ServiceId
     } deriving (Show, Generic)
 
-instance FromJSON ServiceInfo where parseJSON = gFromJson "si_"
-
+instance FromJSON ServiceInfo where
+    parseJSON = gFromJson "si_"
 
 data ListResponse = ListResponse
     { lr_maintenance_windows :: [MaintenanceWindowDetails]
@@ -206,8 +200,8 @@ data ListResponse = ListResponse
     , lr_counts              :: !MaintenanceWindowCounts
     } deriving (Show, Generic)
 
-instance FromJSON ListResponse where parseJSON = gFromJson "lr_"
-
+instance FromJSON ListResponse where
+    parseJSON = gFromJson "lr_"
 
 data MaintenanceWindowCounts = MaintenanceWindowCounts
     { mwc_ongoing :: !Int
@@ -216,21 +210,21 @@ data MaintenanceWindowCounts = MaintenanceWindowCounts
     , mwc_all     :: !Int
     } deriving (Show, Generic)
 
-instance FromJSON MaintenanceWindowCounts where parseJSON = gFromJson "mwc_"
-
+instance FromJSON MaintenanceWindowCounts where
+    parseJSON = gFromJson "mwc_"
 
 newtype DetailsResponse = DetailsResponse
     { dr_maintenance_window :: MaintenanceWindowDetails
     } deriving (Show, Generic)
 
-instance FromJSON DetailsResponse where parseJSON = gFromJson "dr_"
-
+instance FromJSON DetailsResponse where
+    parseJSON = gFromJson "dr_"
 
 data MaintenanceWindowFilter
     = Past
     | Future
     | Ongoing
-    deriving Show
+      deriving Show
 
 filterToBS :: MaintenanceWindowFilter -> ByteString
 filterToBS Past    = "past"

@@ -23,7 +23,6 @@ import Data.Char        (isUpper, toLower)
 import Data.List
 import GHC.Generics
 
-
 gToJson :: (Generic a, GToJSON (Rep a)) => String -> a -> Value
 gToJson prefix = genericToJSON defaultOptions
     { fieldLabelModifier = jsonKey prefix

@@ -10,13 +10,11 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
-module Network.PagerDuty.API.LogEntries
-where
+module Network.PagerDuty.API.LogEntries where
 
 import Data.Aeson
 import GHC.Generics
 import Network.PagerDuty.Types
-
 
 data LogEntries = LogEntries
     { lesTotal      :: !Int

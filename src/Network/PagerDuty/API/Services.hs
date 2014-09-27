@@ -49,7 +49,6 @@ import           Network.PagerDuty.Internal
 import           Network.PagerDuty.IO
 import           Network.PagerDuty.Types
 
-
 type A a = Authenticated a
 
 bASE_PATH :: ByteString
@@ -127,32 +126,29 @@ regenerateServiceKey (Id sid) = fmap (fmap (sd_service_key . service)) . request
     , path   = bASE_PATH <> encodeUtf8 sid <> "/regenerate_key"
     } $ T.empty
 
-
 newtype CreateServiceRequest = CreateServiceRequest
     { csr_service :: CreateService
     } deriving (Show, Generic)
 
-instance ToJSON CreateServiceRequest where toJSON = gToJson "csr_"
-
+instance ToJSON CreateServiceRequest where
+    toJSON = gToJson "csr_"
 
 newtype UpdateServiceRequest = UpdateServiceRequest
     { usr_service :: UpdateService
     } deriving (Show, Generic)
 
-instance ToJSON UpdateServiceRequest where toJSON = gToJson "usr_"
-
+instance ToJSON UpdateServiceRequest where
+    toJSON = gToJson "usr_"
 
 newtype DetailsListResponse = DLR { services :: [ServiceDetails] }
     deriving (Show, Generic)
 
 instance FromJSON DetailsListResponse
 
-
 newtype DetailsResponse = DR { service :: ServiceDetails }
     deriving (Show, Generic)
 
 instance FromJSON DetailsResponse
-
 
 data CreateService = CreateService
     { cs_name                    :: !Text
@@ -166,7 +162,6 @@ data CreateService = CreateService
 
 instance ToJSON CreateService where toJSON = gToJson "cs_"
 
-
 data UpdateService = UpdateService
     { us_name                    :: Maybe Text
     , us_escalation_policy_id    :: Maybe Text
@@ -178,7 +173,6 @@ data UpdateService = UpdateService
     } deriving (Show, Generic)
 
 instance ToJSON UpdateService where toJSON = gToJson "us_"
-
 
 data ServiceDetails = ServiceDetails
     { sd_id                      :: !ServiceId
@@ -201,7 +195,8 @@ data ServiceDetails = ServiceDetails
     , sd_severity_filter         :: Maybe Text   -- todo?
     } deriving (Show, Generic)
 
-instance FromJSON ServiceDetails where parseJSON = gFromJson "sd_"
+instance FromJSON ServiceDetails where
+    parseJSON = gFromJson "sd_"
 
 data ServiceStatus
     = Active
@@ -222,7 +217,6 @@ instance FromJSON ServiceStatus where
 
     parseJSON _ = mzero
 
-
 data IncidentCounts = IncidentCounts
     { triggered    :: !Int
     , acknowledged :: !Int
@@ -231,7 +225,6 @@ data IncidentCounts = IncidentCounts
     } deriving (Show, Generic)
 
 instance FromJSON IncidentCounts
-
 
 data EmailIncidentCreation
     = OnNewEmail
@@ -248,7 +241,6 @@ instance FromJSON EmailIncidentCreation where
 
     parseJSON _ = mzero
 
-
 data EmailFilterMode
     = AllEmail
     | OrRulesEmail
@@ -263,7 +255,6 @@ instance FromJSON EmailFilterMode where
         _                 -> mzero
 
     parseJSON _ = mzero
-
 
 data ServiceType
     = CloudKick

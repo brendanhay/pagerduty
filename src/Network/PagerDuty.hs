@@ -11,12 +11,15 @@
 -- Portability : non-portable (GHC extensions)
 
 module Network.PagerDuty
-    ( withToken
+    (
+    -- * Run PagerDuty actions
+      withToken
     , withBasicAuth
     , unAuthenticated
+
+    -- * Re-exported
     , module Network.PagerDuty.API
-    )
-where
+    ) where
 
 import Control.Monad.Reader
 import Data.Monoid
@@ -24,7 +27,6 @@ import Network.HTTP.Client
 import Network.HTTP.Client.TLS
 import Network.PagerDuty.API
 import Network.PagerDuty.Types
-
 
 withToken :: MonadIO m
           => Token

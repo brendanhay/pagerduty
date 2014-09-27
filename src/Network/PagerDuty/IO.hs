@@ -14,21 +14,21 @@ module Network.PagerDuty.IO
     ( request
     , defaultRequest
     , Request (..)
-    , module HTTPTypes
-    )
-where
+
+    -- * Re-exported
+    , module HTTP
+    ) where
 
 import           Control.Applicative
 import           Control.Monad.Reader
 import           Data.Aeson
-import qualified Data.ByteString.Lazy    as L
+import qualified Data.ByteString.Lazy    as LBS
 import           Data.Default
 import           Data.Maybe
 import           Data.Monoid
 import           Network.HTTP.Client
-import           Network.HTTP.Types      as HTTPTypes
+import           Network.HTTP.Types      as HTTP
 import           Network.PagerDuty.Types
-
 
 defaultRequest :: Request
 defaultRequest = def
@@ -58,7 +58,7 @@ request rq rqBody = liftIO . go =<< ask
 
     authBasic (BasicAuth u p) = applyBasicAuth u p
 
-response :: FromJSON a => Response L.ByteString -> IO (Either Error a)
+response :: FromJSON a => Response LBS.ByteString -> IO (Either Error a)
 response res = case statusCode (responseStatus res) of
     200 -> success
     201 -> success

@@ -8,12 +8,14 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
--- | Re-exports of the supported PagerDuty APIs
+-- | Re-exports of the supported PagerDuty APIs.
 module Network.PagerDuty.API
-    ( -- * Supported APIs
+    (
+    -- * Supported APIs
       module Network.PagerDuty.API.Integration
     , module Network.PagerDuty.API.MaintenanceWindows
     , module Network.PagerDuty.API.Services
+
     -- * Common Types
     , PagerDuty
     , SubDomain (..)
@@ -21,8 +23,7 @@ module Network.PagerDuty.API
     , BasicAuth (..)
     , Code      (..)
     , Error     (..)
-    )
-where
+    ) where
 
 import Network.PagerDuty.API.Integration
 import Network.PagerDuty.API.MaintenanceWindows

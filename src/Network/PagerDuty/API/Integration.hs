@@ -17,14 +17,13 @@
 -- <http://developer.pagerduty.com/documentation/integration/events>
 --
 module Network.PagerDuty.API.Integration
-    ( Event       (..)
+    ( Event (..)
     , submitEvent
 
-    -- * re-exports
+    -- * Re-exported
     , ServiceKey
     , IncidentKey
-    )
-where
+    ) where
 
 import Control.Applicative
 import Data.Aeson
@@ -34,14 +33,12 @@ import GHC.Generics
 import Network.PagerDuty.IO
 import Network.PagerDuty.Types
 
-
 submitEvent :: Event -> PagerDuty a (Either Error IncidentKey)
 submitEvent = fmap (fmap incident_key) . request defaultRequest
     { method = methodPost
     , host   = "events.pagerduty.com"
     , path   = "/generic/2010-04-15/create_event.json"
     }
-
 
 data Event
     = Trigger     !ServiceKey !(Maybe IncidentKey) !Text !(Maybe Object)

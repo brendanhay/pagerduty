@@ -14,20 +14,18 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
-module Network.PagerDuty.Types
-where
+module Network.PagerDuty.Types where
 
 import           Control.Applicative
 import           Control.Monad.Reader
 import           Data.Aeson
 import           Data.ByteString            (ByteString)
-import qualified Data.HashMap.Strict        as H
+import qualified Data.HashMap.Strict        as Map
 import           Data.String
 import           Data.Text                  (Text)
 import           GHC.Generics
 import           Network.HTTP.Client        (Manager)
 import           Network.PagerDuty.Internal
-
 
 data Env a
     = Env      !Manager
@@ -36,10 +34,8 @@ data Env a
 
 type PagerDuty a b = ReaderT (Env a) IO b
 
-
 newtype SubDomain = SubDomain { subDomain :: ByteString }
     deriving (Eq, Show, IsString)
-
 
 data BasicAuth = BasicAuth !ByteString !ByteString
     deriving Eq
@@ -47,13 +43,10 @@ data BasicAuth = BasicAuth !ByteString !ByteString
 newtype Token = Token ByteString
     deriving (Eq, IsString)
 
-
 data Authenticated a
 data UnAuthenticated
 
-
 type Host = ByteString
-
 
 newtype Code = Code Integer
     deriving (Eq, Show, Generic)
@@ -78,7 +71,6 @@ message (Code c) = case c of
    2012 -> "Your account is expired and cannot use the API"
    _    -> "Unrecognised error code"
 
-
 data Error
     = Internal String
     | External
@@ -90,7 +82,6 @@ data Error
 
 instance ToJSON   Error where toJSON    = gToJson   "_"
 instance FromJSON Error where parseJSON = gFromJson "_"
-
 
 newtype Key a = Key Text
     deriving (Eq, Show, Generic, IsString)
@@ -104,7 +95,6 @@ data Incident
 type ServiceKey  = Key Service
 type IncidentKey = Key Incident
 
-
 newtype Id a = Id Text
     deriving (Eq, Show, Generic, IsString)
 
@@ -116,11 +106,13 @@ data Requester
 type ServiceId   = Id Service
 type RequesterId = Id Requester
 
-
 data Empty = Empty
 
-instance ToJSON   Empty where toJSON _ = object []
+instance ToJSON Empty where
+    toJSON _ = object []
+
 instance FromJSON Empty where
-    parseJSON (Object !o) | H.null o  = pure Empty
-                          | otherwise = mzero
+    parseJSON (Object !o)
+        | Map.null o = pure Empty
+        | otherwise  = mzero
     parseJSON _ = mzero
