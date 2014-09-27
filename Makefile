@@ -1,20 +1,17 @@
-default: all
+FLAGS := -j --disable-documentation --disable-library-coverage
 
-all: build lint
+build:
+	cabal build $(addprefix -,$(findstring j,$(MAKEFLAGS)))
 
-build: .conf
-	cabal-dev build
-
-install:
-	cabal-dev install -j \
-	 --disable-documentation \
-	 --disable-library-coverage
+install: cabal.sandbox.config
+	cabal install $(FLAGS) --only-dependencies
 
 clean:
-	-rm -rf .conf dist
+	cabal clean
+	rm -rf cabal.sandbox.config .cabal-sandbox
 
-lint:
-	hlint src
+doc:
+	cabal haddock
 
-.conf:
-	cabal-dev configure && touch .conf
+cabal.sandbox.config:
+	cabal sandbox init
