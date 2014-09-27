@@ -32,8 +32,7 @@ module Network.PagerDuty.API.Services
     , enableService
     , enableService'
     , regenerateServiceKey
-    )
-where
+    ) where
 
 import           Control.Applicative
 import           Control.Monad
