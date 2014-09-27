@@ -7,7 +7,7 @@ license-file:          LICENSE
 author:                Brendan Hay, Kim Altintop
 maintainer:            Brendan Hay <brendan.g.hay@gmail.com>,
                        Kim Altintop <kim.altintop@gmail.com>
-copyright:             Copyright (c) 2013 Brendan Hay, 2014 Kim Altintop
+copyright:             Copyright (c) 2013-2014 Brendan Hay, 2014 Kim Altintop
 category:              Network, Monitoring
 build-type:            Simple
 cabal-version:         >= 1.10
