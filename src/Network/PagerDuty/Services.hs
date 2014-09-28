@@ -12,13 +12,13 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
--- | A service is an endpoint (like Nagios, email, or an API call) that
+-- | This API lets you access and manipulate the services across your account.
+--
+-- A service is an endpoint (like Nagios, email, or an API call) that
 -- generates events, which Pagerduty normalizes and dedupes, creating incidents.
 --
 -- When a service is shown inlined in other resources, a deleted service will
 -- have its 'svcHtmlUrl attribute set to 'Nothing'.
---
--- | This API lets you access and manipulate the services across your account.
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/services>
 module Network.PagerDuty.Services
