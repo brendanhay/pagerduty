@@ -26,6 +26,7 @@ module Network.PagerDuty.Alerts where
 import           Control.Applicative
 import           Control.Lens            hiding ((.=))
 import           Data.Aeson              hiding (Error)
+import           Data.Aeson.Lens
 import           Data.ByteString         (ByteString)
 import qualified Data.ByteString.Char8   as BS
 import           Data.HashMap.Strict     (HashMap)
@@ -33,14 +34,13 @@ import qualified Data.HashMap.Strict     as Map
 import           Data.Monoid
 import           Data.String
 import           Data.Text               (Text)
--- import qualified Network.HTTP.Client   as Client
-import           Network.PagerDuty.TH
-import           Network.PagerDuty.Types hiding (req)
-import qualified Network.PagerDuty.Types as Types
 import           Network.HTTP.Types
+import           Network.PagerDuty.TH
+import qualified Network.PagerDuty.Types as Types
+import           Network.PagerDuty.Types hiding (req)
 
-req :: ToJSON a => StdMethod -> a -> Request a s r
-req m = Types.req m (v1 "alerts")
+req :: ToJSON a => StdMethod -> Unwrap -> s -> Request a s r
+req m u = Types.req m (v1 "alerts") u
 
 data AlertType
     = SMS
@@ -64,13 +64,14 @@ deriveJSON ''GetAlerts
 -- (SMS, Email, Phone, or Push).
 getAlerts :: Date -- ^ 'since'
           -> Date -- ^ 'until'
-          -> Request GetAlerts Token [()]
-getAlerts s u = req GET $ GetAlerts
-    { _since    = s
-    , _until    = u
-    , _filter   = Nothing
-    , _timeZone = Nothing
-    }
+          -> Request GetAlerts Token [Alert]
+getAlerts s u = req GET (key "alerts") $
+    GetAlerts
+        { _since    = s
+        , _until    = u
+        , _filter   = Nothing
+        , _timeZone = Nothing
+        }
 
 -- | The start of the date range over which you want to search.
 since :: Lens' GetAlerts Date

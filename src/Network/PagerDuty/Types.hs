@@ -1,13 +1,15 @@
 {-# LANGUAGE BangPatterns               #-}
-{-# LANGUAGE FlexibleInstances               #-}
 {-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GADTs                      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE KindSignatures             #-}
 {-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE RankNTypes                 #-}
 {-# LANGUAGE StandaloneDeriving         #-}
 {-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE ViewPatterns               #-}
+
+{-# LANGUAGE FlexibleContexts            #-}
 
 -- Module      : Network.PagerDuty.Types
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
@@ -52,16 +54,17 @@ module Network.PagerDuty.Types where
 import           Control.Applicative
 import           Control.Lens          hiding ((.=))
 import           Data.Aeson            hiding (Error)
+import           Data.Aeson.Types      (Parser)
 import           Data.ByteString       (ByteString)
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.HashMap.Strict   as Map
 import           Data.Monoid
 import           Data.String
 import           Data.Text             (Text)
-import           GHC.TypeLits
-import           Network.PagerDuty.TH
-import           Network.HTTP.Types
 import qualified Data.Time             as Time
+import           GHC.TypeLits
+import           Network.HTTP.Types
+import           Network.PagerDuty.TH
 
 v1 :: ByteString -> ByteString
 v1 = mappend "/api/v1/"
@@ -178,6 +181,8 @@ instance ToJSON Pager where
         , "limit"  .= _pgLimit p
         ]
 
+type Unwrap = Value -> Parser Value
+
 data Request a (s :: Security) r where
     Request :: ToJSON a
             => { _rqPayload :: a
@@ -185,21 +190,23 @@ data Request a (s :: Security) r where
                , _rqPath    :: ByteString
                , _rqQuery   :: Query
                , _rqPager   :: Maybe Pager
+               , _rqUnwrap  :: Unwrap
                }
             -> Request a s r
 
 instance ToJSON (Request a s r) where
-    toJSON (Request a _ _ _ p) = Object $
-        let Object x = toJSON a
-         in case toJSON p of
+    -- Manually unwrapped to ensure GADT constraint holds.
+    toJSON (Request p _ _ _ q _) = Object $
+        let Object x = toJSON p
+         in case toJSON q of
                 (Object y) -> x <> y
                 _          -> x
 
-req :: ToJSON a => StdMethod -> ByteString -> a -> Request a s r
-req m p s = Request s m p mempty Nothing
+req :: ToJSON a => StdMethod -> ByteString -> Unwrap -> a -> Request a s r
+req m p u s = Request s m p mempty Nothing u
 
 upd :: ToJSON b => Lens (Request a s r) (Request b s r) a b
-upd = lens _rqPayload (\(Request _ m p q g) x -> Request x m p q g)
+upd = lens _rqPayload (\(Request _ m p q g u) a -> Request a m p q g u)
 
 rqMethod :: Lens' (Request a s r) StdMethod
 rqMethod = lens _rqMethod (\s a -> s { _rqMethod = a })
@@ -212,6 +219,9 @@ rqQuery = lens _rqQuery (\s a -> s { _rqQuery = a })
 
 rqPager :: Lens' (Request a s r) (Maybe Pager)
 rqPager = lens _rqPager (\s a -> s { _rqPager = a })
+
+rqUnwrap :: Lens' (Request a s r) Unwrap
+rqUnwrap = lens _rqUnwrap (\s a -> s { _rqUnwrap = a })
 
 type Request' = Request ()
 
