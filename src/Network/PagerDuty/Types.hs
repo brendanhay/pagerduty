@@ -292,7 +292,8 @@ type ScheduleId    = Id "schedule"
 type ServiceId     = Id "service"
 type TargetId      = Id "target"
 type UserId        = Id "user"
-type EmailFilterId = Id "email-filter-id"
+type EmailFilterId = Id "email-filter"
+type VendorId      = Id "vendor"
 
 data Empty = Empty
 
