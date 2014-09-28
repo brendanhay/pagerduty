@@ -1,8 +1,11 @@
 {-# LANGUAGE BangPatterns               #-}
-{-# LANGUAGE DeriveGeneric              #-}
+{-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE GADTs                      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE KindSignatures             #-}
 {-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE StandaloneDeriving         #-}
+{-# LANGUAGE ViewPatterns               #-}
 
 -- Module      : Network.PagerDuty.Types
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
@@ -14,94 +17,135 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
-module Network.PagerDuty.Types where
+module Network.PagerDuty.Types
+    (
+    -- * Requests
+      Auth         (..)
+    , Cred         (..)
+    , Domain       (..)
+
+    , Request      (..)
+    , Request'
+
+    , Paginate     (..)
+
+    -- * Errors
+    , Code         (..)
+    , message
+    , ServiceError (..)
+    , Error        (..)
+
+    -- * Primitives
+    , Key          (..)
+    , ServiceKey
+    , IncidentKey
+
+    , Id           (..)
+    , ServiceId
+    , RequesterId
+
+    , Empty        (..)
+    ) where
 
 import           Control.Applicative
-import           Control.Monad.Reader
-import           Data.Aeson
-import           Data.ByteString            (ByteString)
-import qualified Data.HashMap.Strict        as Map
+import           Control.Monad
+import           Control.Monad.IO.Class
+import           Data.Aeson             hiding (Error)
+import           Data.Aeson.TH
+import           Data.ByteString        (ByteString)
+import qualified Data.ByteString.Char8  as BS
+import qualified Data.ByteString.Lazy   as LBS
+import           Data.Conduit
+import qualified Data.HashMap.Strict    as Map
+import           Data.Monoid
 import           Data.String
-import           Data.Text                  (Text)
-import           GHC.Generics
-import           Network.HTTP.Client        (Manager)
-import           Network.PagerDuty.Internal
+import           Data.Text              (Text)
+import qualified Network.HTTP.Conduit   as Client
+import           Network.HTTP.Conduit   hiding (Request, Response)
+import           Network.HTTP.Types
 
-data Env a
-    = Env      !Manager
-    | TokenEnv !Host !Token     !Manager
-    | BasicEnv !Host !BasicAuth !Manager
+-- makeLenses ''Client.Request
 
-type PagerDuty a b = ReaderT (Env a) IO b
+data Auth = Token | Basic
+    deriving (Eq, Show)
 
-newtype SubDomain = SubDomain { subDomain :: ByteString }
-    deriving (Eq, Show, IsString)
+data Cred (a :: Auth) where
+    CredToken :: ByteString -> ByteString -> Cred Token
+    CredBasic :: ByteString -> Cred Basic
 
-data BasicAuth = BasicAuth !ByteString !ByteString
-    deriving Eq
+deriving instance Eq   (Cred a)
+deriving instance Show (Cred a)
 
-newtype Token = Token ByteString
-    deriving (Eq, IsString)
-
-data Authenticated a
-data UnAuthenticated
-
-type Host = ByteString
+newtype Domain = Domain ByteString
+      deriving (Eq, Show, IsString)
 
 newtype Code = Code Integer
-    deriving (Eq, Show, Generic)
+    deriving (Eq, Show)
 
-instance FromJSON Code
-instance ToJSON Code
+deriveJSON defaultOptions ''Code
 
-message :: Code -> Text
-message (Code c) = case c of
-   2000 -> "Internal Error"
-   2001 -> "Invalid Input Provided"
-   2002 -> "Arguments Caused Error"
-   2003 -> "Missing Arguments"
-   2004 -> "Invalid 'since' or 'until' Parameter Values"
-   2005 -> "Invalid Query Date Range"
-   2006 -> "Authentication Failed"
-   2007 -> "Account Not Found"
-   2008 -> "Account Locked"
-   2009 -> "Only HTTPS Allowed For This Call"
-   2010 -> "Access Denied"
-   2011 -> "The action requires a 'requester_id' to be specified"
-   2012 -> "Your account is expired and cannot use the API"
-   _    -> "Unrecognised error code"
+description :: Code -> Text
+description (Code c) =
+    case c of
+        2000 -> "Internal Error"
+        2001 -> "Invalid Input Provided"
+        2002 -> "Arguments Caused Error"
+        2003 -> "Missing Arguments"
+        2004 -> "Invalid 'since' or 'until' Parameter Values"
+        2005 -> "Invalid Query Date Range"
+        2006 -> "Authentication Failed"
+        2007 -> "Account Not Found"
+        2008 -> "Account Locked"
+        2009 -> "Only HTTPS Allowed For This Call"
+        2010 -> "Access Denied"
+        2011 -> "The action requires a 'requester_id' to be specified"
+        2012 -> "Your account is expired and cannot use the API"
+        _    -> "Unrecognised error code"
+
+data ServiceError = ServiceError
+    { _errMessage :: Text
+    , _errCode    :: Code
+    , _errErrors  :: [Text]
+    } deriving (Eq, Show)
+
+deriveJSON defaultOptions ''ServiceError
+
+makeLenses ''ServiceError
 
 data Error
     = Internal String
-    | External
-      { _message :: Text
-      , _code    :: Code
-      , _errors  :: [Text]
-      }
-    deriving (Eq, Show, Generic)
+    | Error    ServiceError
+      deriving (Eq, Show)
 
-instance ToJSON   Error where toJSON    = gToJson   "_"
-instance FromJSON Error where parseJSON = gFromJson "_"
+instance FromJSON Error where
+    parseJSON = fmap Error . parseJSON
 
-newtype Key a = Key Text
-    deriving (Eq, Show, Generic, IsString)
+makePrisms ''Error
 
-instance ToJSON   (Key a)
-instance FromJSON (Key a)
+data Request s (a :: Auth) r where
+    Request :: ToJSON s => s -> Client.Request -> Request s a r
+
+type Request' = Request ()
+
+class Paginate r where
+    next :: Request s a r -> r -> Maybe (Request s a r)
 
 data Service
 data Incident
+data Requester
+
+newtype Key a = Key Text
+    deriving (Eq, Show, IsString)
+
+deriveJSON defaultOptions ''Key
 
 type ServiceKey  = Key Service
 type IncidentKey = Key Incident
 
 newtype Id a = Id Text
-    deriving (Eq, Show, Generic, IsString)
+    deriving (Eq, Show, IsString)
 
-instance ToJSON   (Id a)
-instance FromJSON (Id a)
-
-data Requester
+deriveJSON defaultOptions ''Id
 
 type ServiceId   = Id Service
 type RequesterId = Id Requester
@@ -109,10 +153,10 @@ type RequesterId = Id Requester
 data Empty = Empty
 
 instance ToJSON Empty where
-    toJSON _ = object []
+    toJSON = const (object [])
 
 instance FromJSON Empty where
-    parseJSON (Object !o)
-        | Map.null o = pure Empty
-        | otherwise  = mzero
-    parseJSON _ = mzero
+    parseJSON = withObject "empty" f
+      where
+        f !o | Map.null o = pure Empty
+             | otherwise  = fail "Unexpected non-empty JSON object."
