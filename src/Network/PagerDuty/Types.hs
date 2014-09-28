@@ -5,6 +5,7 @@
 {-# LANGUAGE KindSignatures             #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE StandaloneDeriving         #-}
+{-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE ViewPatterns               #-}
 
 -- Module      : Network.PagerDuty.Types
@@ -17,72 +18,73 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
-module Network.PagerDuty.Types
-    (
-    -- * Requests
-      Auth         (..)
-    , Cred         (..)
-    , Domain       (..)
+module Network.PagerDuty.Types where
+    -- (
+    -- -- * Requests
+    --   Auth         (..)
+    -- , Cred         (..)
+    -- , Domain       (..)
 
-    , Request      (..)
-    , Request'
+    -- , Request      (..)
+    -- , Request'
 
-    , Paginate     (..)
+    -- , Paginate     (..)
 
-    -- * Errors
-    , Code         (..)
-    , message
-    , ServiceError (..)
-    , Error        (..)
+    -- -- * Errors
+    -- , Code         (..)
+    -- , message
+    -- , ServiceError (..)
+    -- , Error        (..)
 
-    -- * Primitives
-    , Key          (..)
-    , ServiceKey
-    , IncidentKey
+    -- -- * Primitives
+    -- , Key          (..)
+    -- , ServiceKey
+    -- , IncidentKey
 
-    , Id           (..)
-    , ServiceId
-    , RequesterId
+    -- , Id           (..)
+    -- , ServiceId
+    -- , RequesterId
 
-    , Empty        (..)
-    ) where
+    -- , Empty        (..)
+    -- ) where
 
 import           Control.Applicative
-import           Control.Monad
-import           Control.Monad.IO.Class
-import           Data.Aeson             hiding (Error)
-import           Data.Aeson.TH
-import           Data.ByteString        (ByteString)
-import qualified Data.ByteString.Char8  as BS
-import qualified Data.ByteString.Lazy   as LBS
-import           Data.Conduit
-import qualified Data.HashMap.Strict    as Map
+import           Control.Lens
+import           Data.Aeson                    hiding (Error)
+import           Data.ByteString               (ByteString)
+import qualified Data.ByteString.Char8         as BS
+import qualified Data.HashMap.Strict           as Map
 import           Data.Monoid
 import           Data.String
-import           Data.Text              (Text)
-import qualified Network.HTTP.Conduit   as Client
-import           Network.HTTP.Conduit   hiding (Request, Response)
-import           Network.HTTP.Types
+import           Data.Text                     (Text)
+import qualified Network.HTTP.Client           as Client
+import           Network.PagerDuty.Internal.TH
 
--- makeLenses ''Client.Request
-
-data Auth = Token | Basic
+data Security = Basic | Token | None
     deriving (Eq, Show)
 
-data Cred (a :: Auth) where
-    CredToken :: ByteString -> ByteString -> Cred Token
-    CredBasic :: ByteString -> Cred Basic
+data Auth (a :: Security) where
+    AuthBasic :: ByteString -> ByteString -> Auth Basic
+    AuthToken :: ByteString -> Auth Token
+    AuthNone  :: Auth None
 
-deriving instance Eq   (Cred a)
-deriving instance Show (Cred a)
+deriving instance Eq   (Auth a)
+deriving instance Show (Auth a)
 
-newtype Domain = Domain ByteString
-      deriving (Eq, Show, IsString)
+newtype SubDomain = SubDomain ByteString
+    deriving (Eq, Show, IsString)
+
+domain :: SubDomain -> ByteString
+domain (SubDomain s)
+    | base `BS.isSuffixOf` s = s
+    | otherwise              = s <> base
+  where
+    base = ".pagerduty.com"
 
 newtype Code = Code Integer
     deriving (Eq, Show)
 
-deriveJSON defaultOptions ''Code
+deriveJSON ''Code
 
 description :: Code -> Text
 description (Code c) =
@@ -103,13 +105,12 @@ description (Code c) =
         _    -> "Unrecognised error code"
 
 data ServiceError = ServiceError
-    { _errMessage :: Text
-    , _errCode    :: Code
+    { _errCode    :: Code
+    , _errMessage :: Text
     , _errErrors  :: [Text]
     } deriving (Eq, Show)
 
-deriveJSON defaultOptions ''ServiceError
-
+deriveJSON ''ServiceError
 makeLenses ''ServiceError
 
 data Error
@@ -122,13 +123,13 @@ instance FromJSON Error where
 
 makePrisms ''Error
 
-data Request s (a :: Auth) r where
-    Request :: ToJSON s => s -> Client.Request -> Request s a r
+data Request a (s :: Security) b where
+    Request :: ToJSON a => a -> Client.Request -> Request a s b
 
 type Request' = Request ()
 
-class Paginate r where
-    next :: Request s a r -> r -> Maybe (Request s a r)
+class Paginate a where
+    next :: Request a s b -> b -> Maybe (Request a s b)
 
 data Service
 data Incident
@@ -137,7 +138,7 @@ data Requester
 newtype Key a = Key Text
     deriving (Eq, Show, IsString)
 
-deriveJSON defaultOptions ''Key
+deriveJSON ''Key
 
 type ServiceKey  = Key Service
 type IncidentKey = Key Incident
@@ -145,7 +146,7 @@ type IncidentKey = Key Incident
 newtype Id a = Id Text
     deriving (Eq, Show, IsString)
 
-deriveJSON defaultOptions ''Id
+deriveJSON ''Id
 
 type ServiceId   = Id Service
 type RequesterId = Id Requester

@@ -1,3 +1,6 @@
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE GADTs             #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- Module      : Network.PagerDuty
@@ -21,57 +24,73 @@ module Network.PagerDuty where
     -- , module Network.PagerDuty.API
     -- ) where
 
-import           Control.Applicative
+import           Control.Lens
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans
-import           Control.Monad.Trans.Resource
-import           Data.Aeson                   hiding (Error)
-import qualified Data.ByteString.Lazy         as LBS
+import           Data.Aeson               hiding (Error)
+import qualified Data.ByteString.Lazy     as LBS
 import           Data.Conduit
-import qualified Network.HTTP.Client          as Client
-import qualified Network.HTTP.Conduit         as Client
-import           Network.HTTP.Conduit         hiding (Request)
+import           Data.Monoid
+import           Network.HTTP.Client      (Manager, httpLbs)
+import qualified Network.HTTP.Client      as Client
+import           Network.HTTP.Client.Lens
 import           Network.HTTP.Types
 import           Network.PagerDuty.Types
 
--- data Env (a :: Auth) = Env
+-- data Env (s :: Security) = Env
 --     { _envDomain  :: Domain
---     , _envAuth    :: Cred a
+--     , _envAuth    :: Auth s
 --     , _envManager :: Manager
 --     }
 
-send :: (MonadIO m, FromJSON r)
-     => Cred a
-     -> Domain
+send :: (MonadIO m, FromJSON b)
+     => Auth s
+     -> SubDomain
      -> Manager
-     -> Request s a r
-     -> m (Either Error r)
-send c d m x = httpLbs (request x) m >>= response x
+     -> Request a s b
+     -> m (Either Error b)
+send a s m x = liftIO (httpLbs (request a s x) m) >>= response x
 
-paginate :: (MonadResource m, FromJSON r, Paginate r)
-         => Cred a
-         -> Domain
+paginate :: (MonadIO m, Paginate a, FromJSON b)
+         => Auth s
+         -> SubDomain
          -> Manager
-         -> Request s a r
-         -> Source m (Either Error r)
-paginate c d m = go
+         -> Request a s b
+         -> Source m (Either Error b)
+paginate a d m = go
   where
     go x = do
-        y <- lift (send c d m x)
+        y <- lift (send a d m x)
         yield y
         either (const (return ()))
                (maybe (return ()) go . next x)
                y
 
-request :: Request s a r -> Client.Request
-request (Request x rq) = rq
+request :: Auth s -> SubDomain -> Request a s b -> Client.Request
+request a (SubDomain h) (Request x rq) = auth
+    & secure         .~ True
+    & port           .~ 443
+    & requestHeaders <>~ headers
+    & requestBody    .~ Client.RequestBodyLBS (encode x)
+  where
+    auth = case a of
+        AuthBasic u p -> Client.applyBasicAuth u p rq & host .~ h
+        AuthToken t   -> rq & host .~ h & requestHeaders <>~ [token t]
+        _             -> rq
 
-response :: (MonadIO m, FromJSON r)
-         => Request s a r
+    headers =
+        [ ("Accept",       "application/json")
+        , ("Content-Type", "application/json")
+        ]
+
+    token t = ("Authorization", "Token token=" <> t)
+
+response :: (MonadIO m, FromJSON b)
+         => Request a s b
          -> Client.Response LBS.ByteString
-         -> m (Either Error r)
-response _ x = case statusCode (responseStatus x) of
+         -> m (Either Error b)
+response _ x = case statusCode (Client.responseStatus x) of
     200 -> success
     201 -> success
     400 -> failure
@@ -91,28 +110,4 @@ response _ x = case statusCode (responseStatus x) of
     parse :: (Monad m, FromJSON a) => m (Maybe a)
     parse = return (decode body)
 
-    body = responseBody x
-
-
--- withToken :: MonadIO m
---           => Token
---           -> SubDomain
---           -> PagerDuty (Authenticated Token) b
---           -> m b
--- withToken tok sd pd = run pd (TokenEnv (addr sd) tok)
-
--- withBasicAuth :: MonadIO m
---               => BasicAuth
---               -> SubDomain
---               -> PagerDuty (Authenticated BasicAuth) b
---               -> m b
--- withBasicAuth bas sd pd = run pd (BasicEnv (addr sd) bas)
-
--- unAuthenticated :: MonadIO m => PagerDuty UnAuthenticated b -> m b
--- unAuthenticated pd = run pd Env
-
--- run :: MonadIO m => PagerDuty a b -> (Manager -> Env a) -> m b
--- run pd env = liftIO . withManager tlsManagerSettings $ runReaderT pd . env
-
--- addr :: SubDomain -> Host
--- addr = (<> ".pagerduty.com") . subDomain
+    body = Client.responseBody x

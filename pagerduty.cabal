@@ -38,8 +38,9 @@ library
       -- , Network.PagerDuty.IO
       , Network.PagerDuty.Types
 
-    -- other-modules:
+    other-modules:
     --     Network.PagerDuty.Internal
+        Network.PagerDuty.Internal.TH
 
     build-depends:
         aeson                >= 0.7   && < 1.0
@@ -49,12 +50,13 @@ library
       , conduit              >= 0.5.5
       , data-default         >= 0.5
       , http-client          >= 0.3.6 && < 0.5
-      , http-conduit         >= 2.1   && < 3.0
+      , http-client-lens     >= 0.1
+      , http-client-tls
       , http-types           >= 0.8   && < 1.0
       , lens                 >= 4.0   && < 5.0
       , mtl                  >= 2.1   && < 3.0
-      , resourcet            >= 1.1
       , text                 >= 1.1   && < 2.0
       , time                 >= 1.4   && < 2.0
       , transformers         >= 0.3   && < 0.5
       , unordered-containers >= 0.2.3
+
