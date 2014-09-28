@@ -1,4 +1,5 @@
 {-# LANGUAGE BangPatterns               #-}
+{-# LANGUAGE FlexibleInstances               #-}
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE GADTs                      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -49,16 +50,18 @@ module Network.PagerDuty.Types where
     -- ) where
 
 import           Control.Applicative
-import           Control.Lens
-import           Data.Aeson                    hiding (Error)
-import           Data.ByteString               (ByteString)
-import qualified Data.ByteString.Char8         as BS
-import qualified Data.HashMap.Strict           as Map
+import           Control.Lens          (Lens, Lens', lens)
+import           Control.Lens.TH
+import           Data.Aeson            hiding (Error)
+import           Data.ByteString       (ByteString)
+import qualified Data.ByteString.Char8 as BS
+import           Data.HashMap.Strict   (HashMap)
+import qualified Data.HashMap.Strict   as Map
 import           Data.Monoid
 import           Data.String
-import           Data.Text                     (Text)
-import qualified Network.HTTP.Client           as Client
-import           Network.PagerDuty.Internal.TH
+import           Data.Text             (Text)
+-- import qualified Network.HTTP.Client   as Client
+import           Network.PagerDuty.TH
 
 data Security = Basic | Token | None
     deriving (Eq, Show)
@@ -123,13 +126,65 @@ instance FromJSON Error where
 
 makePrisms ''Error
 
-data Request a (s :: Security) b where
-    Request :: ToJSON a => a -> Client.Request -> Request a s b
+data Request a (s :: Security) r where
+    Request :: ToJSON a
+            => { _rqPayload :: a
+               , _rqPath    :: ByteString
+               , _rqQuery   :: HashMap ByteString [ByteString]
+               }
+            -> Request a s r
+
+instance ToJSON (Request a s r) where
+    toJSON (Request a _ _) = toJSON a
+
+rqPayload :: ToJSON b => Lens (Request a s r) (Request b s r) a b
+rqPayload = lens _rqPayload (\(Request _ p q) x -> Request x p q)
+
+rqPath :: Lens' (Request a s r) ByteString
+rqPath = lens _rqPath (\s a -> s { _rqPath = a })
+
+rqQuery :: Lens' (Request a s r) (HashMap ByteString [ByteString])
+rqQuery = lens _rqQuery (\s a -> s { _rqQuery = a })
 
 type Request' = Request ()
 
+data Pager = Pager
+    { _offset :: !Int
+      -- ^ The offset used in the execution of the query.
+    , _limit  :: !Int
+      -- ^ The limit used in the execution of the query.
+    , _total  :: !Int
+      -- ^ The total number of records available.
+    } deriving (Eq, Show)
+
+makeLenses ''Pager
+
+instance FromJSON a => FromJSON (a, Maybe Pager) where
+    parseJSON = withObject "paginated" $ \o -> (,)
+        <$> parseJSON (Object o)
+        <*> optional  (pager o)
+      where
+        pager o = Pager
+           -- The offset of the first record returned.
+           -- Default is 0.
+           <$> o .: "offset" .!= 0
+           -- The number of records returned.
+           -- Default (and max limit) is 100 for most APIs.
+           <*> o .: "limit"  .!= 100
+           <*> o .: "total"
+
+-- instance ToJSON Pager where
+--     toJSON (Pager o l _) = object
+--         [ "offset" .= o
+--         , "limit"  .= l
+--         ]
+
 class Paginate a where
-    next :: Request a s b -> b -> Maybe (Request a s b)
+    next :: Functor f => Request a s r -> f Pager -> f (Request a s r)
+
+-- Add pagination to requests
+page :: Request a s r -> Pager -> Request a s r
+page = undefined
 
 data Service
 data Incident

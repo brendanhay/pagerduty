@@ -24,6 +24,7 @@ module Network.PagerDuty where
     -- , module Network.PagerDuty.API
     -- ) where
 
+import           Control.Applicative
 import           Control.Lens
 import           Control.Monad
 import           Control.Monad.IO.Class
@@ -31,6 +32,7 @@ import           Control.Monad.Trans
 import           Data.Aeson               hiding (Error)
 import qualified Data.ByteString.Lazy     as LBS
 import           Data.Conduit
+import           Data.Default
 import           Data.Monoid
 import           Network.HTTP.Client      (Manager, httpLbs)
 import qualified Network.HTTP.Client      as Client
@@ -44,52 +46,62 @@ import           Network.PagerDuty.Types
 --     , _envManager :: Manager
 --     }
 
-send :: (MonadIO m, FromJSON b)
+send :: (MonadIO m, FromJSON r)
      => Auth s
      -> SubDomain
      -> Manager
-     -> Request a s b
-     -> m (Either Error b)
-send a s m x = liftIO (httpLbs (request a s x) m) >>= response x
+     -> Request a s r
+     -> m (Either Error r)
+send a s m = liftM (fmap fst) . request a s m
 
-paginate :: (MonadIO m, Paginate a, FromJSON b)
+paginate :: (MonadIO m, Paginate a, FromJSON r)
          => Auth s
          -> SubDomain
          -> Manager
-         -> Request a s b
-         -> Source m (Either Error b)
+         -> Request a s r
+         -> Source m (Either Error r)
 paginate a d m = go
   where
-    go x = do
-        y <- lift (send a d m x)
-        yield y
+    go rq = do
+        rs <- lift (request a d m rq)
+        yield  (fst <$> rs)
         either (const (return ()))
-               (maybe (return ()) go . next x)
-               y
+               (maybe (return ()) go . next rq . snd)
+               rs
 
-request :: Auth s -> SubDomain -> Request a s b -> Client.Request
-request a (SubDomain h) (Request x rq) = auth
-    & secure         .~ True
-    & port           .~ 443
-    & requestHeaders <>~ headers
-    & requestBody    .~ Client.RequestBodyLBS (encode x)
+request :: (MonadIO m, FromJSON r)
+        => Auth s
+        -> SubDomain
+        -> Manager
+        -> Request a s r
+        -> m (Either Error (r, Maybe Pager))
+request a (SubDomain h) m rq = liftIO (httpLbs raw m) >>= response rq
   where
-    auth = case a of
-        AuthBasic u p -> Client.applyBasicAuth u p rq & host .~ h
-        AuthToken t   -> rq & host .~ h & requestHeaders <>~ [token t]
-        _             -> rq
+    raw = authorise
+        & secure         .~ True
+        & port           .~ 443
+        & path           .~ rq^.rqPath
+        & queryString    .~ query
+        & requestHeaders <>~ headers
+        & requestBody    .~ Client.RequestBodyLBS (encode rq)
 
+    authorise = case a of
+        AuthBasic u p -> Client.applyBasicAuth u p def & host .~ h
+        AuthToken t   -> def & host .~ h & requestHeaders <>~ [token t]
+        _             -> def
+
+    token t = ("Authorization", "Token token=" <> t)
     headers =
         [ ("Accept",       "application/json")
         , ("Content-Type", "application/json")
         ]
 
-    token t = ("Authorization", "Token token=" <> t)
+    query = "" -- rq^.rqQuery
 
-response :: (MonadIO m, FromJSON b)
-         => Request a s b
+response :: (MonadIO m, FromJSON r)
+         => Request a s r
          -> Client.Response LBS.ByteString
-         -> m (Either Error b)
+         -> m (Either Error (r, Maybe Pager))
 response _ x = case statusCode (Client.responseStatus x) of
     200 -> success
     201 -> success
