@@ -13,16 +13,14 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
-module Network.PagerDuty where
-    -- (
-    -- -- * Run PagerDuty actions
-    --   withToken
-    -- , withBasicAuth
-    -- , unAuthenticated
+module Network.PagerDuty
+    (
+    -- * Run PagerDuty actions
+      send
+    , paginate
 
-    -- -- * Re-exported
-    -- , module Network.PagerDuty.API
-    -- ) where
+    , module Network.PagerDuty.Types
+    ) where
 
 import           Control.Applicative
 import           Control.Lens

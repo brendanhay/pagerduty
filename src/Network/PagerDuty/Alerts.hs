@@ -12,16 +12,31 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
--- | Alerts API
---
--- When an incident is triggered or when it is escalated it creates an alert
+-- | When an incident is triggered or when it is escalated it creates an alert
 -- (also known as a notification). Alerts are messages containing the details
 -- of the incident, and can be sent through SMS, email, phone calls,
 -- and push notifications.
 --
 -- This API allows you to access read-only data regarding what alerts have been
 -- sent to your users.
-module Network.PagerDuty.Alerts where
+module Network.PagerDuty.Alerts
+    (
+    -- * GET Alerts
+      listAlerts
+    , laUntil
+    , laFilter
+    , laTimeZone
+
+    -- * Types
+    , AlertType (..)
+
+    , Alert
+    , alertId
+    , alertType
+    , alertStartedAt
+    , alertUser
+    , alertAddress
+    ) where
 
 import           Control.Lens            hiding ((.=))
 import           Data.Aeson              (ToJSON)
@@ -55,41 +70,41 @@ deriveJSON ''Alert
 makeLenses ''Alert
 
 data ListAlerts = ListAlerts
-    { _lstSince    :: Date -- ^ Fix this relating to time zones etc.
-    , _lstUntil    :: Date
-    , _lstFilter   :: Maybe AlertType
-    , _lstTimeZone :: Maybe TimeZone
+    { _laSince    :: Date -- ^ Fix this relating to time zones etc.
+    , _laUntil    :: Date
+    , _laFilter   :: Maybe AlertType
+    , _laTimeZone :: Maybe TimeZone
     } deriving (Eq, Show)
 
 -- | List existing alerts for a given time range, optionally filtered by type
 -- (SMS, Email, Phone, or Push).
-listAlerts :: Date -- ^ 'since'
-           -> Date -- ^ 'until'
+listAlerts :: Date -- ^ 'laSince'
+           -> Date -- ^ 'laUntil'
            -> Request ListAlerts Token [Alert]
 listAlerts s u = req GET (key "alerts") $
     ListAlerts
-        { _lstSince    = s
-        , _lstUntil    = u
-        , _lstFilter   = Nothing
-        , _lstTimeZone = Nothing
+        { _laSince    = s
+        , _laUntil    = u
+        , _laFilter   = Nothing
+        , _laTimeZone = Nothing
         }
 
 -- | The start of the date range over which you want to search.
-makeLens "_lstSince" ''Alert
+makeLens "_laSince" ''ListAlerts
 
 -- | The end of the date range over which you want to search.
 -- This should be in the same format as 'since'.
 --
 -- The size of the date range must be less than 3 months.
-makeLens "_lstUntil" ''Alert
+makeLens "_laUntil" ''ListAlerts
 
 -- | Returns only the alerts of the said 'AlertType' type.
-makeLens "_lstFilter" ''Alert
+makeLens "_laFilter" ''ListAlerts
 
 -- | Time zone in which dates in the result will be rendered.
 --
 -- Defaults to account time zone.
-makeLens "_lstTimeZone" ''Alert
+makeLens "_laTimeZone" ''ListAlerts
 
 deriveJSON ''ListAlerts
 

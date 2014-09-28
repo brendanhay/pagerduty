@@ -29,9 +29,8 @@ import           Data.Text              (Text)
 import qualified Data.Text              as Text
 import           Network.HTTP.Types
 
-
 makeLens k = makeLensesWith $
-    lensRulesFor [(k, underscored k)] & simpleLenses .~ True
+    lensRulesFor [(k, drop 1 k)] & simpleLenses .~ True
 
 deriveJSON   = Aeson.deriveJSON options
 deriveToJSON = Aeson.deriveToJSON options

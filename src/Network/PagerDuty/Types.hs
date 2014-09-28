@@ -204,7 +204,7 @@ unwrap :: Getting (First a) a a
 unwrap = to id
 
 -- | Modify the request state.
-upd :: ToJSON b => Lens (Request a s r) (Request b s r) a b
+upd :: ToJSON a => Lens' (Request a s r) a
 upd = lens _rqPayload (\(Request _ m p q g u) a -> Request a m p q g u)
 
 -- | Internal function used by operations to construct a valid request.

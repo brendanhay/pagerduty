@@ -12,8 +12,6 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
--- | Escalation Policies API
---
 -- | This API lets you access and manipulate escalation policies and rules.
 module Network.PagerDuty.EscalationPolicies where
 
@@ -158,27 +156,27 @@ makeLens "_policyServices" ''Policy
 deriveJSON ''Policy
 
 newtype ListPolicies = ListPolicies
-    { _lstQuery :: Maybe Text
+    { _lpQuery :: Maybe Text
     } deriving (Eq, Show)
 
 -- | List all the existing escalation policies.
 listPolicies :: Request ListPolicies Token [Policy]
 listPolicies = req GET BS.empty (key "escalation_policies") $
     ListPolicies
-        { _lstQuery = Nothing
+        { _lpQuery = Nothing
         }
 
 -- | Filters the result, showing only the escalation policies
 -- whose names match the query.
-makeLens "_lstQuery" ''ListPolicies
+makeLens "_lpQuery" ''ListPolicies
 
 deriveJSON ''ListPolicies
 
 data CreatePolicy = CreatePolicy
-    { _creName            :: Text
-    , _creRepeatEnabled   :: Maybe Bool
-    , _creNumLoops        :: Maybe Int
-    , _creEscalationRules :: [Rule] -- ^ Should be List1
+    { _cpName            :: Text
+    , _cpRepeatEnabled   :: Maybe Bool
+    , _cpNumLoops        :: Maybe Int
+    , _cpEscalationRules :: [Rule] -- ^ Should be List1
     } deriving (Eq, Show)
 
 -- | Creates an existing escalation policy and rules.
@@ -188,24 +186,24 @@ createPolicy :: PolicyId
              -> Request CreatePolicy Token Policy
 createPolicy i n rs = req PUT i (key "escalation_policy") $
     CreatePolicy
-        { _creName            = n
-        , _creRepeatEnabled   = Nothing
-        , _creNumLoops        = Nothing
-        , _creEscalationRules = rs
+        { _cpName            = n
+        , _cpRepeatEnabled   = Nothing
+        , _cpNumLoops        = Nothing
+        , _cpEscalationRules = rs
         }
 
 -- | The name of the escalation policy.
-makeLens "_creName" ''CreatePolicy
+makeLens "_cpName" ''CreatePolicy
 
 -- | Whether or not to allow this policy to repeat its escalation
 -- rules after the last rule is finished. Defaults to false.
-makeLens "_creRepeatEnabled" ''CreatePolicy
+makeLens "_cpRepeatEnabled" ''CreatePolicy
 
 -- | The number of times to loop over the set of rules in this escalation policy.
-makeLens "_creNumLoops" ''CreatePolicy
+makeLens "_cpNumLoops" ''CreatePolicy
 
 -- | The escalation rules for this policy.
-makeLens "_creEscalationRules" ''CreatePolicy
+makeLens "_cpEscalationRules" ''CreatePolicy
 
 deriveJSON ''CreatePolicy
 
@@ -218,34 +216,34 @@ getPolicy :: PolicyId -> Request GetPolicy Token Policy
 getPolicy i = req GET i (key "escalation_policy") GetPolicy
 
 data UpdatePolicy = UpdatePolicy
-    { _updName            :: Maybe Text
-    , _updRepeatEnabled   :: Maybe Bool
-    , _updNumLoops        :: Maybe Int
-    , _updEscalationRules :: [Rule]
+    { _upName            :: Maybe Text
+    , _upRepeatEnabled   :: Maybe Bool
+    , _upNumLoops        :: Maybe Int
+    , _upEscalationRules :: [Rule]
     } deriving (Eq, Show)
 
 -- | Updates an existing escalation policy and rules.
 updatePolicy :: PolicyId -> Request UpdatePolicy Token Policy
 updatePolicy i = req PUT i (key "escalation_policy") $
     UpdatePolicy
-        { _updName            = Nothing
-        , _updRepeatEnabled   = Nothing
-        , _updNumLoops        = Nothing
-        , _updEscalationRules = []
+        { _upName            = Nothing
+        , _upRepeatEnabled   = Nothing
+        , _upNumLoops        = Nothing
+        , _upEscalationRules = []
         }
 
 -- | The name of the escalation policy.
-makeLens "_updName" ''UpdatePolicy
+makeLens "_upName" ''UpdatePolicy
 
 -- | Whether or not to allow this policy to repeat its escalation
 -- rules after the last rule is finished.
-makeLens "_updRepeatEnabled" ''UpdatePolicy
+makeLens "_upRepeatEnabled" ''UpdatePolicy
 
 -- | The number of times to loop over the set of rules in this escalation policy.
-makeLens "_updNumLoops" ''UpdatePolicy
+makeLens "_upNumLoops" ''UpdatePolicy
 
 -- | The escalation rules for this policy.
-makeLens "_updEscalationRules" ''UpdatePolicy
+makeLens "_upEscalationRules" ''UpdatePolicy
 
 deriveJSON ''UpdatePolicy
 
