@@ -42,23 +42,23 @@ import           Network.HTTP.Types
 req :: ToJSON a => StdMethod -> a -> Request a s r
 req m = Types.req m (v1 "alerts")
 
-data Filter
+data AlertType
     = SMS
     | Email
     | Phone
     | Push
       deriving (Eq, Show)
 
-deriveToJSON ''Filter
+deriveJSON ''AlertType
 
 data GetAlerts = GetAlerts
     { _since    :: Date -- ^ Fix this relating to time zones etc.
     , _until    :: Date
-    , _filter   :: Maybe Filter
+    , _filter   :: Maybe AlertType
     , _timeZone :: Maybe TimeZone
     } deriving (Eq, Show)
 
-deriveToJSON ''GetAlerts
+deriveJSON ''GetAlerts
 
 -- | List existing alerts for a given time range, optionally filtered by type
 -- (SMS, Email, Phone, or Push).
@@ -83,8 +83,8 @@ since = lens _since (\s a -> s { _since = a })
 until :: Lens' GetAlerts Date
 until = lens _until (\s a -> s { _until = a })
 
--- | Returns only the alerts of the said 'Filter' type.
-filter :: Lens' GetAlerts (Maybe Filter)
+-- | Returns only the alerts of the said 'AlertType' type.
+filter :: Lens' GetAlerts (Maybe AlertType)
 filter = lens _filter (\s a -> s { _filter = a })
 
 -- | Time zone in which dates in the result will be rendered.
@@ -93,25 +93,14 @@ filter = lens _filter (\s a -> s { _filter = a })
 timeZone :: Lens' GetAlerts (Maybe TimeZone)
 timeZone = lens _timeZone (\s a -> s { _timeZone = a })
 
--- class Paginate GetAlerts where
---     next rq f = rq^.rqPager
+instance Paginate GetAlerts
 
 data Alert = Alert
-    { _id :: PKN7NBH,
-    , _type :: Email,
-    , _started_at :: 2013-03-06T15:28:51-05:00,
-    , _user :: User
-    , _address :: Address
-    }
+    { _alertId        :: AlertId
+    , _alertType      :: AlertType
+    , _alertStartedAt :: Date
+    , _alertUser      :: User
+    , _alertAddress   :: Address
+    } deriving (Eq, Show)
 
- -- "user": {
- --    "time_zone": "Eastern Time (US & Canada)",
- --    "color": "dark-slate-grey",
- --    "email": "bart@example.com",
- --    "avatar_url": "https://secure.gravatar.com/avatar/6e1b6fc29a03fc3c13756bd594e314f7.png?d=mm&r=PG",
- --    "user_url": "/users/PIJ90N7",
- --    "invitation_sent": true,
- --    "role": "admin",
- --    "name": "Bart Simpson",
- --    "id": "PIJ90N7"
- --  }
+deriveJSON ''Alert

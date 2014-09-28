@@ -81,7 +81,7 @@ http a (SubDomain h) m rq = liftIO (httpLbs raw m) >>= response rq
         & secure         .~ True
         & port           .~ 443
         & path           .~ rq^.rqPath
-        & queryString    .~ query
+        & queryString    .~ renderQuery False (rq^.rqQuery)
         & requestHeaders <>~ headers
         & requestBody    .~ Client.RequestBodyLBS (encode rq)
 
@@ -91,12 +91,11 @@ http a (SubDomain h) m rq = liftIO (httpLbs raw m) >>= response rq
         _             -> def
 
     token t = ("Authorization", "Token token=" <> t)
-    headers =
-        [ ("Accept",       "application/json")
-        , ("Content-Type", "application/json")
-        ]
 
-    query = "" -- rq^.rqQuery
+    headers =
+        [ ("Content-Type", "application/json")
+        , ("Accept",       "application/json")
+        ]
 
 response :: (MonadIO m, FromJSON r)
          => Request a s r

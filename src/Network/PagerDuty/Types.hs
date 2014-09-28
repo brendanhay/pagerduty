@@ -54,15 +54,14 @@ import           Control.Lens          hiding ((.=))
 import           Data.Aeson            hiding (Error)
 import           Data.ByteString       (ByteString)
 import qualified Data.ByteString.Char8 as BS
-import           Data.HashMap.Strict   (HashMap)
 import qualified Data.HashMap.Strict   as Map
 import           Data.Monoid
 import           Data.String
 import           Data.Text             (Text)
--- import qualified Network.HTTP.Client   as Client
+import           GHC.TypeLits
 import           Network.PagerDuty.TH
 import           Network.HTTP.Types
-import qualified           Data.Time as Time
+import qualified Data.Time             as Time
 
 v1 :: ByteString -> ByteString
 v1 = mappend "/api/v1/"
@@ -70,11 +69,17 @@ v1 = mappend "/api/v1/"
 newtype Date = Date { unDate :: Time.LocalTime }
     deriving (Eq, Ord, Show)
 
+instance FromJSON Date where
+    parseJSON = undefined
+
 instance ToJSON Date where
     toJSON = undefined
 
 newtype TimeZone = TimeZone { unTZ :: Time.TimeZone }
     deriving (Eq, Ord, Show)
+
+instance FromJSON TimeZone where
+    parseJSON = undefined
 
 instance ToJSON TimeZone where
     toJSON = undefined
@@ -173,15 +178,12 @@ instance ToJSON Pager where
         , "limit"  .= _pgLimit p
         ]
 
-iterate :: Pager -> Pager -> Pager
-iterate a b = a & pgTotal .~ 0 & pgOffset +~ _pgOffset b
-
 data Request a (s :: Security) r where
     Request :: ToJSON a
             => { _rqPayload :: a
                , _rqMethod  :: !StdMethod
                , _rqPath    :: ByteString
-               , _rqQuery   :: HashMap ByteString [ByteString]
+               , _rqQuery   :: Query
                , _rqPager   :: Maybe Pager
                }
             -> Request a s r
@@ -205,7 +207,7 @@ rqMethod = lens _rqMethod (\s a -> s { _rqMethod = a })
 rqPath :: Lens' (Request a s r) ByteString
 rqPath = lens _rqPath (\s a -> s { _rqPath = a })
 
-rqQuery :: Lens' (Request a s r) (HashMap ByteString [ByteString])
+rqQuery :: Lens' (Request a s r) Query
 rqQuery = lens _rqQuery (\s a -> s { _rqQuery = a })
 
 rqPager :: Lens' (Request a s r) (Maybe Pager)
@@ -213,28 +215,39 @@ rqPager = lens _rqPager (\s a -> s { _rqPager = a })
 
 type Request' = Request ()
 
+-- | Primarily to obtain a constraint for the pagination function, as well as
+-- the overrideable flexibility.
 class Paginate a where
-    next :: Functor f => Request a s r -> f Pager -> f (Request a s r)
+    next :: Request a s r -> Maybe Pager -> Maybe (Request a s r)
+    next _  Nothing       = Nothing
+    next rq (Just p)
+        | p^.pgTotal == 0 = Nothing
+        | otherwise       = Just (rq & rqPager ?~ (p & pgOffset +~ p^.pgTotal))
 
-data Service
-data Incident
-data Requester
-
-newtype Key a = Key Text
+newtype Key (a :: Symbol) = Key Text
     deriving (Eq, Show, IsString)
 
-deriveJSON ''Key
+instance FromJSON (Key a) where
+    parseJSON = withText "key" (return . Key)
 
-type ServiceKey  = Key Service
-type IncidentKey = Key Incident
+instance ToJSON (Key a) where
+    toJSON (Key k) = toJSON k
 
-newtype Id a = Id Text
+type ServiceKey  = Key "service"
+type IncidentKey = Key "incident"
+
+newtype Id (a :: Symbol) = Id Text
     deriving (Eq, Show, IsString)
 
-deriveJSON ''Id
+instance FromJSON (Id a) where
+    parseJSON = withText "id" (return . Id)
 
-type ServiceId   = Id Service
-type RequesterId = Id Requester
+instance ToJSON (Id a) where
+    toJSON (Id i) = toJSON i
+
+type ServiceId   = Id "service"
+type RequesterId = Id "requester"
+type AlertId     = Id "alert"
 
 data Empty = Empty
 
@@ -247,23 +260,43 @@ instance FromJSON Empty where
         f !o | Map.null o = pure Empty
              | otherwise  = fail "Unexpected non-empty JSON object."
 
+newtype Email = Email Text
+      deriving (Eq, Show, IsString)
+
+deriveJSON ''Email
+
+newtype Phone = Phone Text
+      deriving (Eq, Show, IsString)
+
+deriveJSON ''Phone
+
 data Address
-    = Email Text
-    | Phone Text
+    = AddrEmail Email
+    | AddrPhone Phone
       deriving (Eq, Show)
+
+instance FromJSON Address where
+    parseJSON o =
+            AddrEmail <$> parseJSON o
+        <|> AddrPhone <$> parseJSON o
+
+instance ToJSON Address where
+    toJSON (AddrEmail e) = toJSON e
+    toJSON (AddrPhone p) = toJSON p
 
 makePrisms ''Address
 
 data User = User
-    { _id :: PT23IWX,
-    , _name :: Tim Wright,
-    , _email :: tim@acme.com,
-    , _time_zone :: Eastern Time (US & Canada),
-    , _color :: purple,
-    , _role :: owner,
-    , _avatar_url :: https://secure.gravatar.com/avatar/923a2b907dc04244e9bb5576a42e70a7.png?d=mm&r=PG,
-    , _user_url :: /users/PT23IWX,
-    , _invitation_sent :: false,
-    }
+    { _userId             :: Text
+    , _userName           :: Text
+    , _userEmail          :: Email
+    , _userTimeZone       :: TimeZone
+    , _userColor          :: Text
+    , _userRole           :: Text
+    , _userAvatarUrl      :: Text
+    , _userUrl            :: Text
+    , _userInvitationSent :: Bool
+    } deriving (Eq, Show)
 
+deriveJSON ''User
 makeLenses ''User
