@@ -226,6 +226,8 @@ makeLens "_lpQuery" ''ListPolicies
 
 deriveJSON ''ListPolicies
 
+instance Paginate ListPolicies
+
 data CreatePolicy = CreatePolicy
     { _cpName            :: Text
     , _cpRepeatEnabled   :: Maybe Bool

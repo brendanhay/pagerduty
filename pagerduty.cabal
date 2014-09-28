@@ -40,7 +40,7 @@ library
       -- , Network.PagerDuty.MaintenanceWindows
       -- , Network.PagerDuty.Reports
       -- , Network.PagerDuty.Schedules
-      -- , Network.PagerDuty.Services
+      , Network.PagerDuty.Services
       -- , Network.PagerDuty.Users
 
     other-modules:

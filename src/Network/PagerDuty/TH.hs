@@ -8,7 +8,19 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
-module Network.PagerDuty.TH where
+module Network.PagerDuty.TH
+    (
+    -- * Lenses
+      makeLens
+
+    -- * JSON
+    , deriveJSON
+    , deriveJSONWith
+    -- ** Options
+    , unprefixed
+    , hyphenated
+    , underscored
+    ) where
 
 import           Control.Applicative
 import           Control.Lens
@@ -32,36 +44,40 @@ import           Network.HTTP.Types
 makeLens k = makeLensesWith $
     lensRulesFor [(k, drop 1 k)] & simpleLenses .~ True
 
-deriveJSON   = Aeson.deriveJSON options
-deriveToJSON = Aeson.deriveToJSON options
+deriveJSON = deriveJSONWith underscored
 
-options :: Options
-options = defaultOptions
-    { fieldLabelModifier = underscored . unprefixed
-    , omitNothingFields  = True
+deriveJSONWith o = Aeson.deriveJSON o
+
+unprefixed :: Int -> Options -> Options
+unprefixed n o = o
+    { constructorTagModifier = constructorTagModifier o . drop n
     }
 
-underscored :: String -> String
-underscored = intercalate "_" . map lowered . splitBy isUpper
+hyphenated :: Options
+hyphenated = underscored
+    { fieldLabelModifier     = hyphenate . unprefix
+    , constructorTagModifier = hyphenate
+    }
 
-lowered :: String -> String
-lowered = map toLower
+underscored :: Options
+underscored = defaultOptions
+    { fieldLabelModifier     = underscore . unprefix
+    , constructorTagModifier = underscore
+    , omitNothingFields      = True
+    , allNullaryToStringTag  = True
+    }
 
-unprefixed :: String -> String
-unprefixed = dropWhile (not . isUpper)
+hyphenate :: String -> String
+hyphenate = intercalate "-" . map lower . splitBy isUpper
+
+underscore :: String -> String
+underscore = intercalate "_" . map lower . splitBy isUpper
+
+lower :: String -> String
+lower = map toLower
+
+unprefix :: String -> String
+unprefix = dropWhile (not . isUpper)
 
 splitBy :: (a -> Bool) -> [a] -> [[a]]
 splitBy p = groupBy (const (not . p))
-
-
-
--- makeLens k v = makeLensesWith options
---   where
---     options = lensRulesFor [(k , v)]
---         & simpleLenses       .~ True
---         & generateSignatures .~ False
-
-      -- makeLens :: String
-      --             -> String
-      --             -> template-haskell:Language.Haskell.TH.Syntax.Name
-      --             -> template-haskell:Language.Haskell.TH.Lib.DecsQ

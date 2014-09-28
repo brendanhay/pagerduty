@@ -57,23 +57,32 @@ import           Data.Aeson.Types           (Parser)
 import           Data.ByteString            (ByteString)
 import qualified Data.ByteString.Char8      as BS
 import           Data.ByteString.Conversion
+import           Data.Function
 import qualified Data.HashMap.Strict        as Map
 import           Data.Monoid
 import           Data.String
 import           Data.Text                  (Text)
 import qualified Data.Time                  as Time
+import           Data.Time                  hiding (TimeZone)
 import           GHC.TypeLits
 import           Network.HTTP.Types
 import           Network.PagerDuty.TH
 
-newtype Date = Date { unDate :: Time.LocalTime }
-    deriving (Eq, Ord, Show)
+-- FIXME: Query String parameters vs JSON bodies for GET
+
+newtype Date = Date { unDate :: ZonedTime }
+    deriving (Show)
+
+instance Eq Date where
+    (Date a) == (Date b) =
+           on (==) zonedTimeToLocalTime a b
+        || on (==) zonedTimeZone a b
 
 instance FromJSON Date where
-    parseJSON = undefined
+    parseJSON = fmap Date . parseJSON
 
 instance ToJSON Date where
-    toJSON = undefined
+    toJSON = toJSON . unDate
 
 newtype TimeZone = TimeZone { unTZ :: Time.TimeZone }
     deriving (Eq, Ord, Show)
@@ -275,14 +284,15 @@ instance FromJSON (Id a) where
 instance ToJSON (Id a) where
     toJSON (Id i) = toJSON i
 
-type AlertId     = Id "alert"
-type PolicyId    = Id "policy"
-type RequesterId = Id "requester"
-type RuleId      = Id "rule"
-type ScheduleId  = Id "schedule"
-type ServiceId   = Id "service"
-type TargetId    = Id "target"
-type UserId      = Id "user"
+type AlertId       = Id "alert"
+type PolicyId      = Id "policy"
+type RequesterId   = Id "requester"
+type RuleId        = Id "rule"
+type ScheduleId    = Id "schedule"
+type ServiceId     = Id "service"
+type TargetId      = Id "target"
+type UserId        = Id "user"
+type EmailFilterId = Id "email-filter-id"
 
 data Empty = Empty
 

@@ -74,7 +74,7 @@ deriveJSON ''Alert
 makeLenses ''Alert
 
 data ListAlerts = ListAlerts
-    { _laSince    :: Date -- ^ Fix this relating to time zones etc.
+    { _laSince    :: Date
     , _laUntil    :: Date
     , _laFilter   :: Maybe AlertType
     , _laTimeZone :: Maybe TimeZone
