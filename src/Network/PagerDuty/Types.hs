@@ -50,8 +50,7 @@ module Network.PagerDuty.Types where
     -- ) where
 
 import           Control.Applicative
-import           Control.Lens          (Lens, Lens', lens)
-import           Control.Lens.TH
+import           Control.Lens          hiding ((.=))
 import           Data.Aeson            hiding (Error)
 import           Data.ByteString       (ByteString)
 import qualified Data.ByteString.Char8 as BS
@@ -62,6 +61,23 @@ import           Data.String
 import           Data.Text             (Text)
 -- import qualified Network.HTTP.Client   as Client
 import           Network.PagerDuty.TH
+import           Network.HTTP.Types
+import qualified           Data.Time as Time
+
+v1 :: ByteString -> ByteString
+v1 = mappend "/api/v1/"
+
+newtype Date = Date { unDate :: Time.LocalTime }
+    deriving (Eq, Ord, Show)
+
+instance ToJSON Date where
+    toJSON = undefined
+
+newtype TimeZone = TimeZone { unTZ :: Time.TimeZone }
+    deriving (Eq, Ord, Show)
+
+instance ToJSON TimeZone where
+    toJSON = undefined
 
 data Security = Basic | Token | None
     deriving (Eq, Show)
@@ -126,34 +142,12 @@ instance FromJSON Error where
 
 makePrisms ''Error
 
-data Request a (s :: Security) r where
-    Request :: ToJSON a
-            => { _rqPayload :: a
-               , _rqPath    :: ByteString
-               , _rqQuery   :: HashMap ByteString [ByteString]
-               }
-            -> Request a s r
-
-instance ToJSON (Request a s r) where
-    toJSON (Request a _ _) = toJSON a
-
-rqPayload :: ToJSON b => Lens (Request a s r) (Request b s r) a b
-rqPayload = lens _rqPayload (\(Request _ p q) x -> Request x p q)
-
-rqPath :: Lens' (Request a s r) ByteString
-rqPath = lens _rqPath (\s a -> s { _rqPath = a })
-
-rqQuery :: Lens' (Request a s r) (HashMap ByteString [ByteString])
-rqQuery = lens _rqQuery (\s a -> s { _rqQuery = a })
-
-type Request' = Request ()
-
 data Pager = Pager
-    { _offset :: !Int
+    { _pgOffset :: !Int
       -- ^ The offset used in the execution of the query.
-    , _limit  :: !Int
+    , _pgLimit  :: !Int
       -- ^ The limit used in the execution of the query.
-    , _total  :: !Int
+    , _pgTotal  :: !Int
       -- ^ The total number of records available.
     } deriving (Eq, Show)
 
@@ -173,18 +167,54 @@ instance FromJSON a => FromJSON (a, Maybe Pager) where
            <*> o .: "limit"  .!= 100
            <*> o .: "total"
 
--- instance ToJSON Pager where
---     toJSON (Pager o l _) = object
---         [ "offset" .= o
---         , "limit"  .= l
---         ]
+instance ToJSON Pager where
+    toJSON p = object
+        [ "offset" .= _pgOffset p
+        , "limit"  .= _pgLimit p
+        ]
+
+iterate :: Pager -> Pager -> Pager
+iterate a b = a & pgTotal .~ 0 & pgOffset +~ _pgOffset b
+
+data Request a (s :: Security) r where
+    Request :: ToJSON a
+            => { _rqPayload :: a
+               , _rqMethod  :: !StdMethod
+               , _rqPath    :: ByteString
+               , _rqQuery   :: HashMap ByteString [ByteString]
+               , _rqPager   :: Maybe Pager
+               }
+            -> Request a s r
+
+instance ToJSON (Request a s r) where
+    toJSON (Request a _ _ _ p) = Object $
+        let Object x = toJSON a
+         in case toJSON p of
+                (Object y) -> x <> y
+                _          -> x
+
+req :: ToJSON a => StdMethod -> ByteString -> a -> Request a s r
+req m p s = Request s m p mempty Nothing
+
+upd :: ToJSON b => Lens (Request a s r) (Request b s r) a b
+upd = lens _rqPayload (\(Request _ m p q g) x -> Request x m p q g)
+
+rqMethod :: Lens' (Request a s r) StdMethod
+rqMethod = lens _rqMethod (\s a -> s { _rqMethod = a })
+
+rqPath :: Lens' (Request a s r) ByteString
+rqPath = lens _rqPath (\s a -> s { _rqPath = a })
+
+rqQuery :: Lens' (Request a s r) (HashMap ByteString [ByteString])
+rqQuery = lens _rqQuery (\s a -> s { _rqQuery = a })
+
+rqPager :: Lens' (Request a s r) (Maybe Pager)
+rqPager = lens _rqPager (\s a -> s { _rqPager = a })
+
+type Request' = Request ()
 
 class Paginate a where
     next :: Functor f => Request a s r -> f Pager -> f (Request a s r)
-
--- Add pagination to requests
-page :: Request a s r -> Pager -> Request a s r
-page = undefined
 
 data Service
 data Incident
@@ -216,3 +246,24 @@ instance FromJSON Empty where
       where
         f !o | Map.null o = pure Empty
              | otherwise  = fail "Unexpected non-empty JSON object."
+
+data Address
+    = Email Text
+    | Phone Text
+      deriving (Eq, Show)
+
+makePrisms ''Address
+
+data User = User
+    { _id :: PT23IWX,
+    , _name :: Tim Wright,
+    , _email :: tim@acme.com,
+    , _time_zone :: Eastern Time (US & Canada),
+    , _color :: purple,
+    , _role :: owner,
+    , _avatar_url :: https://secure.gravatar.com/avatar/923a2b907dc04244e9bb5576a42e70a7.png?d=mm&r=PG,
+    , _user_url :: /users/PT23IWX,
+    , _invitation_sent :: false,
+    }
+
+makeLenses ''User

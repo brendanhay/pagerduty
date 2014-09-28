@@ -52,7 +52,7 @@ send :: (MonadIO m, FromJSON r)
      -> Manager
      -> Request a s r
      -> m (Either Error r)
-send a s m = liftM (fmap fst) . request a s m
+send a s m = liftM (fmap fst) . http a s m
 
 paginate :: (MonadIO m, Paginate a, FromJSON r)
          => Auth s
@@ -63,19 +63,19 @@ paginate :: (MonadIO m, Paginate a, FromJSON r)
 paginate a d m = go
   where
     go rq = do
-        rs <- lift (request a d m rq)
+        rs <- lift (http a d m rq)
         yield  (fst <$> rs)
         either (const (return ()))
                (maybe (return ()) go . next rq . snd)
                rs
 
-request :: (MonadIO m, FromJSON r)
-        => Auth s
-        -> SubDomain
-        -> Manager
-        -> Request a s r
-        -> m (Either Error (r, Maybe Pager))
-request a (SubDomain h) m rq = liftIO (httpLbs raw m) >>= response rq
+http :: (MonadIO m, FromJSON r)
+         => Auth s
+         -> SubDomain
+         -> Manager
+         -> Request a s r
+         -> m (Either Error (r, Maybe Pager))
+http a (SubDomain h) m rq = liftIO (httpLbs raw m) >>= response rq
   where
     raw = authorise
         & secure         .~ True
