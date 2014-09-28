@@ -326,5 +326,5 @@ deriveJSON ''DeletePolicy
 -- @DELETE \/escalation_policies\/\:id@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/delete>
-deletePolicy :: PolicyId -> Request DeletePolicy Token ()
+deletePolicy :: PolicyId -> Request DeletePolicy Token Empty
 deletePolicy i = req DELETE i unwrap DeletePolicy
