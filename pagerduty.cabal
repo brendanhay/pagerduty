@@ -33,7 +33,11 @@ library
         Network.PagerDuty
 --      , Network.PagerDuty.API
       , Network.PagerDuty.Alerts
+      , Network.PagerDuty.Alerts.Types
+
       , Network.PagerDuty.EscalationPolicies
+      , Network.PagerDuty.EscalationPolicies.Types
+
       -- , Network.PagerDuty.Incidents
       -- , Network.PagerDuty.Integration
       -- , Network.PagerDuty.LogEntries
@@ -41,11 +45,22 @@ library
       -- , Network.PagerDuty.Reports
       -- , Network.PagerDuty.Schedules
       , Network.PagerDuty.Services
+      , Network.PagerDuty.Services.Types
       -- , Network.PagerDuty.Users
 
     other-modules:
         Network.PagerDuty.TH
       , Network.PagerDuty.Types
+
+      , Network.PagerDuty.Alerts.List
+
+      , Network.PagerDuty.Services.Create
+      , Network.PagerDuty.Services.List
+
+      , Network.PagerDuty.EscalationPolicies.Create
+      , Network.PagerDuty.EscalationPolicies.Delete
+      , Network.PagerDuty.EscalationPolicies.Update
+      , Network.PagerDuty.EscalationPolicies.List
 
     build-depends:
         aeson                 >= 0.7   && < 1.0

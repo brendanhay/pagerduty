@@ -23,13 +23,8 @@
 -- See: <http://developer.pagerduty.com/documentation/rest/alerts>
 module Network.PagerDuty.Alerts
     (
-    -- * Operations
-    -- ** List
-      listAlerts
-    , laSince
-    , laUntil
-    , laFilter
-    , laTimeZone
+    -- * List Alerts
+      module Network.PagerDuty.Alerts.List
 
     -- * Types
     , AlertType (..)
@@ -42,78 +37,5 @@ module Network.PagerDuty.Alerts
     , alertAddress
     ) where
 
-import           Control.Lens            hiding ((.=))
-import           Data.Aeson              (ToJSON)
-import           Data.Aeson.Lens
-import qualified Data.ByteString         as BS
-import           Network.HTTP.Types
-import           Network.PagerDuty.TH
-import           Network.PagerDuty.Types
-
-req :: ToJSON a => StdMethod -> Unwrap -> a -> Request a s r
-req m u = req' m ("alerts", BS.empty) u
-
-data AlertType
-    = SMS
-    | Email
-    | Phone
-    | Push
-      deriving (Eq, Show)
-
-deriveJSON ''AlertType
-
-data Alert = Alert
-    { _alertId        :: AlertId
-    , _alertType      :: AlertType
-    , _alertStartedAt :: Date
-    , _alertUser      :: User
-    , _alertAddress   :: Address
-    } deriving (Eq, Show)
-
-deriveJSON ''Alert
-makeLenses ''Alert
-
-data ListAlerts = ListAlerts
-    { _laSince    :: Date
-    , _laUntil    :: Date
-    , _laFilter   :: Maybe AlertType
-    , _laTimeZone :: Maybe TimeZone
-    } deriving (Eq, Show)
-
--- | List existing alerts for a given time range, optionally filtered by type
--- (SMS, Email, Phone, or Push).
---
--- @GET \/alerts@
---
--- See: <http://developer.pagerduty.com/documentation/rest/alerts/list>
-listAlerts :: Date -- ^ 'laSince'
-           -> Date -- ^ 'laUntil'
-           -> Request ListAlerts Token [Alert]
-listAlerts s u = req GET (key "alerts") $
-    ListAlerts
-        { _laSince    = s
-        , _laUntil    = u
-        , _laFilter   = Nothing
-        , _laTimeZone = Nothing
-        }
-
--- | The start of the date range over which you want to search.
-makeLens "_laSince" ''ListAlerts
-
--- | The end of the date range over which you want to search.
--- This should be in the same format as 'since'.
---
--- The size of the date range must be less than 3 months.
-makeLens "_laUntil" ''ListAlerts
-
--- | Returns only the alerts of the said 'AlertType' type.
-makeLens "_laFilter" ''ListAlerts
-
--- | Time zone in which dates in the result will be rendered.
---
--- Defaults to account time zone.
-makeLens "_laTimeZone" ''ListAlerts
-
-deriveJSON ''ListAlerts
-
-instance Paginate ListAlerts
+import Network.PagerDuty.Alerts.List
+import Network.PagerDuty.Alerts.Types
