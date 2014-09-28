@@ -175,7 +175,7 @@ data SeverityFilter
       -- ^ SQL Monitor: Incidents are created for with high or medium severity
       deriving (Eq, Show)
 
-deriveJSONWith (unprefixed 3 underscored) ''SeverityFilter
+deriveJSONWith (dropped 3 underscored) ''SeverityFilter
 
 data Service = Service
     { _svcId                     :: ServiceId

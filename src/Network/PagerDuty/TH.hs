@@ -17,7 +17,7 @@ module Network.PagerDuty.TH
     , deriveJSON
     , deriveJSONWith
     -- ** Options
-    , unprefixed
+    , dropped
     , hyphenated
     , underscored
     ) where
@@ -46,10 +46,10 @@ makeLens k = makeLensesWith $
 
 deriveJSON = deriveJSONWith underscored
 
-deriveJSONWith o = Aeson.deriveJSON o
+deriveJSONWith = Aeson.deriveJSON
 
-unprefixed :: Int -> Options -> Options
-unprefixed n o = o
+dropped :: Int -> Options -> Options
+dropped n o = o
     { constructorTagModifier = constructorTagModifier o . drop n
     }
 
