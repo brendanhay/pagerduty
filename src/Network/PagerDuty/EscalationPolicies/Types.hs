@@ -15,9 +15,8 @@
 module Network.PagerDuty.EscalationPolicies.Types where
 
 import           Control.Applicative
-import           Control.Lens
+import           Control.Lens.TH
 import           Data.Aeson
-import           Data.Aeson.Lens
 import           Data.ByteString.Conversion
 import qualified Data.HashMap.Strict              as Map
 import           Data.Text                        (Text)

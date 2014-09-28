@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
--- Module      : Network.PagerDuty.EscalationPolicies.Delete
+-- Module      : Network.PagerDuty.Services.Disable
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
 -- License     : This Source Code Form is subject to the terms of
 --               the Mozilla Public License, v. 2.0.
@@ -12,24 +12,26 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
--- | Deletes an existing escalation policy and rules. The escalation policy
--- must not be in use by any services.
+-- | Disable a service. Once a service is disabled, it will not be able to
+-- create incidents until it is enabled again.
 --
--- @DELETE \/escalation_policies\/\:id@
+-- @PUT services\/\:id\/disable@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/delete>
-module Network.PagerDuty.EscalationPolicies.Delete
-    ( deletePolicy
+-- See: <http://developer.pagerduty.com/documentation/rest/services/disable>
+module Network.PagerDuty.Services.Disable
+    ( disableService
     ) where
 
+import Data.ByteString.Conversion
+import Data.Monoid
 import Network.HTTP.Types
-import Network.PagerDuty.EscalationPolicies.Types
+import Network.PagerDuty.Services.Types
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
-data DeletePolicy = DeletePolicy
+data DisableService = DisableService
 
-deriveJSON ''DeletePolicy
+deriveJSON ''DisableService
 
-deletePolicy :: PolicyId -> Request DeletePolicy Token Empty
-deletePolicy i = req DELETE i unwrap DeletePolicy
+disableService :: ServiceId -> Request DisableService Token Empty
+disableService i = req PUT (toByteString i <> "/disable") unwrap DisableService

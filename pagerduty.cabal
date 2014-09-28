@@ -49,18 +49,21 @@ library
       -- , Network.PagerDuty.Users
 
     other-modules:
-        Network.PagerDuty.TH
-      , Network.PagerDuty.Types
-
-      , Network.PagerDuty.Alerts.List
-
-      , Network.PagerDuty.Services.Create
-      , Network.PagerDuty.Services.List
-
+        Network.PagerDuty.Alerts.List
       , Network.PagerDuty.EscalationPolicies.Create
       , Network.PagerDuty.EscalationPolicies.Delete
-      , Network.PagerDuty.EscalationPolicies.Update
       , Network.PagerDuty.EscalationPolicies.List
+      , Network.PagerDuty.EscalationPolicies.Update
+      , Network.PagerDuty.Services.Create
+      , Network.PagerDuty.Services.Delete
+      , Network.PagerDuty.Services.Disable
+      , Network.PagerDuty.Services.Enable
+      , Network.PagerDuty.Services.Get
+      , Network.PagerDuty.Services.List
+      , Network.PagerDuty.Services.RegenerateKey
+      , Network.PagerDuty.Services.Update
+      , Network.PagerDuty.TH
+      , Network.PagerDuty.Types
 
     build-depends:
         aeson                 >= 0.7   && < 1.0

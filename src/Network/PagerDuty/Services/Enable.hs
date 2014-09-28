@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
--- Module      : Network.PagerDuty.EscalationPolicies.Delete
+-- Module      : Network.PagerDuty.Services.Enable
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
 -- License     : This Source Code Form is subject to the terms of
 --               the Mozilla Public License, v. 2.0.
@@ -12,24 +12,25 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
--- | Deletes an existing escalation policy and rules. The escalation policy
--- must not be in use by any services.
+-- | Enable a previously disabled service.
 --
--- @DELETE \/escalation_policies\/\:id@
+-- @PUT services\/\:id\/enable@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/delete>
-module Network.PagerDuty.EscalationPolicies.Delete
-    ( deletePolicy
+-- See: <http://developer.pagerduty.com/documentation/rest/services/enable>
+module Network.PagerDuty.Services.Enable
+    ( enableService
     ) where
 
+import Data.ByteString.Conversion
+import Data.Monoid
 import Network.HTTP.Types
-import Network.PagerDuty.EscalationPolicies.Types
+import Network.PagerDuty.Services.Types
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
-data DeletePolicy = DeletePolicy
+data EnableService = EnableService
 
-deriveJSON ''DeletePolicy
+deriveJSON ''EnableService
 
-deletePolicy :: PolicyId -> Request DeletePolicy Token Empty
-deletePolicy i = req DELETE i unwrap DeletePolicy
+enableService :: ServiceId -> Request EnableService Token Empty
+enableService i = req PUT (toByteString i <> "/enable") unwrap EnableService

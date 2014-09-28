@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
--- Module      : Network.PagerDuty.EscalationPolicies.Delete
+-- Module      : Network.PagerDuty.Services.Delete
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
 -- License     : This Source Code Form is subject to the terms of
 --               the Mozilla Public License, v. 2.0.
@@ -12,24 +12,25 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
--- | Deletes an existing escalation policy and rules. The escalation policy
--- must not be in use by any services.
+-- | Delete an existing service. Once the service is deleted, it will not be
+-- accessible from the web UI and new incidents won't be able to be created
+-- for this service.
 --
--- @DELETE \/escalation_policies\/\:id@
+-- @DELETE \/services/:id@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/delete>
-module Network.PagerDuty.EscalationPolicies.Delete
-    ( deletePolicy
+-- See: <http://developer.pagerduty.com/documentation/rest/services/delete>
+module Network.PagerDuty.Services.Delete
+    ( deleteService
     ) where
 
 import Network.HTTP.Types
-import Network.PagerDuty.EscalationPolicies.Types
+import Network.PagerDuty.Services.Types
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
-data DeletePolicy = DeletePolicy
+data DeleteService = DeleteService
 
-deriveJSON ''DeletePolicy
+deriveJSON ''DeleteService
 
-deletePolicy :: PolicyId -> Request DeletePolicy Token Empty
-deletePolicy i = req DELETE i unwrap DeletePolicy
+deleteService :: ServiceId -> Request DeleteService Token Empty
+deleteService i = req DELETE i unwrap DeleteService

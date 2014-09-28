@@ -30,16 +30,22 @@ module Network.PagerDuty.Services
     , module Network.PagerDuty.Services.Create
 
     -- * Get Service
+    , module Network.PagerDuty.Services.Get
 
     -- * Update Service
+    , module Network.PagerDuty.Services.Update
 
     -- * Delete Service
-
-    -- * Disable Service
+    , module Network.PagerDuty.Services.Delete
 
     -- * Enable Service
+    , module Network.PagerDuty.Services.Enable
+
+    -- * Disable Service
+    , module Network.PagerDuty.Services.Disable
 
     -- * Regenerate Key
+    , module Network.PagerDuty.Services.RegenerateKey
 
     -- * Types
     , EmailFilterMode       (..)
@@ -89,5 +95,11 @@ module Network.PagerDuty.Services
     ) where
 
 import Network.PagerDuty.Services.Create
+import Network.PagerDuty.Services.Delete
+import Network.PagerDuty.Services.Disable
+import Network.PagerDuty.Services.Enable
+import Network.PagerDuty.Services.Get
 import Network.PagerDuty.Services.List
+import Network.PagerDuty.Services.RegenerateKey
 import Network.PagerDuty.Services.Types
+import Network.PagerDuty.Services.Update
