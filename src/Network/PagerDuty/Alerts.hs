@@ -19,10 +19,12 @@
 --
 -- This API allows you to access read-only data regarding what alerts have been
 -- sent to your users.
+--
+-- <http://developer.pagerduty.com/documentation/rest/alerts>
 module Network.PagerDuty.Alerts
     (
     -- * Operations
-    -- ** GET alerts
+    -- ** List
       listAlerts
     , laSince
     , laUntil
@@ -80,6 +82,10 @@ data ListAlerts = ListAlerts
 
 -- | List existing alerts for a given time range, optionally filtered by type
 -- (SMS, Email, Phone, or Push).
+--
+-- @GET \/alerts@
+--
+-- <http://developer.pagerduty.com/documentation/rest/alerts/list>
 listAlerts :: Date -- ^ 'laSince'
            -> Date -- ^ 'laUntil'
            -> Request ListAlerts Token [Alert]

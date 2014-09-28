@@ -13,31 +13,33 @@
 -- Portability : non-portable (GHC extensions)
 
 -- | This API lets you access and manipulate escalation policies and rules.
+--
+-- <http://developer.pagerduty.com/documentation/rest/escalation_policies>
 module Network.PagerDuty.EscalationPolicies
     (
     -- * Operations
-    -- ** GET escalation_policies
+    -- ** List
       listPolicies
     , lpQuery
 
-    -- ** POST escalation_policies
+    -- ** Create
     , createPolicy
     , cpName
     , cpRepeatEnabled
     , cpNumLoops
     , cpEscalationRules
 
-    -- ** GET escalation_policies/:id
+    -- ** Get
     , getPolicy
 
-    -- ** PUT escalation_policies/:id
+    -- ** Update
     , updatePolicy
     , upName
     , upRepeatEnabled
     , upNumLoops
     , upEscalationRules
 
-    -- ** DELETE escalation_policies/:id
+    -- ** Delete
     , deletePolicy
 
     -- * Types
@@ -208,6 +210,10 @@ newtype ListPolicies = ListPolicies
     } deriving (Eq, Show)
 
 -- | List all the existing escalation policies.
+--
+-- @GET \/escalation_policies@
+--
+-- <http://developer.pagerduty.com/documentation/rest/escalation_policies/list>
 listPolicies :: Request ListPolicies Token [Policy]
 listPolicies = req GET BS.empty (key "escalation_policies") $
     ListPolicies
@@ -228,6 +234,10 @@ data CreatePolicy = CreatePolicy
     } deriving (Eq, Show)
 
 -- | Creates an existing escalation policy and rules.
+--
+-- @POST \/escalation_policies@
+--
+-- <http://developer.pagerduty.com/documentation/rest/escalation_policies/create>
 createPolicy :: PolicyId
              -> Text   -- ^ 'creName'
              -> [Rule] -- ^ 'creEscalationRules'
@@ -260,6 +270,10 @@ data GetPolicy = GetPolicy
 deriveJSON ''GetPolicy
 
 -- | Get information about an existing escalation policy and its rules.
+--
+-- @GET \/escalation_policies\/\:id@
+--
+-- <http://developer.pagerduty.com/documentation/rest/escalation_policies/show>
 getPolicy :: PolicyId -> Request GetPolicy Token Policy
 getPolicy i = req GET i (key "escalation_policy") GetPolicy
 
@@ -271,6 +285,10 @@ data UpdatePolicy = UpdatePolicy
     } deriving (Eq, Show)
 
 -- | Updates an existing escalation policy and rules.
+--
+-- @PUT \/escalation_policies\/\:id@
+--
+-- <http://developer.pagerduty.com/documentation/rest/escalation_policies/update>
 updatePolicy :: PolicyId -> Request UpdatePolicy Token Policy
 updatePolicy i = req PUT i (key "escalation_policy") $
     UpdatePolicy
@@ -302,5 +320,9 @@ deriveJSON ''DeletePolicy
 -- FIXME: Expected response 204 no content
 -- | Deletes an existing escalation policy and rules. The escalation policy
 -- must not be in use by any services.
+--
+-- @DELETE \/escalation_policies\/\:id@
+--
+-- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/delete>
 deletePolicy :: PolicyId -> Request DeletePolicy Token ()
 deletePolicy i = req DELETE i unwrap DeletePolicy
