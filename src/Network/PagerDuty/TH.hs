@@ -14,19 +14,43 @@ import           Control.Applicative
 import           Control.Lens
 import           Control.Monad
 import           Control.Monad.IO.Class
-import           Data.Aeson             hiding (Error)
 import qualified Data.Aeson.TH          as Aeson
+import           Data.Aeson.Types
 import           Data.ByteString        (ByteString)
 import qualified Data.ByteString.Char8  as BS
 import qualified Data.ByteString.Lazy   as LBS
+import           Data.Char
 import           Data.Conduit
 import qualified Data.HashMap.Strict    as Map
+import           Data.List
 import           Data.Monoid
 import           Data.String
 import           Data.Text              (Text)
+import qualified Data.Text              as Text
 import           Network.HTTP.Types
 
-deriveJSON = Aeson.deriveJSON Aeson.defaultOptions
+deriveJSON   = Aeson.deriveJSON options
+deriveToJSON = Aeson.deriveToJSON options
+
+options :: Options
+options = defaultOptions
+    { fieldLabelModifier = underscored
+    , omitNothingFields  = True
+    }
+
+underscored :: String -> String
+underscored = intercalate "_" . map lowered . splitBy isUpper
+
+lowered :: String -> String
+lowered = map toLower
+
+unprefixed :: String -> String
+unprefixed = dropWhile (not . isUpper)
+
+splitBy :: (a -> Bool) -> [a] -> [[a]]
+splitBy p = groupBy (const (not . p))
+
+
 
 -- makeLens k v = makeLensesWith options
 --   where
