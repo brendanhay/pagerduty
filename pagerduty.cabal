@@ -52,6 +52,7 @@ library
         Network.PagerDuty.Alerts.List
       , Network.PagerDuty.EscalationPolicies.Create
       , Network.PagerDuty.EscalationPolicies.Delete
+      , Network.PagerDuty.EscalationPolicies.Get
       , Network.PagerDuty.EscalationPolicies.List
       , Network.PagerDuty.EscalationPolicies.Update
       , Network.PagerDuty.Services.Create

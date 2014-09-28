@@ -18,7 +18,7 @@
 -- generates events, which Pagerduty normalizes and dedupes, creating incidents.
 --
 -- When a service is shown inlined in other resources, a deleted service will
--- have its 'svcHtmlUrl attribute set to 'Nothing'.
+-- have its @html_url@ attribute set to 'Nothing'.
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/services>
 module Network.PagerDuty.Services
