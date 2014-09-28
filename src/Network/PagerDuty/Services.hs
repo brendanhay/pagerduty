@@ -78,7 +78,6 @@ module Network.PagerDuty.Services
     , svcAutoResolveTimeout
     , svcAcknowledgementTimeout
     , svcCreatedAt
-    , svcDeletedAt
     , svcStatus
     , svcLastIncidentTimestamp
     , svcEmailIncidentCreation
@@ -90,15 +89,12 @@ module Network.PagerDuty.Services
     , svcSeverityFilter
     ) where
 
-import           Control.Applicative
 import           Control.Lens               hiding ((.=))
 import           Data.Aeson                 hiding (Error)
 import           Data.Aeson.Lens
 import qualified Data.ByteString.Char8      as BS
 import           Data.ByteString.Conversion
-import qualified Data.HashMap.Strict        as Map
 import           Data.Text                  (Text)
-import qualified Data.Text                  as Text
 import           Network.HTTP.Types
 import           Network.PagerDuty.TH
 import           Network.PagerDuty.Types
@@ -267,7 +263,6 @@ data Service = Service
     , _svcAutoResolveTimeout     :: Maybe Int
     , _svcAcknowledgementTimeout :: Maybe Int
     , _svcCreatedAt              :: Date
-    , _svcDeletedAt              :: Maybe Date
     , _svcStatus                 :: ServiceStatus
     , _svcLastIncidentTimestamp  :: Maybe Date
     , _svcEmailIncidentCreation  :: Maybe EmailIncidentCreation
@@ -304,7 +299,7 @@ makeLens "_svcAutoResolveTimeout" ''Service
 -- that long. Value is 'Nothing' is the feature is disabled.
 makeLens "_svcAcknowledgementTimeout" ''Service
 
--- | The date/time when this service was created
+-- | The date/time when this service was created.
 makeLens "_svcCreatedAt" ''Service
 
 -- | The current state of the Service.
