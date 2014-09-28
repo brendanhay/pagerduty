@@ -31,12 +31,9 @@ library
 
     exposed-modules:
         Network.PagerDuty
---      , Network.PagerDuty.API
       , Network.PagerDuty.Alerts
-      , Network.PagerDuty.Alerts.Types
-
       , Network.PagerDuty.EscalationPolicies
-      , Network.PagerDuty.EscalationPolicies.Types
+      , Network.PagerDuty.Services
 
       -- , Network.PagerDuty.Incidents
       -- , Network.PagerDuty.Integration
@@ -44,16 +41,16 @@ library
       -- , Network.PagerDuty.MaintenanceWindows
       -- , Network.PagerDuty.Reports
       -- , Network.PagerDuty.Schedules
-      , Network.PagerDuty.Services
-      , Network.PagerDuty.Services.Types
       -- , Network.PagerDuty.Users
 
     other-modules:
         Network.PagerDuty.Alerts.List
+      , Network.PagerDuty.Alerts.Types
       , Network.PagerDuty.EscalationPolicies.Create
       , Network.PagerDuty.EscalationPolicies.Delete
       , Network.PagerDuty.EscalationPolicies.Get
       , Network.PagerDuty.EscalationPolicies.List
+      , Network.PagerDuty.EscalationPolicies.Types
       , Network.PagerDuty.EscalationPolicies.Update
       , Network.PagerDuty.Services.Create
       , Network.PagerDuty.Services.Delete
@@ -62,6 +59,7 @@ library
       , Network.PagerDuty.Services.Get
       , Network.PagerDuty.Services.List
       , Network.PagerDuty.Services.RegenerateKey
+      , Network.PagerDuty.Services.Types
       , Network.PagerDuty.Services.Update
       , Network.PagerDuty.TH
       , Network.PagerDuty.Types
@@ -76,7 +74,6 @@ library
       , data-default          >= 0.5
       , http-client           >= 0.3.6 && < 0.5
       , http-client-lens      >= 0.1
---      , http-client-tls
       , http-types            >= 0.8   && < 1.0
       , lens                  >= 4.0   && < 5.0
       , lens-aeson            >= 1.0

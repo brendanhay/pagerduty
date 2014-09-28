@@ -20,6 +20,10 @@
 -- See: <http://developer.pagerduty.com/documentation/rest/alerts/list>
 module Network.PagerDuty.Alerts.List
     ( listAlerts
+    , laSince
+    , laUntil
+    , laFilter
+    , laTimeZone
     ) where
 
 import           Control.Applicative
