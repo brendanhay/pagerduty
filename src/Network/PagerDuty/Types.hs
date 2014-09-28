@@ -10,6 +10,7 @@
 {-# LANGUAGE TemplateHaskell            #-}
 
 {-# LANGUAGE FlexibleContexts            #-}
+{-# LANGUAGE ScopedTypeVariables            #-}
 
 -- Module      : Network.PagerDuty.Types
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
@@ -181,8 +182,6 @@ instance ToJSON Pager where
         , "limit"  .= _pgLimit p
         ]
 
-type Unwrap = Value -> Parser Value
-
 data Request a (s :: Security) r where
     Request :: ToJSON a
             => { _rqPayload :: a
@@ -190,7 +189,7 @@ data Request a (s :: Security) r where
                , _rqPath    :: ByteString
                , _rqQuery   :: Query
                , _rqPager   :: Maybe Pager
-               , _rqUnwrap  :: Unwrap
+               , _rqUnwrap  :: Value -> Parser Value
                }
             -> Request a s r
 
@@ -202,11 +201,16 @@ instance ToJSON (Request a s r) where
                 (Object y) -> x <> y
                 _          -> x
 
-req :: ToJSON a => StdMethod -> ByteString -> Unwrap -> a -> Request a s r
-req m p u s = Request s m p mempty Nothing u
+type Unwrap = Getting (First Value) Value Value
 
 upd :: ToJSON b => Lens (Request a s r) (Request b s r) a b
 upd = lens _rqPayload (\(Request _ m p q g u) a -> Request a m p q g u)
+
+req' :: ToJSON a => StdMethod -> ByteString -> Unwrap -> a -> Request a s r
+req' m p u s = Request s m p mempty Nothing (unr' u)
+
+unr' :: Monad m => Getting (First a) s a -> s -> m a
+unr' g s = maybe (fail "Failed to extract nested keys.") return (s ^? g)
 
 rqMethod :: Lens' (Request a s r) StdMethod
 rqMethod = lens _rqMethod (\s a -> s { _rqMethod = a })
@@ -219,9 +223,6 @@ rqQuery = lens _rqQuery (\s a -> s { _rqQuery = a })
 
 rqPager :: Lens' (Request a s r) (Maybe Pager)
 rqPager = lens _rqPager (\s a -> s { _rqPager = a })
-
-rqUnwrap :: Lens' (Request a s r) Unwrap
-rqUnwrap = lens _rqUnwrap (\s a -> s { _rqUnwrap = a })
 
 type Request' = Request ()
 

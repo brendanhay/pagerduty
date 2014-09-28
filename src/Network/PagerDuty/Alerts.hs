@@ -23,24 +23,15 @@
 -- sent to your users.
 module Network.PagerDuty.Alerts where
 
-import           Control.Applicative
-import           Control.Lens            hiding ((.=))
-import           Data.Aeson              hiding (Error)
-import           Data.Aeson.Lens
-import           Data.ByteString         (ByteString)
-import qualified Data.ByteString.Char8   as BS
-import           Data.HashMap.Strict     (HashMap)
-import qualified Data.HashMap.Strict     as Map
-import           Data.Monoid
-import           Data.String
-import           Data.Text               (Text)
-import           Network.HTTP.Types
-import           Network.PagerDuty.TH
-import qualified Network.PagerDuty.Types as Types
-import           Network.PagerDuty.Types hiding (req)
+import Control.Lens            hiding ((.=))
+import Data.Aeson              (ToJSON)
+import Data.Aeson.Lens
+import Network.HTTP.Types
+import Network.PagerDuty.TH
+import Network.PagerDuty.Types
 
-req :: ToJSON a => StdMethod -> Unwrap -> s -> Request a s r
-req m u = Types.req m (v1 "alerts") u
+req :: ToJSON a => StdMethod -> Unwrap -> a -> Request a s r
+req m u = req' m (v1 "alerts") u
 
 data AlertType
     = SMS
