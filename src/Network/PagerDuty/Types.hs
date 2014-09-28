@@ -8,9 +8,7 @@
 {-# LANGUAGE RankNTypes                 #-}
 {-# LANGUAGE StandaloneDeriving         #-}
 {-# LANGUAGE TemplateHaskell            #-}
-
-{-# LANGUAGE FlexibleContexts            #-}
-{-# LANGUAGE ScopedTypeVariables            #-}
+{-# LANGUAGE ViewPatterns               #-}
 
 -- Module      : Network.PagerDuty.Types
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
@@ -53,22 +51,20 @@ module Network.PagerDuty.Types where
     -- ) where
 
 import           Control.Applicative
-import           Control.Lens          hiding ((.=))
-import           Data.Aeson            hiding (Error)
-import           Data.Aeson.Types      (Parser)
-import           Data.ByteString       (ByteString)
-import qualified Data.ByteString.Char8 as BS
-import qualified Data.HashMap.Strict   as Map
+import           Control.Lens               hiding ((.=))
+import           Data.Aeson                 hiding (Error)
+import           Data.Aeson.Types           (Parser)
+import           Data.ByteString            (ByteString)
+import qualified Data.ByteString.Char8      as BS
+import           Data.ByteString.Conversion
+import qualified Data.HashMap.Strict        as Map
 import           Data.Monoid
 import           Data.String
-import           Data.Text             (Text)
-import qualified Data.Time             as Time
+import           Data.Text                  (Text)
+import qualified Data.Time                  as Time
 import           GHC.TypeLits
 import           Network.HTTP.Types
 import           Network.PagerDuty.TH
-
-v1 :: ByteString -> ByteString
-v1 = mappend "/api/v1/"
 
 newtype Date = Date { unDate :: Time.LocalTime }
     deriving (Eq, Ord, Show)
@@ -203,14 +199,31 @@ instance ToJSON (Request a s r) where
 
 type Unwrap = Getting (First Value) Value Value
 
+-- | Identity unwrapper which always succeeds.
+unwrap :: Getting (First a) a a
+unwrap = to id
+
+-- | Modify the request state.
 upd :: ToJSON b => Lens (Request a s r) (Request b s r) a b
 upd = lens _rqPayload (\(Request _ m p q g u) a -> Request a m p q g u)
 
-req' :: ToJSON a => StdMethod -> ByteString -> Unwrap -> a -> Request a s r
-req' m p u s = Request s m p mempty Nothing (unr' u)
+-- | Internal function used by operations to construct a valid request.
+req' :: (ToJSON a, ToByteString p)
+     => StdMethod
+     -> (ByteString, p)
+     -> Unwrap
+     -> a
+     -> Request a s r
+req' m (p, toByteString' -> r) u s = Request s m path mempty Nothing (f u)
+  where
+    path | BS.null r              = v1
+         |  "/" `BS.isPrefixOf` r = v1 <> r
+         | otherwise              = v1 <> "/" <> r
 
-unr' :: Monad m => Getting (First a) s a -> s -> m a
-unr' g s = maybe (fail "Failed to extract nested keys.") return (s ^? g)
+    v1 = "/api/v1/" <> p
+
+    f :: Monad m => Getting (First a) s a -> s -> m a
+    f g x = maybe (fail "Failed to extract nested keys.") return (x ^? g)
 
 rqMethod :: Lens' (Request a s r) StdMethod
 rqMethod = lens _rqMethod (\s a -> s { _rqMethod = a })
@@ -238,6 +251,9 @@ class Paginate a where
 newtype Key (a :: Symbol) = Key Text
     deriving (Eq, Show, IsString)
 
+instance ToByteString (Key a) where
+    builder (Key k) = builder k
+
 instance FromJSON (Key a) where
     parseJSON = withText "key" (return . Key)
 
@@ -250,6 +266,9 @@ type IncidentKey = Key "incident"
 newtype Id (a :: Symbol) = Id Text
     deriving (Eq, Show, IsString)
 
+instance ToByteString (Id a) where
+    builder (Id i) = builder i
+
 instance FromJSON (Id a) where
     parseJSON = withText "id" (return . Id)
 
@@ -259,6 +278,9 @@ instance ToJSON (Id a) where
 type ServiceId   = Id "service"
 type RequesterId = Id "requester"
 type AlertId     = Id "alert"
+type TargetId    = Id "target"
+type RuleId      = Id "rule"
+type PolicyId    = Id "policy"
 
 data Empty = Empty
 

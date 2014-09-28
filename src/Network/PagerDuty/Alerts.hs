@@ -23,15 +23,16 @@
 -- sent to your users.
 module Network.PagerDuty.Alerts where
 
-import Control.Lens            hiding ((.=))
-import Data.Aeson              (ToJSON)
-import Data.Aeson.Lens
-import Network.HTTP.Types
-import Network.PagerDuty.TH
-import Network.PagerDuty.Types
+import           Control.Lens            hiding ((.=))
+import           Data.Aeson              (ToJSON)
+import           Data.Aeson.Lens
+import qualified Data.ByteString         as BS
+import           Network.HTTP.Types
+import           Network.PagerDuty.TH
+import           Network.PagerDuty.Types
 
 req :: ToJSON a => StdMethod -> Unwrap -> a -> Request a s r
-req m u = req' m (v1 "alerts") u
+req m u = req' m ("alerts", BS.empty) u
 
 data AlertType
     = SMS
@@ -42,51 +43,6 @@ data AlertType
 
 deriveJSON ''AlertType
 
-data GetAlerts = GetAlerts
-    { _since    :: Date -- ^ Fix this relating to time zones etc.
-    , _until    :: Date
-    , _filter   :: Maybe AlertType
-    , _timeZone :: Maybe TimeZone
-    } deriving (Eq, Show)
-
-deriveJSON ''GetAlerts
-
--- | List existing alerts for a given time range, optionally filtered by type
--- (SMS, Email, Phone, or Push).
-getAlerts :: Date -- ^ 'since'
-          -> Date -- ^ 'until'
-          -> Request GetAlerts Token [Alert]
-getAlerts s u = req GET (key "alerts") $
-    GetAlerts
-        { _since    = s
-        , _until    = u
-        , _filter   = Nothing
-        , _timeZone = Nothing
-        }
-
--- | The start of the date range over which you want to search.
-since :: Lens' GetAlerts Date
-since = lens _since (\s a -> s { _since = a })
-
--- | The end of the date range over which you want to search.
--- This should be in the same format as 'since'.
---
--- The size of the date range must be less than 3 months.
-until :: Lens' GetAlerts Date
-until = lens _until (\s a -> s { _until = a })
-
--- | Returns only the alerts of the said 'AlertType' type.
-filter :: Lens' GetAlerts (Maybe AlertType)
-filter = lens _filter (\s a -> s { _filter = a })
-
--- | Time zone in which dates in the result will be rendered.
---
--- Defaults to account time zone.
-timeZone :: Lens' GetAlerts (Maybe TimeZone)
-timeZone = lens _timeZone (\s a -> s { _timeZone = a })
-
-instance Paginate GetAlerts
-
 data Alert = Alert
     { _alertId        :: AlertId
     , _alertType      :: AlertType
@@ -96,3 +52,45 @@ data Alert = Alert
     } deriving (Eq, Show)
 
 deriveJSON ''Alert
+makeLenses ''Alert
+
+data ListAlerts = ListAlerts
+    { _lstSince    :: Date -- ^ Fix this relating to time zones etc.
+    , _lstUntil    :: Date
+    , _lstFilter   :: Maybe AlertType
+    , _lstTimeZone :: Maybe TimeZone
+    } deriving (Eq, Show)
+
+-- | List existing alerts for a given time range, optionally filtered by type
+-- (SMS, Email, Phone, or Push).
+listAlerts :: Date -- ^ 'since'
+           -> Date -- ^ 'until'
+           -> Request ListAlerts Token [Alert]
+listAlerts s u = req GET (key "alerts") $
+    ListAlerts
+        { _lstSince    = s
+        , _lstUntil    = u
+        , _lstFilter   = Nothing
+        , _lstTimeZone = Nothing
+        }
+
+-- | The start of the date range over which you want to search.
+makeLens "_lstSince" ''Alert
+
+-- | The end of the date range over which you want to search.
+-- This should be in the same format as 'since'.
+--
+-- The size of the date range must be less than 3 months.
+makeLens "_lstUntil" ''Alert
+
+-- | Returns only the alerts of the said 'AlertType' type.
+makeLens "_lstFilter" ''Alert
+
+-- | Time zone in which dates in the result will be rendered.
+--
+-- Defaults to account time zone.
+makeLens "_lstTimeZone" ''Alert
+
+deriveJSON ''ListAlerts
+
+instance Paginate ListAlerts

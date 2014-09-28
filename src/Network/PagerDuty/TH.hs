@@ -29,12 +29,16 @@ import           Data.Text              (Text)
 import qualified Data.Text              as Text
 import           Network.HTTP.Types
 
+
+makeLens k = makeLensesWith $
+    lensRulesFor [(k, underscored k)] & simpleLenses .~ True
+
 deriveJSON   = Aeson.deriveJSON options
 deriveToJSON = Aeson.deriveToJSON options
 
 options :: Options
 options = defaultOptions
-    { fieldLabelModifier = underscored
+    { fieldLabelModifier = underscored . unprefixed
     , omitNothingFields  = True
     }
 
