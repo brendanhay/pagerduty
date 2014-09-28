@@ -275,12 +275,14 @@ instance FromJSON (Id a) where
 instance ToJSON (Id a) where
     toJSON (Id i) = toJSON i
 
-type ServiceId   = Id "service"
-type RequesterId = Id "requester"
 type AlertId     = Id "alert"
-type TargetId    = Id "target"
-type RuleId      = Id "rule"
 type PolicyId    = Id "policy"
+type RequesterId = Id "requester"
+type RuleId      = Id "rule"
+type ScheduleId  = Id "schedule"
+type ServiceId   = Id "service"
+type TargetId    = Id "target"
+type UserId      = Id "user"
 
 data Empty = Empty
 
@@ -320,7 +322,7 @@ instance ToJSON Address where
 makePrisms ''Address
 
 data User = User
-    { _userId             :: Text
+    { _userId             :: UserId
     , _userName           :: Text
     , _userEmail          :: Email
     , _userTimeZone       :: TimeZone

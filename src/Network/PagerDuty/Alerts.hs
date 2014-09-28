@@ -21,8 +21,10 @@
 -- sent to your users.
 module Network.PagerDuty.Alerts
     (
-    -- * GET Alerts
+    -- * Operations
+    -- ** GET alerts
       listAlerts
+    , laSince
     , laUntil
     , laFilter
     , laTimeZone

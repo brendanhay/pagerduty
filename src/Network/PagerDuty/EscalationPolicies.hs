@@ -13,7 +13,61 @@
 -- Portability : non-portable (GHC extensions)
 
 -- | This API lets you access and manipulate escalation policies and rules.
-module Network.PagerDuty.EscalationPolicies where
+module Network.PagerDuty.EscalationPolicies
+    (
+    -- * Operations
+    -- ** GET escalation_policies
+      listPolicies
+    , lpQuery
+
+    -- ** POST escalation_policies
+    , createPolicy
+    , cpName
+    , cpRepeatEnabled
+    , cpNumLoops
+    , cpEscalationRules
+
+    -- ** GET escalation_policies/:id
+    , getPolicy
+
+    -- ** PUT escalation_policies/:id
+    , updatePolicy
+    , upName
+    , upRepeatEnabled
+    , upNumLoops
+    , upEscalationRules
+
+    -- ** DELETE escalation_policies/:id
+    , deletePolicy
+
+    -- * Types
+    , Target (..)
+    , _TSchedule
+    , _TUser
+
+    , ScheduleTarget
+    , stgtId
+    , stgtName
+
+    , UserTarget
+    , utgtId
+    , utgtName
+    , utgtEmail
+    , utgtTimeZone
+    , utgtColor
+
+    , Rule
+    , ruleId
+    , ruleEscalationDelayInMinutes
+    , ruleTargets
+
+    , Policy
+    , policyId
+    , policyName
+    , policyNumLoops
+    , policyRules
+    , policyServices
+    ) where
 
 import           Control.Applicative
 import           Control.Lens               hiding ((.=))
@@ -43,40 +97,40 @@ req :: (ToJSON a, ToByteString p)
 req m p u = req' m ("escalation_policies", p) u
 
 data ScheduleTarget = ScheduleTarget
-    { _schedId   :: TargetId
-    , _schedName :: Text
+    { _stgtId   :: ScheduleId
+    , _stgtName :: Text
     } deriving (Eq, Show)
 
 -- | The id of the target.
-makeLens "_schedId" ''ScheduleTarget
+makeLens "_stgtId" ''ScheduleTarget
 
 -- | The name of the target.
-makeLens "_schedName" ''ScheduleTarget
+makeLens "_stgtName" ''ScheduleTarget
 
 deriveJSON ''ScheduleTarget
 
 data UserTarget = UserTarget
-    { _userId       :: TargetId
-    , _userName     :: Text
-    , _userEmail    :: Email
-    , _userTimeZone :: TimeZone
-    , _userColor    :: Text
+    { _utgtId       :: UserId
+    , _utgtName     :: Text
+    , _utgtEmail    :: Email
+    , _utgtTimeZone :: TimeZone
+    , _utgtColor    :: Text
     } deriving (Eq, Show)
 
 -- | The id of the user.
-makeLens "_userId" ''UserTarget
+makeLens "_utgtId" ''UserTarget
 
 -- | The name of the user.
-makeLens "_userName" ''UserTarget
+makeLens "_utgtName" ''UserTarget
 
 -- | The user's email address.
-makeLens "_userEmail" ''UserTarget
+makeLens "_utgtEmail" ''UserTarget
 
 -- | The user's personal time zone.
-makeLens "_userTimeZone" ''UserTarget
+makeLens "_utgtTimeZone" ''UserTarget
 
 -- | The color used to represent the user in schedules.
-makeLens "_userColor" ''UserTarget
+makeLens "_utgtColor" ''UserTarget
 
 deriveJSON ''UserTarget
 
@@ -125,16 +179,10 @@ deriveJSON ''Rule
 
 data Policy = Policy
     { _policyId       :: PolicyId
-      -- ^ The ID of the escalation policy.
     , _policyName     :: Text
-      -- ^ The name of the escalation policy.
     , _policyNumLoops :: !Int
-      -- ^ The number of times the escalation policy will repeat after
-      -- reaching the end of its escalation.
     , _policyRules    :: [Rule]
-      -- ^ A list of the policy's escalation rules in order of escalation.
     , _policyServices :: [Service]
-      -- ^ A list of services using this escalation policy.
     } deriving (Eq, Show)
 
 -- | The ID of the escalation policy.
