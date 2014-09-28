@@ -20,7 +20,7 @@
 -- This API allows you to access read-only data regarding what alerts have been
 -- sent to your users.
 --
--- <http://developer.pagerduty.com/documentation/rest/alerts>
+-- See: <http://developer.pagerduty.com/documentation/rest/alerts>
 module Network.PagerDuty.Alerts
     (
     -- * Operations
@@ -85,7 +85,7 @@ data ListAlerts = ListAlerts
 --
 -- @GET \/alerts@
 --
--- <http://developer.pagerduty.com/documentation/rest/alerts/list>
+-- See: <http://developer.pagerduty.com/documentation/rest/alerts/list>
 listAlerts :: Date -- ^ 'laSince'
            -> Date -- ^ 'laUntil'
            -> Request ListAlerts Token [Alert]

@@ -14,7 +14,7 @@
 
 -- | This API lets you access and manipulate escalation policies and rules.
 --
--- <http://developer.pagerduty.com/documentation/rest/escalation_policies>
+-- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies>
 module Network.PagerDuty.EscalationPolicies
     (
     -- * Operations
@@ -213,7 +213,7 @@ newtype ListPolicies = ListPolicies
 --
 -- @GET \/escalation_policies@
 --
--- <http://developer.pagerduty.com/documentation/rest/escalation_policies/list>
+-- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/list>
 listPolicies :: Request ListPolicies Token [Policy]
 listPolicies = req GET BS.empty (key "escalation_policies") $
     ListPolicies
@@ -237,7 +237,7 @@ data CreatePolicy = CreatePolicy
 --
 -- @POST \/escalation_policies@
 --
--- <http://developer.pagerduty.com/documentation/rest/escalation_policies/create>
+-- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/create>
 createPolicy :: PolicyId
              -> Text   -- ^ 'creName'
              -> [Rule] -- ^ 'creEscalationRules'
@@ -273,7 +273,7 @@ deriveJSON ''GetPolicy
 --
 -- @GET \/escalation_policies\/\:id@
 --
--- <http://developer.pagerduty.com/documentation/rest/escalation_policies/show>
+-- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/show>
 getPolicy :: PolicyId -> Request GetPolicy Token Policy
 getPolicy i = req GET i (key "escalation_policy") GetPolicy
 
@@ -288,7 +288,7 @@ data UpdatePolicy = UpdatePolicy
 --
 -- @PUT \/escalation_policies\/\:id@
 --
--- <http://developer.pagerduty.com/documentation/rest/escalation_policies/update>
+-- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/update>
 updatePolicy :: PolicyId -> Request UpdatePolicy Token Policy
 updatePolicy i = req PUT i (key "escalation_policy") $
     UpdatePolicy
