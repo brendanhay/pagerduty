@@ -34,7 +34,7 @@ import           Data.Default
 import           Data.Monoid
 import           Network.HTTP.Client      (Manager, httpLbs)
 import qualified Network.HTTP.Client      as Client
-import           Network.HTTP.Client.Lens
+import qualified Network.HTTP.Client.Lens as Lens
 import           Network.HTTP.Types
 import           Network.PagerDuty.Types
 
@@ -76,16 +76,16 @@ http :: (MonadIO m, FromJSON r)
 http a (SubDomain h) m rq = liftIO (httpLbs raw m) >>= response rq
   where
     raw = authorise
-        & secure         .~ True
-        & port           .~ 443
-        & path           .~ rq^.rqPath
-        & queryString    .~ renderQuery False (rq^.rqQuery)
-        & requestHeaders <>~ headers
-        & requestBody    .~ Client.RequestBodyLBS (encode rq)
+        & Lens.secure         .~ True
+        & Lens.port           .~ 443
+        & Lens.path           .~ rq^.path
+        & Lens.queryString    .~ renderQuery False (rq^.query)
+        & Lens.requestHeaders <>~ headers
+        & Lens.requestBody    .~ Client.RequestBodyLBS (encode rq)
 
     authorise = case a of
-        AuthBasic u p -> Client.applyBasicAuth u p def & host .~ h
-        AuthToken t   -> def & host .~ h & requestHeaders <>~ [token t]
+        AuthBasic u p -> Client.applyBasicAuth u p def & Lens.host .~ h
+        AuthToken t   -> def & Lens.host .~ h & Lens.requestHeaders <>~ [token t]
         _             -> def
 
     token t = ("Authorization", "Token token=" <> t)

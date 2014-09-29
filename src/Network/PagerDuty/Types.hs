@@ -66,7 +66,7 @@ import qualified Data.Time                  as Time
 import           Data.Time                  hiding (TimeZone)
 import           GHC.TypeLits
 import           Network.HTTP.Types
-import           Network.PagerDuty.TH
+import           Network.PagerDuty.JSON
 
 -- FIXME: Query String parameters vs JSON bodies for GET
 
@@ -205,8 +205,6 @@ instance ToJSON (Request a s r) where
          in case toJSON q of
                 (Object y) -> x <> y
                 _          -> x
-
--- type Request' s b = forall a r. Lens' (Request s a r) b
 
 type Unwrap = Getting (First Value) Value Value
 
