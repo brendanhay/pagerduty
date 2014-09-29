@@ -22,9 +22,6 @@ import           Network.HTTP.Types
 import           Network.PagerDuty.TH
 import           Network.PagerDuty.Types
 
-req :: ToJSON a => StdMethod -> Unwrap -> a -> Request a s r
-req m u = req' m ("alerts", BS.empty) u
-
 data AlertType
     = SMS
     | Email

@@ -22,20 +22,6 @@ import Network.HTTP.Types
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
-req :: (ToJSON a, ToByteString p)
-    => StdMethod
-    -> p
-    -> Unwrap
-    -> a
-    -> Request a s r
-req m p u = req' m ("services", p) u
-
-includes :: Query
-includes =
-    [ ("include[]", Just "escalation_policy")
-    , ("include[]", Just "email_filters")
-    ]
-
 data IncidentCounts = IncidentCounts
     { _cntTriggered    :: !Int
     , _cntAcknowledged :: !Int
