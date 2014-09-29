@@ -44,8 +44,11 @@ module Network.PagerDuty.Alerts
 import Control.Lens
 import Data.Aeson.Lens
 import Network.PagerDuty.Alerts.Types
-import Network.PagerDuty.JSON
+import Network.PagerDuty.TH
 import Network.PagerDuty.Types
+
+alerts :: Setter (Request a s r) (Request a s r) Path [Path]
+alerts = base "alerts"
 
 data ListAlerts = ListAlerts
     { _laSince'    :: Date
@@ -68,13 +71,14 @@ makeLenses ''ListAlerts
 listAlerts :: Date -- ^ 'laSince'
            -> Date -- ^ 'laUntil'
            -> Request ListAlerts Token [Alert]
-listAlerts s u = mk (unwrap .~ key "alerts")
-    ListAlerts
+listAlerts s u =
+    mk ListAlerts
         { _laSince'    = s
         , _laUntil'    = u
         , _laFilter'   = Nothing
         , _laTimeZone' = Nothing
-        }
+        } & alerts .~ []
+          & unwrap .~ key "alerts"
 
 -- | The start of the date range over which you want to search.
 laSince :: Lens' (Request ListAlerts s r) Date

@@ -70,16 +70,16 @@ module Network.PagerDuty.EscalationPolicies
     , policyServices
     ) where
 
-import           Control.Lens
-import           Data.Aeson
-import           Data.Aeson.Lens
-import qualified Data.ByteString.Char8                      as BS
-import           Data.ByteString.Conversion
-import           Data.Text                                  (Text)
-import           Network.HTTP.Types
-import           Network.PagerDuty.EscalationPolicies.Types
-import           Network.PagerDuty.JSON
-import           Network.PagerDuty.Types
+import Control.Lens
+import Data.Aeson.Lens
+import Data.Text                                  (Text)
+import Network.HTTP.Types
+import Network.PagerDuty.EscalationPolicies.Types
+import Network.PagerDuty.TH
+import Network.PagerDuty.Types
+
+policies :: Setter (Request a s r) (Request a s r) Path [Path]
+policies = base "policies"
 
 newtype ListPolicies = ListPolicies
     { _lpQuery' :: Maybe Text
@@ -96,14 +96,15 @@ makeLenses ''ListPolicies
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/list>
 listPolicies :: Request ListPolicies Token [Policy]
-listPolicies = mk (unwrap .~ key "escalation_policies")
-    ListPolicies
+listPolicies =
+    mk ListPolicies
         { _lpQuery' = Nothing
-        }
+        } & policies .~ []
+          & unwrap   .~ key "escalation_policies"
 
 -- | Filters the result, showing only the escalation policies
 -- whose names match the query.
-lpQuery :: Lens' (Request ListPolicies s r) a
+lpQuery :: Lens' (Request ListPolicies s r) (Maybe Text)
 lpQuery = upd.lpQuery'
 
 data CreatePolicy = CreatePolicy
@@ -125,30 +126,33 @@ createPolicy :: PolicyId
              -> Text   -- ^ 'creName'
              -> [Rule] -- ^ 'creEscalationRules'
              -> Request CreatePolicy Token Policy
-createPolicy i n rs = mk
-    (method .~ PUT & path .~ i & unwrap .~ key "escalation_policy")
-    CreatePolicy
+createPolicy i n rs =
+    mk CreatePolicy
         { _cpName'            = n
         , _cpRepeatEnabled'   = Nothing
         , _cpNumLoops'        = Nothing
         , _cpEscalationRules' = rs
-        }
+        } & policies .~ [P i]
+          & meth     .~ PUT
+          & unwrap   .~ key "escalation_policy"
 
 -- | The name of the escalation policy.
-cpName :: Lens' (Request CreatePolicy s r) a
+cpName :: Lens' (Request CreatePolicy s r) Text
 cpName = upd.cpName'
 
 -- | Whether or not to allow this policy to repeat its escalation
--- rules after the last rule is finished. Defaults to false.
-cpRepeatEnabled :: Lens' (Request CreatePolicy s r) a
+-- rules after the last rule is finished.
+--
+-- Defaults to false.
+cpRepeatEnabled :: Lens' (Request CreatePolicy s r) (Maybe Bool)
 cpRepeatEnabled = upd.cpRepeatEnabled'
 
 -- | The number of times to loop over the set of rules in this escalation policy.
-cpNumLoops :: Lens' (Request CreatePolicy s r) a
+cpNumLoops :: Lens' (Request CreatePolicy s r) (Maybe Int)
 cpNumLoops = upd.cpNumLoops'
 
 -- | The escalation rules for this policy.
-cpEscalationRules :: Lens' (Request CreatePolicy s r) a
+cpEscalationRules :: Lens' (Request CreatePolicy s r) [Rule]
 cpEscalationRules = upd.cpEscalationRules'
 
 -- | Get information about an existing escalation policy and its rules.
@@ -157,7 +161,7 @@ cpEscalationRules = upd.cpEscalationRules'
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/show>
 getPolicy :: PolicyId -> Request Empty Token Policy
-getPolicy i = mk (path .~ i & unwrap .~ key "escalation_policy") Empty
+getPolicy i = mk Empty & policies .~ [P i] & unwrap .~ key "escalation_policy"
 
 data UpdatePolicy = UpdatePolicy
     { _upName'            :: Maybe Text
@@ -175,30 +179,31 @@ makeLenses ''UpdatePolicy
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/update>
 updatePolicy :: PolicyId -> Request UpdatePolicy Token Policy
-updatePolicy i = mk
-    (method .~ PUT & path .~ i & unwrap .~ key "escalation_policy")
-    UpdatePolicy
+updatePolicy i =
+    mk UpdatePolicy
         { _upName'            = Nothing
         , _upRepeatEnabled'   = Nothing
         , _upNumLoops'        = Nothing
         , _upEscalationRules' = []
-        }
+        } & policies .~ [P i]
+          & meth     .~ PUT
+          & unwrap   .~ key "escalation_policy"
 
 -- | The name of the escalation policy.
-upName :: Lens' (Request UpdatePolicy s r) a
+upName :: Lens' (Request UpdatePolicy s r) (Maybe Text)
 upName = upd.upName'
 
 -- | Whether or not to allow this policy to repeat its escalation
 -- rules after the last rule is finished.
-upRepeatEnabled :: Lens' (Request UpdatePolicy s r) a
+upRepeatEnabled :: Lens' (Request UpdatePolicy s r) (Maybe Bool)
 upRepeatEnabled = upd.upRepeatEnabled'
 
 -- | The number of times to loop over the set of rules in this escalation policy.
-upNumLoops :: Lens' (Request UpdatePolicy s r) a
+upNumLoops :: Lens' (Request UpdatePolicy s r) (Maybe Int)
 upNumLoops = upd.upNumLoops'
 
 -- | The escalation rules for this policy.
-upEscalationRules :: Lens' (Request UpdatePolicy s r) a
+upEscalationRules :: Lens' (Request UpdatePolicy s r) [Rule]
 upEscalationRules = upd.upEscalationRules'
 
 -- | Deletes an existing escalation policy and rules. The escalation policy
@@ -208,4 +213,4 @@ upEscalationRules = upd.upEscalationRules'
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/delete>
 deletePolicy :: PolicyId -> Request Empty Token Empty
-deletePolicy i = req DELETE i unwrap Empty
+deletePolicy i = mk Empty & policies .~ [P i] & meth .~ DELETE

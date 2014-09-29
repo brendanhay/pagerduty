@@ -17,35 +17,25 @@ module Network.PagerDuty.EscalationPolicies.Types where
 import           Control.Applicative
 import           Control.Lens.TH
 import           Data.Aeson
-import           Data.ByteString.Conversion
 import qualified Data.HashMap.Strict              as Map
 import           Data.Text                        (Text)
 import qualified Data.Text                        as Text
-import           Network.HTTP.Types
 import           Network.PagerDuty.Services.Types (Service)
-import           Network.PagerDuty.JSON
+import           Network.PagerDuty.TH
 import           Network.PagerDuty.Types
-
-req :: (ToJSON a, ToByteString p)
-    => StdMethod
-    -> p
-    -> Unwrap
-    -> a
-    -> Request a s r
-req m p u = req' m ("escalation_policies", p) u
 
 data ScheduleTarget = ScheduleTarget
     { _stgtId   :: ScheduleId
     , _stgtName :: Text
     } deriving (Eq, Show)
 
+deriveJSON ''ScheduleTarget
+
 -- | The id of the target.
 makeLens "_stgtId" ''ScheduleTarget
 
 -- | The name of the target.
 makeLens "_stgtName" ''ScheduleTarget
-
-deriveJSON ''ScheduleTarget
 
 data UserTarget = UserTarget
     { _utgtId       :: UserId
@@ -54,6 +44,8 @@ data UserTarget = UserTarget
     , _utgtTimeZone :: TimeZone
     , _utgtColor    :: Text
     } deriving (Eq, Show)
+
+deriveJSON ''UserTarget
 
 -- | The id of the user.
 makeLens "_utgtId" ''UserTarget
@@ -69,8 +61,6 @@ makeLens "_utgtTimeZone" ''UserTarget
 
 -- | The color used to represent the user in schedules.
 makeLens "_utgtColor" ''UserTarget
-
-deriveJSON ''UserTarget
 
 data Target
     = TSchedule ScheduleTarget
@@ -104,6 +94,8 @@ data Rule = Rule
     , _ruleTargets                  :: [Target]
     } deriving (Eq, Show)
 
+deriveJSON ''Rule
+
 -- | The ID of the escalation rule.
 makeLens "_ruleId" ''Rule
 
@@ -113,8 +105,6 @@ makeLens "_ruleEscalationDelayInMinutes" ''Rule
 -- | A list of targets which an incident will be assigned to upon reaching this rule.
 makeLens "_ruleTargets" ''Rule
 
-deriveJSON ''Rule
-
 data Policy = Policy
     { _policyId       :: PolicyId
     , _policyName     :: Text
@@ -122,6 +112,8 @@ data Policy = Policy
     , _policyRules    :: [Rule]
     , _policyServices :: [Service]
     } deriving (Eq, Show)
+
+deriveJSON ''Policy
 
 -- | The ID of the escalation policy.
 makeLens "_policyId" ''Policy
@@ -138,5 +130,3 @@ makeLens "_policyRules" ''Policy
 
 -- | A list of services using this escalation policy.
 makeLens "_policyServices" ''Policy
-
-deriveJSON ''Policy

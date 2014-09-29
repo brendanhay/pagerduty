@@ -15,11 +15,8 @@
 module Network.PagerDuty.Services.Types where
 
 import Control.Lens
-import Data.Aeson
-import Data.ByteString.Conversion
-import Data.Text                  (Text)
-import Network.HTTP.Types
-import Network.PagerDuty.JSON
+import Data.Text               (Text)
+import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
 data IncidentCounts = IncidentCounts
@@ -110,6 +107,8 @@ data EmailFilters = EmailFilters
     , _efsFromEmailRegex :: Maybe Text
     } deriving (Eq, Show)
 
+deriveJSON ''EmailFilters
+
 -- | The email filter ID.
 makeLens "_efsId" ''EmailFilters
 
@@ -146,8 +145,6 @@ makeLens "_efsFromEmailMode" ''EmailFilters
 -- It is a required parameter on such cases.
 makeLens "_efsFromEmailRegex" ''EmailFilters
 
-deriveJSON ''EmailFilters
-
 data SeverityFilter
     = SevCritical
       -- ^ Incidents are created when an alarm enters the Critical state.
@@ -182,6 +179,8 @@ data Service = Service
     , _svcEmailFilters           :: Maybe EmailFilters -- FIXME: extract from inline.
     , _svcSeverityFilter         :: Maybe SeverityFilter
     } deriving (Eq, Show)
+
+deriveJSON ''Service
 
 -- | A unique identifier for this service.
 makeLens "_svcId" ''Service
@@ -241,5 +240,3 @@ makeLens "_svcEmailFilters" ''Service
 
 -- | Specifies what severity levels will create a new open incident.
 makeLens "_svcSeverityFilter" ''Service
-
-deriveJSON ''Service

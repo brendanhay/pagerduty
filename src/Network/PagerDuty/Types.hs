@@ -66,7 +66,7 @@ import qualified Data.Time                  as Time
 import           Data.Time                  hiding (TimeZone)
 import           GHC.TypeLits
 import           Network.HTTP.Types
-import           Network.PagerDuty.JSON
+import           Network.PagerDuty.TH
 
 -- FIXME: Query String parameters vs JSON bodies for GET
 
@@ -233,8 +233,8 @@ instance ToJSON (Request a s r) where
 type Unwrap = Getting (First Value) Value Value
 
 -- | Create a defaulted request from the payload type.
-mk :: ToJSON a => (Request a s r -> Request a s r) -> a -> Request a s r
-mk f x = Request x GET E mempty Nothing pure & f
+mk :: ToJSON a => a -> Request a s r
+mk x = Request x GET E mempty Nothing pure
 
 -- | Modify the request state.
 upd :: ToJSON a => Lens' (Request a s r) a
@@ -243,8 +243,11 @@ upd = lens _rqPayload (\(Request _ m p q g u) x -> Request x m p q g u)
 meth :: Lens' (Request a s r) StdMethod
 meth = lens _rqMethod (\r x -> r { _rqMethod = x })
 
-path :: Lens' (Request a s r) Path
-path = lens _rqPath (\r x -> r { _rqPath = x })
+path :: Getter (Request a s r) Path
+path = to _rqPath
+
+base :: Path -> Setter (Request a s r) (Request a s r) Path [Path]
+base x = lens (view path) (\r xs -> r { _rqPath = mconcat (x:xs) })
 
 query :: Lens' (Request a s r) Query
 query = lens _rqQuery (\r x -> r { _rqQuery = x })
@@ -252,10 +255,10 @@ query = lens _rqQuery (\r x -> r { _rqQuery = x })
 pager :: Lens' (Request a s r) (Maybe Pager)
 pager = lens _rqPager (\r x -> r { _rqPager = x })
 
-unwrap :: Lens (Request a s r) (Request a s r) (Value -> Parser Value) Unwrap
-unwrap f r = fmap (\x -> r { _rqUnwrap = g x }) (f (_rqUnwrap r))
+unwrap :: Setter (Request a s r) (Request a s r) (Value -> Parser Value) Unwrap
+unwrap f r = fmap (\k -> r { _rqUnwrap = g k }) (f (_rqUnwrap r))
   where
-    g h x = maybe (fail "Failed to extract nested keys.") return (x ^? h)
+    g k x = maybe (fail "Failed to extract nested keys.") return (x ^? k)
 
 -- | Primarily to obtain a constraint for the pagination function, as well as
 -- the overrideable flexibility.

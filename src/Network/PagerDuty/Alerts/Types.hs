@@ -15,7 +15,7 @@
 module Network.PagerDuty.Alerts.Types where
 
 import Control.Lens
-import Network.PagerDuty.JSON
+import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
 data AlertType

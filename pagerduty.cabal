@@ -32,8 +32,8 @@ library
     exposed-modules:
         Network.PagerDuty
       , Network.PagerDuty.Alerts
-      -- , Network.PagerDuty.EscalationPolicies
-      -- , Network.PagerDuty.Services
+      , Network.PagerDuty.EscalationPolicies
+      , Network.PagerDuty.Services
 
       -- , Network.PagerDuty.Incidents
       -- , Network.PagerDuty.Integration
@@ -45,9 +45,9 @@ library
 
     other-modules:
         Network.PagerDuty.Alerts.Types
-      -- , Network.PagerDuty.EscalationPolicies.Types
-      -- , Network.PagerDuty.Services.Types
-      , Network.PagerDuty.JSON
+      , Network.PagerDuty.EscalationPolicies.Types
+      , Network.PagerDuty.Services.Types
+      , Network.PagerDuty.TH
       , Network.PagerDuty.Types
 
     build-depends:

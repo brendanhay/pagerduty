@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 
--- Module      : Network.PagerDuty.JSON
+-- Module      : Network.PagerDuty.TH
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
 -- License     : This Source Code Form is subject to the terms of
 --               the Mozilla Public License, v. 2.0.
@@ -10,10 +10,12 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
-module Network.PagerDuty.JSON
+module Network.PagerDuty.TH
     (
+    -- * Lenses
+      makeLens
     -- * JSON
-      deriveJSON
+    , deriveJSON
     , deriveJSONWith
     -- ** Options
     , dropped
@@ -21,12 +23,18 @@ module Network.PagerDuty.JSON
     , underscored
     ) where
 
+import           Control.Lens
 import qualified Data.Aeson.TH    as Aeson
 import           Data.Aeson.Types
 import           Data.Char
 import           Data.List
 
-deriveJSON     = deriveJSONWith underscored
+makeLens k = makeLensesWith
+    $ lensRulesFor [(k, drop 1 k)]
+    & simpleLenses .~ True
+
+deriveJSON = deriveJSONWith underscored
+
 deriveJSONWith = Aeson.deriveJSON
 
 dropped :: Int -> Options -> Options
