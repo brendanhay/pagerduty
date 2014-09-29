@@ -170,9 +170,9 @@ makeLenses ''Pager
 instance FromJSON a => FromJSON (a, Maybe Pager) where
     parseJSON = withObject "paginated" $ \o -> (,)
         <$> parseJSON (Object o)
-        <*> optional  (pager o)
+        <*> optional  (parse o)
       where
-        pager o = Pager
+        parse o = Pager
            -- The offset of the first record returned.
            -- Default is 0.
            <$> o .: "offset" .!= 0
@@ -206,56 +206,49 @@ instance ToJSON (Request a s r) where
                 (Object y) -> x <> y
                 _          -> x
 
+-- type Request' s b = forall a r. Lens' (Request s a r) b
+
 type Unwrap = Getting (First Value) Value Value
 
--- | Identity unwrapper which always succeeds.
-unwrap :: Getting (First a) a a
-unwrap = to id
+-- | Create a defaulted request from the payload type.
+mk :: ToJSON a => (Request a s r -> Request a s r) -> a -> Request a s r
+mk f x = Request x GET "/" mempty Nothing pure & f
 
 -- | Modify the request state.
 upd :: ToJSON a => Lens' (Request a s r) a
-upd = lens _rqPayload (\(Request _ m p q g u) a -> Request a m p q g u)
+upd = lens _rqPayload (\(Request _ m p q g u) x -> Request x m p q g u)
 
--- | Internal function used by operations to construct a valid request.
-req' :: (ToJSON a, ToByteString p)
-     => StdMethod
-     -> (ByteString, p)
-     -> Unwrap
-     -> a
-     -> Request a s r
-req' m (p, toByteString' -> r) u s = Request s m path mempty Nothing (f u)
+method :: Lens' (Request a s r) StdMethod
+method = lens _rqMethod (\r x -> r { _rqMethod = x })
+
+path :: ToByteString b => Lens (Request a s r) (Request a s r) ByteString b
+path f r = fmap (\x -> r { _rqPath = rm (toByteString' x) }) (f (_rqPath r))
   where
-    path | BS.null r              = v1
-         |  "/" `BS.isPrefixOf` r = v1 <> r
-         | otherwise              = v1 <> "/" <> r
+    rm x | BS.null x              = v1
+         |  "/" `BS.isPrefixOf` x = v1 <> x
+         | otherwise              = v1 <> "/" <> x
 
-    v1 = "/api/v1/" <> p
+    v1 = "/api/v1"
 
-    f :: Monad m => Getting (First a) s a -> s -> m a
-    f g x = maybe (fail "Failed to extract nested keys.") return (x ^? g)
+query :: Lens' (Request a s r) Query
+query = lens _rqQuery (\r x -> r { _rqQuery = x })
 
-rqMethod :: Lens' (Request a s r) StdMethod
-rqMethod = lens _rqMethod (\s a -> s { _rqMethod = a })
+pager :: Lens' (Request a s r) (Maybe Pager)
+pager = lens _rqPager (\r x -> r { _rqPager = x })
 
-rqPath :: Lens' (Request a s r) ByteString
-rqPath = lens _rqPath (\s a -> s { _rqPath = a })
-
-rqQuery :: Lens' (Request a s r) Query
-rqQuery = lens _rqQuery (\s a -> s { _rqQuery = a })
-
-rqPager :: Lens' (Request a s r) (Maybe Pager)
-rqPager = lens _rqPager (\s a -> s { _rqPager = a })
-
-type Request' = Request ()
+unwrap :: Lens (Request a s r) (Request a s r) (Value -> Parser Value) Unwrap
+unwrap f r = fmap (\x -> r { _rqUnwrap = g x }) (f (_rqUnwrap r))
+  where
+    g h x = maybe (fail "Failed to extract nested keys.") return (x ^? h)
 
 -- | Primarily to obtain a constraint for the pagination function, as well as
 -- the overrideable flexibility.
 class Paginate a where
     next :: Request a s r -> Maybe Pager -> Maybe (Request a s r)
     next _  Nothing       = Nothing
-    next rq (Just p)
-        | p^.pgTotal == 0 = Nothing
-        | otherwise       = Just (rq & rqPager ?~ (p & pgOffset +~ p^.pgTotal))
+    next rq (Just x)
+        | x^.pgTotal == 0 = Nothing
+        | otherwise       = Just (rq & pager ?~ (x & pgOffset +~ x^.pgTotal))
 
 newtype Key (a :: Symbol) = Key Text
     deriving (Eq, Show, IsString)
