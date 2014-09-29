@@ -19,7 +19,7 @@ import Data.Aeson
 import Data.ByteString.Conversion
 import Data.Text                  (Text)
 import Network.HTTP.Types
-import Network.PagerDuty.TH
+import Network.PagerDuty.JSON
 import Network.PagerDuty.Types
 
 data IncidentCounts = IncidentCounts

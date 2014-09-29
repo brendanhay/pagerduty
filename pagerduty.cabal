@@ -32,8 +32,8 @@ library
     exposed-modules:
         Network.PagerDuty
       , Network.PagerDuty.Alerts
-      , Network.PagerDuty.EscalationPolicies
-      , Network.PagerDuty.Services
+      -- , Network.PagerDuty.EscalationPolicies
+      -- , Network.PagerDuty.Services
 
       -- , Network.PagerDuty.Incidents
       -- , Network.PagerDuty.Integration
@@ -44,24 +44,10 @@ library
       -- , Network.PagerDuty.Users
 
     other-modules:
-        Network.PagerDuty.Alerts.List
-      , Network.PagerDuty.Alerts.Types
-      , Network.PagerDuty.EscalationPolicies.Create
-      , Network.PagerDuty.EscalationPolicies.Delete
-      , Network.PagerDuty.EscalationPolicies.Get
-      , Network.PagerDuty.EscalationPolicies.List
-      , Network.PagerDuty.EscalationPolicies.Types
-      , Network.PagerDuty.EscalationPolicies.Update
-      , Network.PagerDuty.Services.Create
-      , Network.PagerDuty.Services.Delete
-      , Network.PagerDuty.Services.Disable
-      , Network.PagerDuty.Services.Enable
-      , Network.PagerDuty.Services.Get
-      , Network.PagerDuty.Services.List
-      , Network.PagerDuty.Services.RegenerateKey
-      , Network.PagerDuty.Services.Types
-      , Network.PagerDuty.Services.Update
-      , Network.PagerDuty.TH
+        Network.PagerDuty.Alerts.Types
+      -- , Network.PagerDuty.EscalationPolicies.Types
+      -- , Network.PagerDuty.Services.Types
+      , Network.PagerDuty.JSON
       , Network.PagerDuty.Types
 
     build-depends:

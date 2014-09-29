@@ -187,11 +187,35 @@ instance ToJSON Pager where
         , "limit"  .= _pgLimit p
         ]
 
+-- | A path segment.
+data Path where
+    E :: Path
+    P :: ToByteString a => a -> Path
+
+instance Monoid Path where
+    mempty = E
+    mappend x E         = x
+    mappend E y         = y
+    mappend (P x) (P y) = P (builder x <> "/" <> builder y)
+
+instance IsString Path where
+    fromString = P
+
+instance ToByteString Path where
+    builder E     = mempty
+    builder (P x) = builder x
+
+renderPath :: Path -> ByteString
+renderPath = toByteString' . mappend v1
+  where
+    v1 :: Path
+    v1 = "/api/v1"
+
 data Request a (s :: Security) r where
     Request :: ToJSON a
             => { _rqPayload :: a
                , _rqMethod  :: !StdMethod
-               , _rqPath    :: ByteString
+               , _rqPath    :: Path
                , _rqQuery   :: Query
                , _rqPager   :: Maybe Pager
                , _rqUnwrap  :: Value -> Parser Value
@@ -210,23 +234,17 @@ type Unwrap = Getting (First Value) Value Value
 
 -- | Create a defaulted request from the payload type.
 mk :: ToJSON a => (Request a s r -> Request a s r) -> a -> Request a s r
-mk f x = Request x GET "/" mempty Nothing pure & f
+mk f x = Request x GET E mempty Nothing pure & f
 
 -- | Modify the request state.
 upd :: ToJSON a => Lens' (Request a s r) a
 upd = lens _rqPayload (\(Request _ m p q g u) x -> Request x m p q g u)
 
-method :: Lens' (Request a s r) StdMethod
-method = lens _rqMethod (\r x -> r { _rqMethod = x })
+meth :: Lens' (Request a s r) StdMethod
+meth = lens _rqMethod (\r x -> r { _rqMethod = x })
 
-path :: ToByteString b => Lens (Request a s r) (Request a s r) ByteString b
-path f r = fmap (\x -> r { _rqPath = rm (toByteString' x) }) (f (_rqPath r))
-  where
-    rm x | BS.null x              = v1
-         |  "/" `BS.isPrefixOf` x = v1 <> x
-         | otherwise              = v1 <> "/" <> x
-
-    v1 = "/api/v1"
+path :: Lens' (Request a s r) Path
+path = lens _rqPath (\r x -> r { _rqPath = x })
 
 query :: Lens' (Request a s r) Query
 query = lens _rqQuery (\r x -> r { _rqQuery = x })

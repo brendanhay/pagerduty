@@ -14,13 +14,9 @@
 
 module Network.PagerDuty.Alerts.Types where
 
-import           Control.Lens
-import           Data.Aeson              (ToJSON)
-import           Data.Aeson.Lens
-import qualified Data.ByteString         as BS
-import           Network.HTTP.Types
-import           Network.PagerDuty.TH
-import           Network.PagerDuty.Types
+import Control.Lens
+import Network.PagerDuty.JSON
+import Network.PagerDuty.Types
 
 data AlertType
     = SMS

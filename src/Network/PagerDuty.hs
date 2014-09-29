@@ -27,14 +27,14 @@ import           Control.Lens
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans
-import           Data.Aeson               hiding (Error)
-import qualified Data.ByteString.Lazy     as LBS
+import           Data.Aeson                 hiding (Error)
+import qualified Data.ByteString.Lazy       as LBS
 import           Data.Conduit
 import           Data.Default
 import           Data.Monoid
-import           Network.HTTP.Client      (Manager, httpLbs)
-import qualified Network.HTTP.Client      as Client
-import qualified Network.HTTP.Client.Lens as Lens
+import           Network.HTTP.Client        (Manager, httpLbs)
+import qualified Network.HTTP.Client        as Client
+import qualified Network.HTTP.Client.Lens   as Lens
 import           Network.HTTP.Types
 import           Network.PagerDuty.Types
 
@@ -78,7 +78,7 @@ http a (SubDomain h) m rq = liftIO (httpLbs raw m) >>= response rq
     raw = authorise
         & Lens.secure         .~ True
         & Lens.port           .~ 443
-        & Lens.path           .~ rq^.path
+        & Lens.path           .~ renderPath (rq^.path)
         & Lens.queryString    .~ renderQuery False (rq^.query)
         & Lens.requestHeaders <>~ headers
         & Lens.requestBody    .~ Client.RequestBodyLBS (encode rq)

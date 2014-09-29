@@ -23,7 +23,7 @@ import           Data.Text                        (Text)
 import qualified Data.Text                        as Text
 import           Network.HTTP.Types
 import           Network.PagerDuty.Services.Types (Service)
-import           Network.PagerDuty.TH
+import           Network.PagerDuty.JSON
 import           Network.PagerDuty.Types
 
 req :: (ToJSON a, ToByteString p)

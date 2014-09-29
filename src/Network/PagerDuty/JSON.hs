@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
+
 -- Module      : Network.PagerDuty.JSON
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
 -- License     : This Source Code Form is subject to the terms of
@@ -24,8 +26,7 @@ import           Data.Aeson.Types
 import           Data.Char
 import           Data.List
 
-deriveJSON = deriveJSONWith underscored
-
+deriveJSON     = deriveJSONWith underscored
 deriveJSONWith = Aeson.deriveJSON
 
 dropped :: Int -> Options -> Options
