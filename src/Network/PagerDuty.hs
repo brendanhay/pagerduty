@@ -1,6 +1,4 @@
-{-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE GADTs             #-}
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- Module      : Network.PagerDuty
@@ -13,14 +11,7 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
-module Network.PagerDuty
-    (
-    -- * Run PagerDuty actions
-      send
-    , paginate
-
-    , module Network.PagerDuty.Types
-    ) where
+module Network.PagerDuty where
 
 import           Control.Applicative
 import           Control.Lens
@@ -28,7 +19,6 @@ import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans
 import           Data.Aeson               hiding (Error)
-import qualified Data.ByteString.Lazy     as LBS
 import           Data.Conduit
 import           Data.Default
 import           Data.Monoid

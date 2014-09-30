@@ -31,12 +31,10 @@ library
 
     exposed-modules:
         Network.PagerDuty
-      -- , Network.PagerDuty.Alerts
-      -- , Network.PagerDuty.EscalationPolicies
-      -- , Network.PagerDuty.Services
       , Network.PagerDuty.Integration
-
-      , Network.PagerDuty.HTTP
+      , Network.PagerDuty.Alerts
+      , Network.PagerDuty.EscalationPolicies
+      , Network.PagerDuty.Services
 
       -- , Network.PagerDuty.Incidents
       -- , Network.PagerDuty.Integration
@@ -47,11 +45,9 @@ library
       -- , Network.PagerDuty.Users
 
     other-modules:
-        Network.PagerDuty.Alerts.Types
-      , Network.PagerDuty.EscalationPolicies.Types
-      , Network.PagerDuty.Services.Types
-      , Network.PagerDuty.TH
+        Network.PagerDuty.TH
       , Network.PagerDuty.Types
+      , Network.PagerDuty.HTTP
 
     build-depends:
         aeson                 >= 0.7   && < 1.0

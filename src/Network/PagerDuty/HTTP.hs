@@ -41,7 +41,7 @@ request m x rq = liftIO (httpLbs raw m) >>= response
         , ("Accept",       "application/json")
         ]
 
-response :: (MonadIO m, FromJSON b)
+response :: (Monad m, FromJSON b)
          => Client.Response LBS.ByteString
          -> m (Either Error b)
 response rs = case statusCode (Client.responseStatus rs) of

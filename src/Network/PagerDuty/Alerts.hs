@@ -43,12 +43,31 @@ module Network.PagerDuty.Alerts
 
 import Control.Lens
 import Data.Aeson.Lens
-import Network.PagerDuty.Alerts.Types
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
 alerts :: Path
 alerts = "alerts"
+
+data AlertType
+    = SMS
+    | Email
+    | Phone
+    | Push
+      deriving (Eq, Show)
+
+deriveJSON ''AlertType
+
+data Alert = Alert
+    { _alertId        :: AlertId
+    , _alertType      :: AlertType
+    , _alertStartedAt :: Date
+    , _alertUser      :: User
+    , _alertAddress   :: Address
+    } deriving (Eq, Show)
+
+deriveJSON ''Alert
+makeLenses ''Alert
 
 data ListAlerts = ListAlerts
     { _laSince'    :: Date
