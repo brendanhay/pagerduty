@@ -10,11 +10,63 @@
 
 module Network.PagerDuty.REST
     (
-      module Network.PagerDuty.Alerts
-    , module Network.PagerDuty.EscalationPolicies
-    , module Network.PagerDuty.Services
+    -- * Sending requests
+      send
+    , paginate
     ) where
 
-import Network.PagerDuty.Alerts
-import Network.PagerDuty.EscalationPolicies
-import Network.PagerDuty.Services
+import           Control.Applicative
+import           Control.Lens
+import           Control.Monad
+import           Control.Monad.IO.Class
+import           Control.Monad.Trans
+import           Data.Aeson              (FromJSON)
+import           Data.Conduit
+import           Data.Default
+import           Data.Monoid
+import           Network.HTTP.Client     (Manager)
+import qualified Network.HTTP.Client     as Client
+import           Network.HTTP.Types
+import           Network.PagerDuty.IO
+import           Network.PagerDuty.Types
+
+send :: (MonadIO m, FromJSON b)
+     => Auth s
+     -> SubDomain
+     -> Manager
+     -> Request a s b
+     -> m (Either Error b)
+send a s m = liftM (fmap fst) . http a s m
+
+paginate :: (MonadIO m, Paginate a, FromJSON b)
+         => Auth s
+         -> SubDomain
+         -> Manager
+         -> Request a s b
+         -> Source m (Either Error b)
+paginate a d m = go
+  where
+    go rq = do
+        rs <- lift (http a d m rq)
+        yield  (fst <$> rs)
+        either (const (return ()))
+               (maybe (return ()) go . next rq . snd)
+               rs
+
+http :: (MonadIO m, FromJSON b)
+     => Auth s
+     -> SubDomain
+     -> Manager
+     -> Request a s b
+     -> m (Either Error (b, Maybe Pager))
+http a (SubDomain h) m rq = request m rq $ raw
+    { Client.host        = h
+    , Client.path        = renderPath (rq ^. path)
+    , Client.queryString = renderQuery False (rq ^. query)
+    }
+  where
+    raw = case a of
+        AuthBasic u p -> Client.applyBasicAuth u p def
+        AuthToken t   -> def
+            { Client.requestHeaders = [("Authorization", "Token token=" <> t)]
+            }
