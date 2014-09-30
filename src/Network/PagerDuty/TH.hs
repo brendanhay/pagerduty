@@ -44,13 +44,13 @@ dropped n o = o
 
 hyphenated :: Options
 hyphenated = underscored
-    { fieldLabelModifier     = hyphenate . unprefix
+    { fieldLabelModifier     = unsuffix . hyphenate . unprefix
     , constructorTagModifier = hyphenate
     }
 
 underscored :: Options
 underscored = defaultOptions
-    { fieldLabelModifier     = underscore . unprefix
+    { fieldLabelModifier     = unsuffix . underscore . unprefix
     , constructorTagModifier = underscore
     , omitNothingFields      = True
     , allNullaryToStringTag  = True
@@ -64,6 +64,9 @@ underscore = intercalate "_" . map lower . splitBy isUpper
 
 lower :: String -> String
 lower = map toLower
+
+unsuffix :: String -> String
+unsuffix = takeWhile (/= '\'')
 
 unprefix :: String -> String
 unprefix = dropWhile (not . isUpper)

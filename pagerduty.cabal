@@ -34,6 +34,7 @@ library
       , Network.PagerDuty.Alerts
       , Network.PagerDuty.EscalationPolicies
       , Network.PagerDuty.Services
+      , Network.PagerDuty.Integration
 
       -- , Network.PagerDuty.Incidents
       -- , Network.PagerDuty.Integration

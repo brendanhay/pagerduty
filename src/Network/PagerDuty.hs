@@ -68,11 +68,11 @@ paginate a d m = go
                rs
 
 http :: (MonadIO m, FromJSON b)
-         => Auth s
-         -> SubDomain
-         -> Manager
-         -> Request a s b
-         -> m (Either Error (b, Maybe Pager))
+     => Auth s
+     -> SubDomain
+     -> Manager
+     -> Request a s b
+     -> m (Either Error (b, Maybe Pager))
 http a (SubDomain h) m rq = liftIO (httpLbs raw m) >>= response rq
   where
     raw = authorise

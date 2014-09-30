@@ -35,7 +35,7 @@ module Network.PagerDuty.Types where
     -- -- * Errors
     -- , Code         (..)
     -- , message
-    -- , ServiceError (..)
+    -- , RestError (..)
     -- , Error        (..)
 
     -- -- * Primitives
@@ -138,18 +138,18 @@ description (Code c) =
         2012 -> "Your account is expired and cannot use the API"
         _    -> "Unrecognised error code"
 
-data ServiceError = ServiceError
-    { _errCode    :: Code
-    , _errMessage :: Text
-    , _errErrors  :: [Text]
+data RestError = RestError
+    { _reCode    :: Code
+    , _reMessage :: Text
+    , _reErrors  :: [Text]
     } deriving (Eq, Show)
 
-deriveJSON ''ServiceError
-makeLenses ''ServiceError
+deriveJSON ''RestError
+makeLenses ''RestError
 
 data Error
     = Internal String
-    | Error    ServiceError
+    | Error    RestError
       deriving (Eq, Show)
 
 instance FromJSON Error where
