@@ -25,7 +25,7 @@ import           Data.Monoid
 import           Network.HTTP.Client      (Manager, applyBasicAuth)
 import qualified Network.HTTP.Client.Lens as Lens
 import           Network.HTTP.Types
-import           Network.PagerDuty.HTTP
+import           Network.PagerDuty.IO
 import           Network.PagerDuty.Types
 
 -- data Env (s :: Security) = Env

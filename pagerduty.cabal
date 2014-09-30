@@ -31,7 +31,10 @@ library
 
     exposed-modules:
         Network.PagerDuty
+
+      , Network.PagerDuty.REST
       , Network.PagerDuty.Integration
+
       , Network.PagerDuty.Alerts
       , Network.PagerDuty.EscalationPolicies
       , Network.PagerDuty.Services
@@ -45,9 +48,9 @@ library
       -- , Network.PagerDuty.Users
 
     other-modules:
-        Network.PagerDuty.TH
+        Network.PagerDuty.IO
+      , Network.PagerDuty.TH
       , Network.PagerDuty.Types
-      , Network.PagerDuty.HTTP
 
     build-depends:
         aeson                 >= 0.7   && < 1.0

@@ -78,7 +78,7 @@ import           Data.Monoid
 import           Data.Text                (Text)
 import           Network.HTTP.Client      (Manager)
 import qualified Network.HTTP.Client.Lens as Lens
-import           Network.PagerDuty.HTTP
+import           Network.PagerDuty.IO
 import           Network.PagerDuty.TH
 import           Network.PagerDuty.Types
 

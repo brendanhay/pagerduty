@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- Module      : Network.PagerDuty.HTTP
+-- Module      : Network.PagerDuty.IO
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
 -- License     : This Source Code Form is subject to the terms of
 --               the Mozilla Public License, v. 2.0.
@@ -10,7 +10,7 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
-module Network.PagerDuty.HTTP where
+module Network.PagerDuty.IO where
 
 import           Control.Lens
 import           Control.Monad
