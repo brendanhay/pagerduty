@@ -1,6 +1,9 @@
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE ExtendedDefaultRules       #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE TemplateHaskell            #-}
+
+{-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
 -- Module      : Network.PagerDuty.Services
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
@@ -30,10 +33,10 @@ module Network.PagerDuty.Services
     -- * Create Service
     , createService
     , csName
-    , csEscalationPolicyId
+    , csDescription
     , csType
     , csVendorId
-    , csDescription
+    , csEscalationPolicyId
     , csAcknowledgementTimeout
     , csAutoResolveTimeout
     , csSeverityFilter
@@ -43,6 +46,12 @@ module Network.PagerDuty.Services
 
     -- * Update Service
     , updateService
+    , usName
+    , usEscalationPolicyId
+    , usDescription
+    , usAcknowledgementTimeout
+    , usAutoResolveTimeout
+    , usSeverityFilter
 
     -- * Delete Service
     , deleteService
@@ -105,14 +114,17 @@ module Network.PagerDuty.Services
 
 import Control.Lens
 import Data.Aeson.Lens
+import Data.ByteString.Builder          (Builder)
 import Data.Text                        (Text)
 import Network.HTTP.Types
 import Network.PagerDuty.Services.Types
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
-services :: Setter (Request a s r) (Request a s r) Path [Path]
-services = base "services"
+default (Builder)
+
+services :: Path
+services = "services"
 
 includes :: Query
 includes =
@@ -138,9 +150,9 @@ listServices :: Request ListServices Token [Service]
 listServices =
     mk ListServices
         { _lsTimeZone' = Nothing
-        } & services .~ []
-          & unwrap   .~ key "escalation_policies"
-          & query   <>~ includes
+        } & path   .~ services
+          & query <>~ includes
+          & unwrap .~ key "escalation_policies"
 
 -- | Time zone in which dates in the result will be rendered.
 --
@@ -181,16 +193,16 @@ createService n p t =
         , _csAcknowledgementTimeout' = Nothing
         , _csAutoResolveTimeout'     = Nothing
         , _csSeverityFilter'         = Nothing
-        } & services .~ []
-          & unwrap   .~ key "service"
+        } & path   .~ services
+          & unwrap .~ key "service"
 
 -- | The name of the service.
 csName :: Lens' (Request CreateService s r) Text
 csName = upd.csName'
 
--- | The id of the escalation policy to be used by this service.
-csEscalationPolicyId :: Lens' (Request CreateService s r) PolicyId
-csEscalationPolicyId = upd.csEscalationPolicyId'
+-- | A description for your service. 1024 character maximum.
+csDescription :: Lens' (Request CreateService s r) (Maybe Text)
+csDescription = upd.csDescription'
 
 -- | The type of service to create.
 csType :: Lens' (Request CreateService s r) ServiceType
@@ -201,9 +213,9 @@ csType = upd.csType'
 csVendorId :: Lens' (Request CreateService s r) (Maybe VendorId)
 csVendorId = upd.csVendorId'
 
--- | A description for your service. 1024 character maximum.
-csDescription :: Lens' (Request CreateService s r) (Maybe Text)
-csDescription = upd.csDescription'
+-- | The id of the escalation policy to be used by this service.
+csEscalationPolicyId :: Lens' (Request CreateService s r) PolicyId
+csEscalationPolicyId = upd.csEscalationPolicyId'
 
 -- | The duration in seconds before an incidents acknowledged in this service
 -- become triggered again.
@@ -229,15 +241,14 @@ csSeverityFilter = upd.csSeverityFilter'
 -- See: <http://developer.pagerduty.com/documentation/rest/services/show>
 getService :: ServiceId -> Request Empty Token Service
 getService i = empty
-    & services .~ [P i]
-    & unwrap   .~ key "service"
-    & query   <>~ includes
+    & path   .~ services % i
+    & query <>~ includes
+    & unwrap .~ key "service"
 
 data UpdateService = UpdateService
-    { _usName'                   :: Text
-    , _usEscalationPolicyId'     :: PolicyId
-    , _usType'                   :: !ServiceType
+    { _usName'                   :: Maybe Text
     , _usDescription'            :: Maybe Text
+    , _usEscalationPolicyId'     :: Maybe PolicyId
     , _usAcknowledgementTimeout' :: Maybe Int
     , _usAutoResolveTimeout'     :: Maybe Int
     , _usSeverityFilter'         :: Maybe SeverityFilter
@@ -251,35 +262,30 @@ makeLenses ''UpdateService
 -- @PUT services\/\:id@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/services/update>
-updateService ServiceId -> Request UpdateService Token Service
+updateService :: ServiceId -> Request UpdateService Token Service
 updateService i =
     mk UpdateService
-        { _usName'                   = n
-        , _usEscalationPolicyId'     = p
-        , _usType'                   = t
+        { _usName'                   = Nothing
+        , _usEscalationPolicyId'     = Nothing
         , _usDescription'            = Nothing
         , _usAcknowledgementTimeout' = Nothing
         , _usAutoResolveTimeout'     = Nothing
         , _usSeverityFilter'         = Nothing
-        } & services .~ [P i]
-          & unwrap   .~ key "service"
+        } & meth   .~ PUT
+          & path   .~ services % i
+          & unwrap .~ key "service"
 
 -- | The name of the service.
-usName :: Lens' (Request UpdateService s r) Text
+usName :: Lens' (Request UpdateService s r) (Maybe Text)
 usName = upd.usName'
-
--- | The id of the escalation policy to be used by this service.
-usEscalationPolicyId :: Lens' (Request UpdateService s r) PolicyId
-usEscalationPolicyId = upd.usEscalationPolicyId'
-
--- | PagerDuty's internal vendor identifier for this service. For more information
--- about a specific vendor, please contact PagerDuty Support.
-usVendorId :: Lens' (Request UpdateService s r) (Maybe VendorId)
-usVendorId = upd.usVendorId'
 
 -- | A description for your service. 1024 character maximum.
 usDescription :: Lens' (Request UpdateService s r) (Maybe Text)
 usDescription = upd.usDescription'
+
+-- | The id of the escalation policy to be used by this service.
+usEscalationPolicyId :: Lens' (Request UpdateService s r) (Maybe PolicyId)
+usEscalationPolicyId = upd.usEscalationPolicyId'
 
 -- | The duration in seconds before an incidents acknowledged in this service
 -- become triggered again.
@@ -306,15 +312,20 @@ usSeverityFilter = upd.usSeverityFilter'
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/services/delete>
 deleteService :: ServiceId -> Request Empty Token Empty
-deleteService i = empty & services .~ [P i] & meth .~ DELETE
+deleteService i = empty & meth .~ DELETE & path .~ services % i
 
 -- | Enable a previously disabled service.
 --
 -- @PUT services\/\:id\/enable@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/services/enable>
-enableService :: ServiceId -> Request Empty Token Empty
-enableService i = empty & services .~ [P i, "enable"] & meth .~ PUT
+enableService :: RequesterId -> ServiceId -> Request Empty s Empty
+enableService r i = auth (enableServiceBasic i) & query .~ [("requester_id", r)]
+
+-- | A version of 'enableService' which uses HTTP Basic authentication and
+-- doesn't require a 'RequesterId'.
+enableServiceBasic :: ServiceId -> Request Empty Basic Empty
+enableServiceBasic i = empty & meth .~ PUT & path .~ services % i % "enable"
 
 -- | Disable a service. Once a service is disabled, it will not be able to
 -- create incidents until it is enabled again.
@@ -322,8 +333,13 @@ enableService i = empty & services .~ [P i, "enable"] & meth .~ PUT
 -- @PUT services\/\:id\/disable@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/services/disable>
-disableService :: ServiceId -> Request Empty Token Empty
-disableService i = empty & services .~ [P i, "disable"] & meth .~ PUT
+disableService :: RequesterId -> ServiceId -> Request Empty s Empty
+disableService r i = auth (disableServiceBasic i) & query .~ [("requester_id", r)]
+
+-- | A version of 'disableService' which uses HTTP Basic authentication and
+-- doesn't require a 'RequesterId'.
+disableServiceBasic :: ServiceId -> Request Empty Basic Empty
+disableServiceBasic i = empty & meth .~ PUT & path .~ services % i % "disable"
 
 -- | Regenerate a new service key for an existing service.
 --
@@ -333,5 +349,5 @@ disableService i = empty & services .~ [P i, "disable"] & meth .~ PUT
 -- @POST services\/\:id\/regenerate_key@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/services/regenerate_key>
-regenerateKey :: ServiceId -> Request Empty Token Service
-regenerateKey i = empty & services .~ [P i, "regenerate_key"] & meth .~ POST
+regenerateKey :: ServiceId -> Request Empty s Service
+regenerateKey i = empty & meth .~ POST & path .~ services % i % "regenerate_key"

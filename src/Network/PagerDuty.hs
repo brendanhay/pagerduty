@@ -44,20 +44,20 @@ import           Network.PagerDuty.Types
 --     , _envManager :: Manager
 --     }
 
-send :: (MonadIO m, FromJSON r)
+send :: (MonadIO m, FromJSON b)
      => Auth s
      -> SubDomain
      -> Manager
-     -> Request a s r
-     -> m (Either Error r)
+     -> Request a s b
+     -> m (Either Error b)
 send a s m = liftM (fmap fst) . http a s m
 
-paginate :: (MonadIO m, Paginate a, FromJSON r)
+paginate :: (MonadIO m, Paginate a, FromJSON b)
          => Auth s
          -> SubDomain
          -> Manager
-         -> Request a s r
-         -> Source m (Either Error r)
+         -> Request a s b
+         -> Source m (Either Error b)
 paginate a d m = go
   where
     go rq = do
@@ -67,26 +67,25 @@ paginate a d m = go
                (maybe (return ()) go . next rq . snd)
                rs
 
-http :: (MonadIO m, FromJSON r)
+http :: (MonadIO m, FromJSON b)
          => Auth s
          -> SubDomain
          -> Manager
-         -> Request a s r
-         -> m (Either Error (r, Maybe Pager))
+         -> Request a s b
+         -> m (Either Error (b, Maybe Pager))
 http a (SubDomain h) m rq = liftIO (httpLbs raw m) >>= response rq
   where
     raw = authorise
         & Lens.secure         .~ True
         & Lens.port           .~ 443
-        & Lens.path           .~ renderPath (rq^.path)
-        & Lens.queryString    .~ renderQuery False (rq^.query)
+        & Lens.path           .~ renderPath (rq ^. path)
+        & Lens.queryString    .~ renderQuery False (rq ^. query)
         & Lens.requestHeaders <>~ headers
         & Lens.requestBody    .~ Client.RequestBodyLBS (encode rq)
 
     authorise = case a of
         AuthBasic u p -> Client.applyBasicAuth u p def & Lens.host .~ h
         AuthToken t   -> def & Lens.host .~ h & Lens.requestHeaders <>~ [token t]
-        _             -> def
 
     token t = ("Authorization", "Token token=" <> t)
 
@@ -95,10 +94,10 @@ http a (SubDomain h) m rq = liftIO (httpLbs raw m) >>= response rq
         , ("Accept",       "application/json")
         ]
 
-response :: (MonadIO m, FromJSON r)
-         => Request a s r
+response :: (MonadIO m, FromJSON b)
+         => Request a s b
          -> Client.Response LBS.ByteString
-         -> m (Either Error (r, Maybe Pager))
+         -> m (Either Error (b, Maybe Pager))
 response _ x = case statusCode (Client.responseStatus x) of
     200 -> success
     201 -> success

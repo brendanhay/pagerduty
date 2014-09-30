@@ -51,21 +51,22 @@ module Network.PagerDuty.Types where
     -- ) where
 
 import           Control.Applicative
-import           Control.Lens               hiding ((.=))
-import           Data.Aeson                 hiding (Error)
-import           Data.Aeson.Types           (Parser)
-import           Data.ByteString            (ByteString)
-import qualified Data.ByteString.Char8      as BS
+import           Control.Lens                 hiding ((.=))
+import           Data.Aeson                   hiding (Error)
+import           Data.Aeson.Types             (Parser)
+import           Data.ByteString              (ByteString)
+import qualified Data.ByteString.Char8        as BS
 import           Data.ByteString.Conversion
 import           Data.Function
-import qualified Data.HashMap.Strict        as Map
+import qualified Data.HashMap.Strict          as Map
 import           Data.Monoid
 import           Data.String
-import           Data.Text                  (Text)
-import qualified Data.Time                  as Time
-import           Data.Time                  hiding (TimeZone)
+import           Data.Text                    (Text)
+import qualified Data.Time                    as Time
+import           Data.Time                    hiding (TimeZone)
 import           GHC.TypeLits
 import           Network.HTTP.Types
+import           Network.HTTP.Types.QueryLike
 import           Network.PagerDuty.TH
 
 -- FIXME: Query String parameters vs JSON bodies for GET
@@ -93,13 +94,13 @@ instance FromJSON TimeZone where
 instance ToJSON TimeZone where
     toJSON = undefined
 
-data Security = Basic | Token | None
+data Security = Basic | Token -- None
     deriving (Eq, Show)
 
 data Auth (a :: Security) where
     AuthBasic :: ByteString -> ByteString -> Auth Basic
     AuthToken :: ByteString -> Auth Token
-    AuthNone  :: Auth None
+--    AuthNone  :: Auth None
 
 deriving instance Eq   (Auth a)
 deriving instance Show (Auth a)
@@ -189,21 +190,24 @@ instance ToJSON Pager where
 
 -- | A path segment.
 data Path where
-    E :: Path
-    P :: ToByteString a => a -> Path
+    Path :: Path
+    Seg  :: ToByteString a => a -> Path
 
 instance Monoid Path where
-    mempty = E
-    mappend x E         = x
-    mappend E y         = y
-    mappend (P x) (P y) = P (builder x <> "/" <> builder y)
+    mempty                  = Path
+    mappend x Path          = x
+    mappend Path y          = y
+    mappend (Seg x) (Seg y) = Seg (builder x <> "/" <> builder y)
 
 instance IsString Path where
-    fromString = P
+    fromString = Seg
 
 instance ToByteString Path where
-    builder E     = mempty
-    builder (P x) = builder x
+    builder Path    = mempty
+    builder (Seg x) = builder x
+
+(%) :: ToByteString a => Path -> a -> Path
+a % b = a <> Seg b
 
 renderPath :: Path -> ByteString
 renderPath = toByteString' . mappend v1
@@ -211,18 +215,18 @@ renderPath = toByteString' . mappend v1
     v1 :: Path
     v1 = "/api/v1"
 
-data Request a (s :: Security) r where
+data Request a (s :: Security) b where
     Request :: ToJSON a
-            => { _rqPayload :: a
-               , _rqMethod  :: !StdMethod
-               , _rqPath    :: Path
-               , _rqQuery   :: Query
-               , _rqPager   :: Maybe Pager
-               , _rqUnwrap  :: Value -> Parser Value
+            => { _rqPayload  :: a
+               , _rqMethod   :: !StdMethod
+               , _rqPath     :: Path
+               , _rqQuery    :: Query
+               , _rqPager    :: Maybe Pager
+               , _rqUnwrap   :: Value -> Parser Value
                }
-            -> Request a s r
+            -> Request a s b
 
-instance ToJSON (Request a s r) where
+instance ToJSON (Request a s b) where
     -- Manually unwrapped to ensure GADT constraint holds.
     toJSON (Request p _ _ _ q _) = Object $
         let Object x = toJSON p
@@ -233,40 +237,42 @@ instance ToJSON (Request a s r) where
 type Unwrap = Getting (First Value) Value Value
 
 -- | Create a defaulted request from the payload type.
-mk :: ToJSON a => a -> Request a s r
-mk x = Request x GET E mempty Nothing pure
+mk :: ToJSON a => a -> Request a s b
+mk x = Request x GET mempty mempty Nothing pure
 
 empty :: Request Empty s r
 empty = mk Empty
 
 -- | Modify the request state.
-upd :: ToJSON a => Lens' (Request a s r) a
+upd :: ToJSON a => Lens' (Request a s b) a
 upd = lens _rqPayload (\(Request _ m p q g u) x -> Request x m p q g u)
 
-meth :: Lens' (Request a s r) StdMethod
+-- | Drop the security constraint.
+auth :: Request a s b -> Request a t b
+auth (Request x m p q g u) = Request x m p q g u
+
+meth :: Lens' (Request a s b) StdMethod
 meth = lens _rqMethod (\r x -> r { _rqMethod = x })
 
-path :: Getter (Request a s r) Path
-path = to _rqPath
+path :: Lens' (Request a s b) Path
+path = lens _rqPath (\r x -> r { _rqPath = x })
 
-base :: Path -> Setter (Request a s r) (Request a s r) Path [Path]
-base x = lens (view path) (\r xs -> r { _rqPath = mconcat (x:xs) })
+query :: QueryValueLike v
+      => Lens (Request a s b) (Request a s b) Query [(ByteString, v)]
+query = lens _rqQuery (\r x -> r { _rqQuery = toQuery x })
 
-query :: Lens' (Request a s r) Query
-query = lens _rqQuery (\r x -> r { _rqQuery = x })
-
-pager :: Lens' (Request a s r) (Maybe Pager)
+pager :: Lens' (Request a s b) (Maybe Pager)
 pager = lens _rqPager (\r x -> r { _rqPager = x })
 
-unwrap :: Setter (Request a s r) (Request a s r) (Value -> Parser Value) Unwrap
-unwrap f r = fmap (\k -> r { _rqUnwrap = g k }) (f (_rqUnwrap r))
+unwrap :: Setter (Request a s b) (Request a s b) (Value -> Parser Value) Unwrap
+unwrap f r = f (_rqUnwrap r) <&> \k -> r { _rqUnwrap = g k }
   where
     g k x = maybe (fail "Failed to extract nested keys.") return (x ^? k)
 
 -- | Primarily to obtain a constraint for the pagination function, as well as
 -- the overrideable flexibility.
 class Paginate a where
-    next :: Request a s r -> Maybe Pager -> Maybe (Request a s r)
+    next :: Request a s b -> Maybe Pager -> Maybe (Request a s b)
     next _  Nothing       = Nothing
     next rq (Just x)
         | x^.pgTotal == 0 = Nothing
@@ -284,6 +290,9 @@ instance FromJSON (Key a) where
 instance ToJSON (Key a) where
     toJSON (Key k) = toJSON k
 
+instance QueryValueLike (Key a) where
+    toQueryValue = Just . toByteString'
+
 type ServiceKey  = Key "service"
 type IncidentKey = Key "incident"
 
@@ -298,6 +307,9 @@ instance FromJSON (Id a) where
 
 instance ToJSON (Id a) where
     toJSON (Id i) = toJSON i
+
+instance QueryValueLike (Id a) where
+    toQueryValue = Just . toByteString'
 
 type AlertId       = Id "alert"
 type PolicyId      = Id "policy"
