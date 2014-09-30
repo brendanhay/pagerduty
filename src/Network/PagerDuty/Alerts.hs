@@ -70,7 +70,7 @@ makeLenses ''ListAlerts
 -- See: <http://developer.pagerduty.com/documentation/rest/alerts/list>
 listAlerts :: Date -- ^ 'laSince'
            -> Date -- ^ 'laUntil'
-           -> Request ListAlerts Token [Alert]
+           -> Request ListAlerts s [Alert]
 listAlerts s u =
     mk ListAlerts
         { _laSince'    = s

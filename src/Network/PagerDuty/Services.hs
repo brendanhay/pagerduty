@@ -146,7 +146,7 @@ makeLenses ''ListServices
 -- @GET \/services@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/services/list>
-listServices :: Request ListServices Token [Service]
+listServices :: Request ListServices s [Service]
 listServices =
     mk ListServices
         { _lsTimeZone' = Nothing
@@ -182,7 +182,7 @@ makeLenses ''CreateService
 createService :: Text
               -> PolicyId
               -> ServiceType
-              -> Request CreateService Token Service
+              -> Request CreateService s Service
 createService n p t =
     mk CreateService
         { _csName'                   = n
@@ -239,7 +239,7 @@ csSeverityFilter = upd.csSeverityFilter'
 -- @GET services\/\:id@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/services/show>
-getService :: ServiceId -> Request Empty Token Service
+getService :: ServiceId -> Request Empty s Service
 getService i = empty
     & path   .~ services % i
     & query <>~ includes
@@ -262,7 +262,7 @@ makeLenses ''UpdateService
 -- @PUT services\/\:id@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/services/update>
-updateService :: ServiceId -> Request UpdateService Token Service
+updateService :: ServiceId -> Request UpdateService s Service
 updateService i =
     mk UpdateService
         { _usName'                   = Nothing
@@ -311,7 +311,7 @@ usSeverityFilter = upd.usSeverityFilter'
 -- @DELETE \/services/:id@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/services/delete>
-deleteService :: ServiceId -> Request Empty Token Empty
+deleteService :: ServiceId -> Request Empty s Empty
 deleteService i = empty & meth .~ DELETE & path .~ services % i
 
 -- | Enable a previously disabled service.
