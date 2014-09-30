@@ -73,11 +73,11 @@ import           Control.Lens
 import           Control.Monad.IO.Class
 import           Data.Aeson
 import           Data.Default
-import qualified Data.HashMap.Strict      as Map
+import qualified Data.HashMap.Strict     as Map
 import           Data.Monoid
-import           Data.Text                (Text)
-import           Network.HTTP.Client      (Manager)
-import qualified Network.HTTP.Client.Lens as Lens
+import           Data.Text               (Text)
+import           Network.HTTP.Client     (Manager)
+import qualified Network.HTTP.Client     as Client
 import           Network.PagerDuty.IO
 import           Network.PagerDuty.TH
 import           Network.PagerDuty.Types
@@ -249,8 +249,9 @@ rDetails = _Resolve.gDetails
 -- | Send an event to the integration API.
 event :: (MonadIO m, Event a) => Manager -> a -> m (Either Error Response)
 event m x = request m payload $ def
-    & Lens.host .~ "events.pagerduty.com"
-    & Lens.path .~ "/generic/2010-04-15/create_event.json"
+    { Client.host = "events.pagerduty.com"
+    , Client.path = "/generic/2010-04-15/create_event.json"
+    }
   where
     payload = Object $
         Map.insert "event_type" (String (eventType x)) (eventPayload x)

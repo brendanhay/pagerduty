@@ -12,14 +12,12 @@
 
 module Network.PagerDuty.IO where
 
-import           Control.Lens
 import           Control.Monad
 import           Control.Monad.IO.Class
-import           Data.Aeson               hiding (Error)
-import qualified Data.ByteString.Lazy     as LBS
-import           Network.HTTP.Client      (Manager, httpLbs)
-import qualified Network.HTTP.Client      as Client
-import qualified Network.HTTP.Client.Lens as Lens
+import           Data.Aeson                hiding (Error)
+import qualified Data.ByteString.Lazy      as LBS
+import           Network.HTTP.Client       (Manager, httpLbs)
+import qualified Network.HTTP.Client       as Client
 import           Network.HTTP.Types
 import           Network.PagerDuty.Types
 
@@ -31,10 +29,11 @@ request :: (MonadIO m, ToJSON a, FromJSON b)
 request m x rq = liftIO (httpLbs raw m) >>= response
   where
     raw = rq
-        & Lens.secure         .~ True
-        & Lens.port           .~ 443
-        & Lens.requestHeaders .~ headers
-        & Lens.requestBody    .~ Client.RequestBodyLBS (encode x)
+        { Client.secure         = True
+        , Client.port           = 443
+        , Client.requestHeaders = headers
+        , Client.requestBody    = Client.RequestBodyLBS (encode x)
+        }
 
     headers =
         [ ("Content-Type", "application/json")

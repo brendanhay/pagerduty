@@ -18,12 +18,12 @@ import           Control.Lens
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans
-import           Data.Aeson               hiding (Error)
+import           Data.Aeson              (FromJSON)
 import           Data.Conduit
 import           Data.Default
 import           Data.Monoid
-import           Network.HTTP.Client      (Manager, applyBasicAuth)
-import qualified Network.HTTP.Client.Lens as Lens
+import           Network.HTTP.Client     (Manager, applyBasicAuth)
+import qualified Network.HTTP.Client     as Client
 import           Network.HTTP.Types
 import           Network.PagerDuty.IO
 import           Network.PagerDuty.Types
@@ -64,11 +64,13 @@ http :: (MonadIO m, FromJSON b)
      -> Request a s b
      -> m (Either Error (b, Maybe Pager))
 http a (SubDomain h) m rq = request m rq $ raw
-    & Lens.host        .~ h
-    & Lens.path        .~ renderPath (rq ^. path)
-    & Lens.queryString .~ renderQuery False (rq ^. query)
+    { Client.host        = h
+    , Client.path        = renderPath (rq ^. path)
+    , Client.queryString = renderQuery False (rq ^. query)
+    }
   where
     raw = case a of
         AuthBasic u p -> applyBasicAuth u p def
-        AuthToken t   -> def & Lens.requestHeaders <>~
-            [("Authorization", "Token token=" <> t)]
+        AuthToken t   -> def
+            { Client.requestHeaders = [("Authorization", "Token token=" <> t)]
+            }
