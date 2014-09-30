@@ -37,7 +37,7 @@
 module Network.PagerDuty.Integration
     (
     -- * Events
-      submit
+      send
 
     -- ** Trigger
     , Trigger
@@ -269,8 +269,9 @@ rDescription = _Resolve.gDescription
 rDetails :: Lens' Resolve Object
 rDetails = _Resolve.gDetails
 
-submit :: (MonadIO m, Event a) => Manager -> a -> m (Either Error Response)
-submit x m = request m (Object payload) $ def
+-- | Send an event to the integration API.
+send :: (MonadIO m, Event a) => Manager -> a -> m (Either Error Response)
+send x m = request m (Object payload) $ def
     & Lens.host .~ "events.pagerduty.com"
     & Lens.path .~ "/generic/2010-04-15/create_event.json"
   where
