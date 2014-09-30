@@ -47,8 +47,8 @@ import Network.PagerDuty.Alerts.Types
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
-alerts :: Setter (Request a s r) (Request a s r) Path [Path]
-alerts = base "alerts"
+alerts :: Path
+alerts = "alerts"
 
 data ListAlerts = ListAlerts
     { _laSince'    :: Date
@@ -77,7 +77,7 @@ listAlerts s u =
         , _laUntil'    = u
         , _laFilter'   = Nothing
         , _laTimeZone' = Nothing
-        } & alerts .~ []
+        } & path   .~ alerts
           & unwrap .~ key "alerts"
 
 -- | The start of the date range over which you want to search.
