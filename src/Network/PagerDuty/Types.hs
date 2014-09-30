@@ -236,6 +236,9 @@ type Unwrap = Getting (First Value) Value Value
 mk :: ToJSON a => a -> Request a s r
 mk x = Request x GET E mempty Nothing pure
 
+empty :: Request Empty s r
+empty = mk Empty
+
 -- | Modify the request state.
 upd :: ToJSON a => Lens' (Request a s r) a
 upd = lens _rqPayload (\(Request _ m p q g u) x -> Request x m p q g u)

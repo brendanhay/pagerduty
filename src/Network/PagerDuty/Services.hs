@@ -222,17 +222,81 @@ csAutoResolveTimeout = upd.csAutoResolveTimeout'
 csSeverityFilter :: Lens' (Request CreateService s r) (Maybe SeverityFilter)
 csSeverityFilter = upd.csSeverityFilter'
 
+-- | Get details about an existing service.
 --
 -- @GET services\/\:id@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/services/show>
-getService = undefined
+getService :: ServiceId -> Request Empty Token Service
+getService i = empty
+    & services .~ [P i]
+    & unwrap   .~ key "service"
+    & query   <>~ includes
 
+data UpdateService = UpdateService
+    { _usName'                   :: Text
+    , _usEscalationPolicyId'     :: PolicyId
+    , _usType'                   :: !ServiceType
+    , _usDescription'            :: Maybe Text
+    , _usAcknowledgementTimeout' :: Maybe Int
+    , _usAutoResolveTimeout'     :: Maybe Int
+    , _usSeverityFilter'         :: Maybe SeverityFilter
+    } deriving (Eq, Show)
+
+deriveJSON ''UpdateService
+makeLenses ''UpdateService
+
+-- | Update an existing service.
 --
 -- @PUT services\/\:id@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/services/update>
-updateService = undefined
+updateService ServiceId -> Request UpdateService Token Service
+updateService i =
+    mk UpdateService
+        { _usName'                   = n
+        , _usEscalationPolicyId'     = p
+        , _usType'                   = t
+        , _usDescription'            = Nothing
+        , _usAcknowledgementTimeout' = Nothing
+        , _usAutoResolveTimeout'     = Nothing
+        , _usSeverityFilter'         = Nothing
+        } & services .~ [P i]
+          & unwrap   .~ key "service"
+
+-- | The name of the service.
+usName :: Lens' (Request UpdateService s r) Text
+usName = upd.usName'
+
+-- | The id of the escalation policy to be used by this service.
+usEscalationPolicyId :: Lens' (Request UpdateService s r) PolicyId
+usEscalationPolicyId = upd.usEscalationPolicyId'
+
+-- | PagerDuty's internal vendor identifier for this service. For more information
+-- about a specific vendor, please contact PagerDuty Support.
+usVendorId :: Lens' (Request UpdateService s r) (Maybe VendorId)
+usVendorId = upd.usVendorId'
+
+-- | A description for your service. 1024 character maximum.
+usDescription :: Lens' (Request UpdateService s r) (Maybe Text)
+usDescription = upd.usDescription'
+
+-- | The duration in seconds before an incidents acknowledged in this service
+-- become triggered again.
+--
+-- Defaults to 30 minutes.
+usAcknowledgementTimeout :: Lens' (Request UpdateService s r) (Maybe Int)
+usAcknowledgementTimeout = upd.usAcknowledgementTimeout'
+
+-- | The duration in seconds before a triggered incident auto-resolves itself.
+--
+-- Defaults to 4 hours.
+usAutoResolveTimeout :: Lens' (Request UpdateService s r) (Maybe Int)
+usAutoResolveTimeout = upd.usAutoResolveTimeout'
+
+-- | Specifies what severity levels will create a new open incident.
+usSeverityFilter :: Lens' (Request UpdateService s r) (Maybe SeverityFilter)
+usSeverityFilter = upd.usSeverityFilter'
 
 -- | Delete an existing service. Once the service is deleted, it will not be
 -- accessible from the web UI and new incidents won't be able to be created
@@ -242,7 +306,7 @@ updateService = undefined
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/services/delete>
 deleteService :: ServiceId -> Request Empty Token Empty
-deleteService i = mk Empty & services .~ [P i] & meth .~ DELETE
+deleteService i = empty & services .~ [P i] & meth .~ DELETE
 
 -- | Enable a previously disabled service.
 --
@@ -250,7 +314,7 @@ deleteService i = mk Empty & services .~ [P i] & meth .~ DELETE
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/services/enable>
 enableService :: ServiceId -> Request Empty Token Empty
-enableService i = mk Empty & services .~ [P i, "enable"] & meth .~ PUT
+enableService i = empty & services .~ [P i, "enable"] & meth .~ PUT
 
 -- | Disable a service. Once a service is disabled, it will not be able to
 -- create incidents until it is enabled again.
@@ -259,7 +323,7 @@ enableService i = mk Empty & services .~ [P i, "enable"] & meth .~ PUT
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/services/disable>
 disableService :: ServiceId -> Request Empty Token Empty
-disableService i = mk Empty & services .~ [P i, "disable"] & meth .~ PUT
+disableService i = empty & services .~ [P i, "disable"] & meth .~ PUT
 
 -- | Regenerate a new service key for an existing service.
 --
@@ -270,4 +334,4 @@ disableService i = mk Empty & services .~ [P i, "disable"] & meth .~ PUT
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/services/regenerate_key>
 regenerateKey :: ServiceId -> Request Empty Token Service
-regenerateKey i = mk Empty & services .~ [P i, "regenerate_key"] & meth .~ POST
+regenerateKey i = empty & services .~ [P i, "regenerate_key"] & meth .~ POST
