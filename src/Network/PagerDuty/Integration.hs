@@ -61,6 +61,7 @@ module Network.PagerDuty.Integration
     , rDetails
 
     -- * Types
+    , Event
     , AnyEvent (..)
 
     , Response

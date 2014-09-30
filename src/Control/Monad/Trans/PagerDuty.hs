@@ -1,9 +1,10 @@
 {-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE KindSignatures             #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE UndecidableInstances       #-}
 
@@ -19,35 +20,26 @@
 
 module Control.Monad.Trans.PagerDuty where
 
-import Control.Applicative
-import Control.Lens
-import Control.Monad.Base
-import Control.Monad.Catch
-import Control.Monad.Except
-import Control.Monad.Morph
-import Control.Monad.Reader
-import Control.Monad.Trans.Control
-import Network.HTTP.Client         (Manager)
-import Network.PagerDuty.Types
-
--- -- | Provides an alias for shortening type signatures if preferred.
--- --
--- -- Note: requires the @ConstraintKinds@ extension.
--- type MonadAWS m =
---     ( MonadBaseControl IO m
---     , MonadCatch m
---     , MonadResource m
---     , MonadError Error m
---     , MonadReader Env m
---     )
+import           Control.Applicative
+import           Control.Monad.Base
+import           Control.Monad.Catch
+import           Control.Monad.Except
+import           Control.Monad.Morph
+import           Control.Monad.Reader
+import           Control.Monad.Trans.Control
+import           Data.Aeson
+import           Data.Conduit
+import           Network.HTTP.Client           (Manager)
+import           Network.PagerDuty.Integration (Event, Response)
+import qualified Network.PagerDuty.Integration as Int
+import qualified Network.PagerDuty.REST        as REST
+import           Network.PagerDuty.Types
 
 data Env (s :: Security) = Env
     { _envDomain  :: SubDomain
     , _envAuth    :: Auth s
     , _envManager :: Manager
     }
-
-makeLenses ''Env
 
 -- | A convenient alias for 'PDT' 'IO'.
 type PD s = PDT s IO
@@ -106,3 +98,26 @@ instance MMonad (PDT s) where
 
 runPDT :: PDT s m a -> Env s -> m (Either Error a)
 runPDT (PDT k) = runExceptT . runReaderT k
+
+hoistEither :: (MonadError Error m) => Either Error a -> m a
+hoistEither = either throwError return
+
+scoped f = ask >>= f
+
+submit = submitCatch >=> hoistEither
+
+submitCatch x = scoped $ \e ->
+    Int.submit (_envManager e) x
+
+send = sendCatch >=> hoistEither
+
+sendCatch x = scoped $ \Env{..} ->
+    REST.send _envAuth _envDomain _envManager x
+
+paginate x = paginateCatch x $= awaitForever (hoistEither >=> yield)
+
+paginateCatch :: (MonadIO m, MonadReader (Env s) m, Paginate a, FromJSON b)
+              => Request a s b
+              -> Source m (Either Error b)
+paginateCatch x = scoped $ \Env{..} ->
+    REST.paginate _envAuth _envDomain _envManager x
