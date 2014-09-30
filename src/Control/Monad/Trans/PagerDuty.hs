@@ -5,6 +5,7 @@
 {-# LANGUAGE KindSignatures             #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE RecordWildCards            #-}
+{-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE UndecidableInstances       #-}
 
@@ -26,7 +27,7 @@ module Control.Monad.Trans.PagerDuty
     , PD
 
     -- * Run
-    , runAWST
+    , runPDT
 
     -- * Environment
     , Env
@@ -44,6 +45,7 @@ module Control.Monad.Trans.PagerDuty
     ) where
 
 import           Control.Applicative
+import           Control.Lens
 import           Control.Monad.Base
 import           Control.Monad.Catch
 import           Control.Monad.Except
@@ -64,6 +66,8 @@ data Env (s :: Security) = Env
     , _envManager :: Manager
 --    , _envLogging ::
     }
+
+makeLenses ''Env
 
 -- | A convenient alias for 'PDT' 'IO'.
 type PD s = PDT s IO
@@ -90,17 +94,17 @@ instance MonadBase b m => MonadBase b (PDT s m) where
     {-# INLINE liftBase #-}
 
 instance MonadTransControl (PDT s) where
-    newtype StT (PDT s) a = StTAWS
-        { unStTAWS :: StT (ExceptT Error) (StT (ReaderT (Env s)) a)
+    newtype StT (PDT s) a = StTPD
+        { unStTPD :: StT (ExceptT Error) (StT (ReaderT (Env s)) a)
         }
 
     liftWith f = PDT $
         liftWith $ \g ->
             liftWith $ \h ->
-                f (liftM StTAWS . h . g . unPDT)
+                f (liftM StTPD . h . g . unPDT)
     {-# INLINE liftWith #-}
 
-    restoreT = PDT . restoreT . restoreT . liftM unStTAWS
+    restoreT = PDT . restoreT . restoreT . liftM unStTPD
     {-# INLINE restoreT #-}
 
 instance MonadBaseControl b m => MonadBaseControl b (PDT s m) where
