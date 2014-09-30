@@ -31,10 +31,12 @@ library
 
     exposed-modules:
         Network.PagerDuty
-      , Network.PagerDuty.Alerts
-      , Network.PagerDuty.EscalationPolicies
-      , Network.PagerDuty.Services
+      -- , Network.PagerDuty.Alerts
+      -- , Network.PagerDuty.EscalationPolicies
+      -- , Network.PagerDuty.Services
       , Network.PagerDuty.Integration
+
+      , Network.PagerDuty.HTTP
 
       -- , Network.PagerDuty.Incidents
       -- , Network.PagerDuty.Integration

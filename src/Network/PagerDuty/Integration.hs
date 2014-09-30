@@ -76,14 +76,19 @@ module Network.PagerDuty.Integration
 
 import           Control.Applicative
 import           Control.Lens
+import           Control.Monad.IO.Class
 import           Data.Aeson
 import           Data.Aeson.Types
-import qualified Data.HashMap.Strict     as Map
+import           Data.Default
+import qualified Data.HashMap.Strict      as Map
 import           Data.Monoid
-import           Data.Text               (Text)
-import qualified Data.Text               as Text
+import           Data.Text                (Text)
+import qualified Data.Text                as Text
+import           Network.HTTP.Client      (Manager)
+import qualified Network.HTTP.Client.Lens as Lens
+import           Network.PagerDuty.HTTP
 import           Network.PagerDuty.TH
-import           Network.PagerDuty.Types (ServiceKey, IncidentKey)
+import           Network.PagerDuty.Types  (ServiceKey, IncidentKey)
 
 data Response = Response
     { _rsStatus      :: Text
@@ -264,7 +269,14 @@ rDescription = _Resolve.gDescription
 rDetails :: Lens' Resolve Object
 rDetails = _Resolve.gDetails
 
-submit :: (Monad m, Event a) => a -> m (Either Error Response)
-submit = undefined
-  -- where
-  --   payload = Map.insert "event_type" (String (eventType x)) (eventPayload x)
+submit :: (MonadIO m, Event a) => Manager -> a -> m (Either Error Response)
+submit x m = request m (Object payload) $ def
+    & Lens.host .~ "events.pagerduty.com"
+    & Lens.path .~ "/generic/2010-04-15/create_event.json"
+  where
+    payload = Map.insert "event_type" (String (eventType x)) (eventPayload x)
+
+    headers =
+        [ ("Content-Type", "application/json")
+        , ("Accept",       "application/json")
+        ]

@@ -27,15 +27,15 @@ import           Control.Lens
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans
-import           Data.Aeson                 hiding (Error)
-import qualified Data.ByteString.Lazy       as LBS
+import           Data.Aeson               hiding (Error)
+import qualified Data.ByteString.Lazy     as LBS
 import           Data.Conduit
 import           Data.Default
 import           Data.Monoid
-import           Network.HTTP.Client        (Manager, httpLbs)
-import qualified Network.HTTP.Client        as Client
-import qualified Network.HTTP.Client.Lens   as Lens
+import           Network.HTTP.Client      (Manager, applyBasicAuth)
+import qualified Network.HTTP.Client.Lens as Lens
 import           Network.HTTP.Types
+import           Network.PagerDuty.HTTP
 import           Network.PagerDuty.Types
 
 -- data Env (s :: Security) = Env
@@ -73,49 +73,12 @@ http :: (MonadIO m, FromJSON b)
      -> Manager
      -> Request a s b
      -> m (Either Error (b, Maybe Pager))
-http a (SubDomain h) m rq = liftIO (httpLbs raw m) >>= response rq
+http a (SubDomain h) m rq = request m rq $ raw
+    & Lens.host        .~ h
+    & Lens.path        .~ renderPath (rq ^. path)
+    & Lens.queryString .~ renderQuery False (rq ^. query)
   where
-    raw = authorise
-        & Lens.secure         .~ True
-        & Lens.port           .~ 443
-        & Lens.path           .~ renderPath (rq ^. path)
-        & Lens.queryString    .~ renderQuery False (rq ^. query)
-        & Lens.requestHeaders <>~ headers
-        & Lens.requestBody    .~ Client.RequestBodyLBS (encode rq)
-
-    authorise = case a of
-        AuthBasic u p -> Client.applyBasicAuth u p def & Lens.host .~ h
-        AuthToken t   -> def & Lens.host .~ h & Lens.requestHeaders <>~ [token t]
-
-    token t = ("Authorization", "Token token=" <> t)
-
-    headers =
-        [ ("Content-Type", "application/json")
-        , ("Accept",       "application/json")
-        ]
-
-response :: (MonadIO m, FromJSON b)
-         => Request a s b
-         -> Client.Response LBS.ByteString
-         -> m (Either Error (b, Maybe Pager))
-response _ x = case statusCode (Client.responseStatus x) of
-    200 -> success
-    201 -> success
-    400 -> failure
-    500 -> failure
-    n   -> return . Left $ unhandled n
-  where
-    success = maybe (Left unknown) Right `liftM` parse
-    failure = maybe (Left unknown) Left  `liftM` parse
-
-    unhandled n = Internal
-        $ "PagerDuty returned unhandled status code: " ++ show n
-
-    unknown = Internal
-        $ "Unable to parse response into a PagerDuty API compatible type: "
-        ++ show body
-
-    parse :: (Monad m, FromJSON a) => m (Maybe a)
-    parse = return (decode body)
-
-    body = Client.responseBody x
+    raw = case a of
+        AuthBasic u p -> applyBasicAuth u p def
+        AuthToken t   -> def & Lens.requestHeaders <>~
+            [("Authorization", "Token token=" <> t)]
