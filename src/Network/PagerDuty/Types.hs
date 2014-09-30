@@ -138,6 +138,15 @@ description (Code c) =
         2012 -> "Your account is expired and cannot use the API"
         _    -> "Unrecognised error code"
 
+data IntegrationError = IntegrationError
+    { _ieStatus  :: Text
+    , _ieMessage :: Text
+    , _ieErrors  :: [Text]
+    } deriving (Eq, Show)
+
+deriveJSON ''IntegrationError
+makeLenses ''IntegrationError
+
 data RestError = RestError
     { _reCode    :: Code
     , _reMessage :: Text
@@ -148,12 +157,14 @@ deriveJSON ''RestError
 makeLenses ''RestError
 
 data Error
-    = Internal String
-    | Error    RestError
+    = Internal    String
+    | Integration IntegrationError
+    | Rest        RestError
       deriving (Eq, Show)
 
 instance FromJSON Error where
-    parseJSON = fmap Error . parseJSON
+    parseJSON o = (Rest <$> parseJSON o)
+       <|> (Integration <$> parseJSON o)
 
 makePrisms ''Error
 

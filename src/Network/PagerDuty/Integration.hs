@@ -37,7 +37,7 @@
 module Network.PagerDuty.Integration
     (
     -- * Events
-      send
+      event
 
     -- ** Trigger
     , Trigger
@@ -67,28 +67,20 @@ module Network.PagerDuty.Integration
     , rsStatus
     , rsMessage
     , rsIncidentKey
-
-    , Error
-    , ieStatus
-    , ieMessage
-    , ieErrors
     ) where
 
-import           Control.Applicative
 import           Control.Lens
 import           Control.Monad.IO.Class
 import           Data.Aeson
-import           Data.Aeson.Types
 import           Data.Default
 import qualified Data.HashMap.Strict      as Map
 import           Data.Monoid
 import           Data.Text                (Text)
-import qualified Data.Text                as Text
 import           Network.HTTP.Client      (Manager)
 import qualified Network.HTTP.Client.Lens as Lens
 import           Network.PagerDuty.HTTP
 import           Network.PagerDuty.TH
-import           Network.PagerDuty.Types  (ServiceKey, IncidentKey)
+import           Network.PagerDuty.Types
 
 data Response = Response
     { _rsStatus      :: Text
@@ -106,23 +98,6 @@ makeLens "_rsMessage" ''Response
 
 -- | The key of the incident that will be affected by the request.
 makeLens "_rsIncidentKey" ''Response
-
-data Error = Error
-    { _ieStatus  :: Text
-    , _ieMessage :: Text
-    , _ieErrors  :: [Text]
-    } deriving (Eq, Show)
-
-deriveJSON ''Error
-
--- | @invalid event@
-makeLens "_ieStatus" ''Error
-
--- | A description of the problem.
-makeLens "_ieMessage" ''Error
-
--- | A list of specific error messages.
-makeLens "_ieErrors" ''Error
 
 class Event a where
     eventType    :: a -> Text
@@ -146,7 +121,9 @@ data Generic = Generic
     } deriving (Eq, Show)
 
 deriveJSON ''Generic
-makeLenses ''Generic
+
+makeLens "_gDescription" ''Generic
+makeLens "_gDetails"     ''Generic
 
 data Trigger = Trigger
     { _tServiceKey  :: ServiceKey
@@ -270,14 +247,10 @@ rDetails :: Lens' Resolve Object
 rDetails = _Resolve.gDetails
 
 -- | Send an event to the integration API.
-send :: (MonadIO m, Event a) => Manager -> a -> m (Either Error Response)
-send x m = request m (Object payload) $ def
+event :: (MonadIO m, Event a) => Manager -> a -> m (Either Error Response)
+event m x = request m payload $ def
     & Lens.host .~ "events.pagerduty.com"
     & Lens.path .~ "/generic/2010-04-15/create_event.json"
   where
-    payload = Map.insert "event_type" (String (eventType x)) (eventPayload x)
-
-    headers =
-        [ ("Content-Type", "application/json")
-        , ("Accept",       "application/json")
-        ]
+    payload = Object $
+        Map.insert "event_type" (String (eventType x)) (eventPayload x)
