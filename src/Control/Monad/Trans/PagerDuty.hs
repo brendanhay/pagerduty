@@ -33,7 +33,7 @@ module Control.Monad.Trans.PagerDuty
     , envDomain
     , envAuth
     , envManager
-    , envLogging
+--    , envLogging
 
     -- * Integration API
     , submit
@@ -62,7 +62,7 @@ data Env (s :: Security) = Env
     { _envDomain  :: SubDomain
     , _envAuth    :: Auth s
     , _envManager :: Manager
-    , _envLogging ::
+--    , _envLogging ::
     }
 
 -- | A convenient alias for 'PDT' 'IO'.
@@ -129,34 +129,57 @@ hoistEither = either throwError return
 scoped :: MonadReader (Env s) m => (Env s -> m a) -> m a
 scoped f = ask >>= f
 
-submit :: (MonadIO m, MonadReader (Env s) m, Event a)
+submit :: ( MonadIO m
+          , MonadReader (Env s) m
+          , MonadError Error m
+          , Event a
+          )
        => a
        -> m Response
 submit = submitCatch >=> hoistEither
 
-submitCatch :: (MonadIO m, MonadReader (Env s) m, Event a)
+submitCatch :: ( MonadIO m
+               , MonadReader (Env s) m
+               , Event a
+               )
             => a
             -> m (Either Error Response)
 submitCatch x = scoped $ \e ->
     Int.submit (_envManager e) x
 
-send :: (MonadIO m, MonadReader (Env s) m, FromJSON b)
+send :: ( MonadIO m
+        , MonadReader (Env s) m
+        , MonadError Error m
+        , FromJSON b
+        )
      => Request a s b
      -> m b
 send = sendCatch >=> hoistEither
 
-sendCatch :: (MonadIO m, MonadReader (Env s) m, FromJSON b)
+sendCatch :: ( MonadIO m
+             , MonadReader (Env s) m
+             , FromJSON b
+             )
           => Request a s b
           -> m (Either Error b)
 sendCatch x = scoped $ \Env{..} ->
     REST.send _envAuth _envDomain _envManager x
 
-paginate :: (MonadIO m, MonadReader (Env s) m, Paginate a, FromJSON b)
+paginate :: ( MonadIO m
+            , MonadReader (Env s) m
+            , MonadError Error m
+            , Paginate a
+            , FromJSON b
+            )
          => Request a s b
          -> Source m b
 paginate x = paginateCatch x $= awaitForever (hoistEither >=> yield)
 
-paginateCatch :: (MonadIO m, MonadReader (Env s) m, Paginate a, FromJSON b)
+paginateCatch :: ( MonadIO m
+                 , MonadReader (Env s) m
+                 , Paginate a
+                 , FromJSON b
+                 )
               => Request a s b
               -> Source m (Either Error b)
 paginateCatch x = scoped $ \Env{..} ->
