@@ -3,9 +3,8 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TupleSections       #-}
-{-# LANGUAGE ViewPatterns        #-}
 
--- Module      : Generics.SOP.Query
+-- Module      : Network.PagerDuty.Generics
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
 -- License     : This Source Code Form is subject to the terms of
 --               the Mozilla Public License, v. 2.0.
@@ -15,20 +14,29 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
-module Generics.SOP.Query
+module Network.PagerDuty.Generics
     ( gquery
+    , gqueryWith
     ) where
 
+import           Data.Aeson.Types
 import           Data.ByteString              (ByteString)
 import qualified Data.ByteString.Char8        as BS
 import           Generics.SOP
 import           Network.HTTP.Types
 import           Network.HTTP.Types.QueryLike
+import           Network.PagerDuty.Options
 
 gquery :: forall a. (Generic a, HasDatatypeInfo a, All2 QueryValueLike (Code a))
        => a
        -> Query
-gquery a = case datatypeInfo (Proxy :: Proxy a) of
+gquery = gqueryWith underscored
+
+gqueryWith :: forall a. (Generic a, HasDatatypeInfo a, All2 QueryValueLike (Code a))
+       => Options
+       -> a
+       -> Query
+gqueryWith o a = case datatypeInfo (Proxy :: Proxy a) of
     ADT     _ _ cs -> go cs         (from a)
     Newtype _ _ c  -> go (c :* Nil) (from a)
   where
@@ -36,27 +44,38 @@ gquery a = case datatypeInfo (Proxy :: Proxy a) of
        => NP ConstructorInfo xss
        -> SOP I xss
        -> Query
-    go cs (SOP sop) = unI . hcollapse $ hcliftA2' p gctor cs sop
+    go cs (SOP sop) = unI . hcollapse $ hcliftA2' p (gctor o) cs sop
 
-gctor :: All QueryValueLike xs => ConstructorInfo xs -> NP I xs -> K Query xs
-gctor (Constructor (BS.pack -> n)) args =
-    K . hcollapse $ hcliftA p (K . (n,) . toQueryValue . unI) args
+gctor :: All QueryValueLike xs
+      => Options
+      -> ConstructorInfo xs
+      -> NP I xs
+      -> K Query xs
+gctor o (Constructor n) args =
+    K . hcollapse $ hcliftA p (K . (k,) . toQueryValue . unI) args
+  where
+    k = BS.pack $ (constructorTagModifier o) n
 
-gctor (Record _ ns) args =
-    K . hcollapse $ hcliftA2 p gfield ns args
+gctor o (Record _ ns) args =
+    K . hcollapse $ hcliftA2 p (gfield o) ns args
 
-gctor (Infix (BS.pack -> n) _ _) (x :* y :* Nil) =
-    K [ (n, toQueryValue (unI x))
-      , (n, toQueryValue (unI y))
+gctor o (Infix n _ _) (x :* y :* Nil) =
+    K [ (k, toQueryValue (unI x))
+      , (k, toQueryValue (unI y))
       ]
+  where
+    k = BS.pack $ (constructorTagModifier o) n
 
-gctor (Infix _ _ _) _ = error "inaccessible"
+gctor _ (Infix _ _ _) _ =
+    error "Network.PagerDuty.Generics.inaccessible"
 
 gfield :: QueryValueLike a
-       => FieldInfo a
+       => Options
+       -> FieldInfo a
        -> I a
        -> K (ByteString, Maybe ByteString) a
-gfield (FieldInfo f) (I a) = K (BS.pack f, toQueryValue a)
+gfield o (FieldInfo f) (I a) =
+    K (BS.pack $ (fieldLabelModifier o) f, toQueryValue a)
 
 p :: Proxy QueryValueLike
 p = Proxy

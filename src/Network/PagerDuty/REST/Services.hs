@@ -372,7 +372,7 @@ listServices =
     mk ListServices
         { _lsTimeZone' = Nothing
         } & path   .~ services
-          & query <>~ includes
+          & query  .~ includes
           & unwrap .~ key "escalation_policies"
 
 -- | Time zone in which dates in the result will be rendered.

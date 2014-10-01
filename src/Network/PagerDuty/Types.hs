@@ -57,28 +57,21 @@ import           Data.Aeson.Types             (Parser)
 import           Data.ByteString              (ByteString)
 import qualified Data.ByteString.Char8        as BS
 import           Data.ByteString.Conversion
-import           Data.Function
+import           Data.Default
 import qualified Data.HashMap.Strict          as Map
 import           Data.Monoid
 import           Data.String
 import           Data.Text                    (Text)
-import qualified Data.Time                    as Time
-import           Data.Time                    hiding (TimeZone)
+import qualified Data.Text.Encoding           as Text
+import           Data.Time
 import           GHC.TypeLits
 import           Network.HTTP.Types
 import           Network.HTTP.Types.QueryLike
 import           Network.PagerDuty.TH
+import           System.Locale
 
--- FIXME: Query String parameters vs JSON bodies for GET
-
--- FIXME: UTCTime: http://developer.pagerduty.com/documentation/rest/types#datetime
-newtype Date = Date { unDate :: ZonedTime }
-    deriving (Show)
-
-instance Eq Date where
-    (Date a) == (Date b) =
-           on (==) zonedTimeToLocalTime a b
-        || on (==) zonedTimeZone a b
+newtype Date = Date { unDate :: UTCTime }
+    deriving (Eq, Ord, Show)
 
 instance FromJSON Date where
     parseJSON = fmap Date . parseJSON
@@ -86,22 +79,38 @@ instance FromJSON Date where
 instance ToJSON Date where
     toJSON = toJSON . unDate
 
-newtype TimeZone = TimeZone { unTZ :: Time.TimeZone }
+instance ToByteString Date where
+    builder = builder
+        . formatTime defaultTimeLocale (iso8601DateFormat $ Just "%XZ")
+        . unDate
+
+instance QueryValueLike Date where
+    toQueryValue = Just . toByteString'
+
+newtype TZ = TZ { unTZ :: TimeZone }
     deriving (Eq, Ord, Show)
 
-instance FromJSON TimeZone where
+instance FromJSON TZ where
     parseJSON = undefined
 
-instance ToJSON TimeZone where
-    toJSON = undefined
+instance ToJSON TZ where
+    toJSON = toJSON . Text.decodeUtf8 . toByteString'
 
-data Security = Basic | Token -- None
+instance ToByteString TZ where
+    builder = builder . timeZoneName . unTZ
+
+instance QueryValueLike TZ where
+    toQueryValue = Just . toByteString'
+
+instance Default TZ where
+    def = TZ utc
+
+data Security = Basic | Token
     deriving (Eq, Show)
 
 data Auth (a :: Security) where
     AuthBasic :: ByteString -> ByteString -> Auth Basic
     AuthToken :: ByteString -> Auth Token
---    AuthNone  :: Auth None
 
 deriving instance Eq   (Auth a)
 deriving instance Show (Auth a)
@@ -145,8 +154,7 @@ data IntegrationError = IntegrationError
     , _ieErrors  :: [Text]
     } deriving (Eq, Show)
 
-deriveJSON ''IntegrationError
-makeLenses ''IntegrationError
+deriveRecord ''IntegrationError
 
 data RestError = RestError
     { _reCode    :: Code
@@ -154,8 +162,7 @@ data RestError = RestError
     , _reErrors  :: [Text]
     } deriving (Eq, Show)
 
-deriveJSON ''RestError
-makeLenses ''RestError
+deriveRecord ''RestError
 
 data Error
     = Internal    String
@@ -228,43 +235,43 @@ renderPath = toByteString' . mappend v1
     v1 = "/api/v1"
 
 data Request a (s :: Security) b where
-    Request :: ToJSON a
-            => { _rqPayload  :: a
-               , _rqMethod   :: !StdMethod
-               , _rqPath     :: Path
-               , _rqQuery    :: Query
-               , _rqPager    :: Maybe Pager
-               , _rqUnwrap   :: Value -> Parser Value
+    Request :: (QueryLike a, ToJSON a)
+            => { _rqMeth   :: !StdMethod
+               , _rqPath   :: Path
+               , _rqQuery  :: Query
+               , _rqBody   :: a
+               , _rqPager  :: Maybe Pager
+               , _rqUnwrap :: Value -> Parser Value
                }
             -> Request a s b
 
 instance ToJSON (Request a s b) where
     -- Manually unwrapped to ensure GADT constraint holds.
-    toJSON (Request p _ _ _ q _) = Object $
-        let Object x = toJSON p
-         in case toJSON q of
+    toJSON (Request _ _ _ b p _) = Object $
+        let Object x = toJSON b
+         in case toJSON p of
                 (Object y) -> x <> y
                 _          -> x
 
 type Unwrap = Getting (First Value) Value Value
 
 -- | Create a defaulted request from the payload type.
-mk :: ToJSON a => a -> Request a s b
-mk x = Request x GET mempty mempty Nothing pure
+mk :: (QueryLike a, ToJSON a) => a -> Request a s b
+mk x = Request GET mempty mempty x Nothing pure
 
 empty :: Request Empty s r
 empty = mk Empty
 
--- | Modify the request state.
-upd :: ToJSON a => Lens' (Request a s b) a
-upd = lens _rqPayload (\(Request _ m p q g u) x -> Request x m p q g u)
+-- | Lens into the body of a request.
+upd :: (QueryLike a, ToJSON a) => Lens' (Request a s b) a
+upd = lens _rqBody (\(Request m p q _ g u) x -> Request m p q x g u)
 
 -- | Drop the security constraint.
 auth :: Request a s b -> Request a t b
 auth (Request x m p q g u) = Request x m p q g u
 
 meth :: Lens' (Request a s b) StdMethod
-meth = lens _rqMethod (\r x -> r { _rqMethod = x })
+meth = lens _rqMeth (\r x -> r { _rqMeth = x })
 
 path :: Lens' (Request a s b) Path
 path = lens _rqPath (\r x -> r { _rqPath = x })
@@ -293,14 +300,14 @@ class Paginate a where
 newtype Key (a :: Symbol) = Key Text
     deriving (Eq, Show, IsString)
 
-instance ToByteString (Key a) where
-    builder (Key k) = builder k
-
 instance FromJSON (Key a) where
     parseJSON = withText "key" (return . Key)
 
 instance ToJSON (Key a) where
     toJSON (Key k) = toJSON k
+
+instance ToByteString (Key a) where
+    builder (Key k) = builder k
 
 instance QueryValueLike (Key a) where
     toQueryValue = Just . toByteString'
@@ -311,14 +318,14 @@ type IncidentKey = Key "incident"
 newtype Id (a :: Symbol) = Id Text
     deriving (Eq, Show, IsString)
 
-instance ToByteString (Id a) where
-    builder (Id i) = builder i
-
 instance FromJSON (Id a) where
     parseJSON = withText "id" (return . Id)
 
 instance ToJSON (Id a) where
     toJSON (Id i) = toJSON i
+
+instance ToByteString (Id a) where
+    builder (Id i) = builder i
 
 instance QueryValueLike (Id a) where
     toQueryValue = Just . toByteString'
@@ -345,37 +352,25 @@ instance FromJSON Empty where
         f !o | Map.null o = pure Empty
              | otherwise  = fail "Unexpected non-empty JSON object."
 
-newtype Email = Email Text
-      deriving (Eq, Show, IsString)
+instance QueryLike Empty where
+    toQuery = const []
 
-deriveJSON ''Email
+newtype Address = Address Text
+    deriving (Eq, Show)
 
-newtype Phone = Phone Text
-      deriving (Eq, Show, IsString)
+deriveJSON ''Address
 
-deriveJSON ''Phone
+instance ToByteString Address where
+    builder (Address a) = builder a
 
-data Address
-    = AddrEmail Email
-    | AddrPhone Phone
-      deriving (Eq, Show)
-
-instance FromJSON Address where
-    parseJSON o =
-            AddrEmail <$> parseJSON o
-        <|> AddrPhone <$> parseJSON o
-
-instance ToJSON Address where
-    toJSON (AddrEmail e) = toJSON e
-    toJSON (AddrPhone p) = toJSON p
-
-makePrisms ''Address
+instance QueryValueLike Address where
+    toQueryValue = Just . toByteString'
 
 data User = User
     { _userId             :: UserId
     , _userName           :: Text
-    , _userEmail          :: Email
-    , _userTimeZone       :: TimeZone
+    , _userEmail          :: Address
+    , _userTimeZone       :: TZ
     , _userColor          :: Text
     , _userRole           :: Text
     , _userAvatarUrl      :: Text
@@ -383,5 +378,4 @@ data User = User
     , _userInvitationSent :: Bool
     } deriving (Eq, Show)
 
-deriveJSON ''User
-makeLenses ''User
+deriveRecord ''User

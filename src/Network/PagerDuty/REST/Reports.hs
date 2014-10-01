@@ -1,6 +1,8 @@
+{-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE ExtendedDefaultRules       #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeFamilies               #-}
 
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
@@ -23,6 +25,11 @@ module Network.PagerDuty.REST.Reports
 
     -- * Incidents Per Time
     , incidentsPerTime
+
+    -- * Lenses
+    , rSince
+    , rUntil
+    , rRollup
 
     -- * Types
     , Rollup (..)
@@ -52,8 +59,6 @@ module Network.PagerDuty.REST.Reports
 import Control.Lens
 import Data.Aeson.Lens
 import Data.ByteString.Builder (Builder)
-import Data.Text               (Text)
-import Network.HTTP.Types
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
@@ -66,9 +71,9 @@ data Rollup
     = Daily
     | Weekly
     | Monthly
-      deriving (Eq Show)
+      deriving (Eq, Show)
 
-deriveJSON ''Rollup
+deriveNullary ''Rollup
 
 data Report = Report
     { _rSince'  :: Date
@@ -76,10 +81,29 @@ data Report = Report
     , _rRollup' :: !Rollup
     } deriving (Eq, Show)
 
-deriveJSON ''Report
-makeLenses ''Report
+deriveQuery ''Report
 
-data AlertReport
+-- | Start of the date range over which you want to search. The time element
+-- is optional.
+rSince :: Lens' (Request Report s b) Date
+rSince = upd.rSince'
+
+-- | The end of the date range over which you want to search. This should be
+-- in the same format as since.
+rUntil :: Lens' (Request Report s b) Date
+rUntil = upd.rUntil'
+
+-- | Specifies the bucket duration for each summation.
+--
+-- Defaults to monthly.
+--
+-- Example: A time window of two years (based on since and until) with a
+-- rollup of monthly will result in 24 sets of data points being returned
+-- (one for each month in the span).
+rRollup :: Lens' (Request Report s b) Rollup
+rRollup = upd.rRollup'
+
+data AlertReport = AlertReport
     { _arStart               :: Date
     , _arEnd                 :: Date
     , _arNumberOfAlerts      :: !Int
@@ -88,8 +112,7 @@ data AlertReport
     , _arNumberOfEmailAlerts :: !Int
     } deriving (Eq, Show)
 
-deriveJSON ''AlertReport
-makeLenses ''AlertReport
+deriveRecord ''AlertReport
 
 data AlertTotals = AlertTotals
     { _atAlerts                      :: [AlertReport]
@@ -100,37 +123,7 @@ data AlertTotals = AlertTotals
     , _atTotalNumberOfBillableAlerts :: !Int
     } deriving (Eq, Show)
 
-deriveJSON ''AlertTotals
-makeLenses ''AlertTotals
-
-data IncidentReport = IncidentReport
-    { _irStart             :: Date
-    , _irEnd               :: Date
-    , _irNumberOfIncidents :: !Int
-    } deriving (Eq, Show)
-
-deriveJSON ''IncidentReport
-makeLenses ''IncidentReport
-
--- | Start of the date range over which you want to search. The time element
--- is optional.
-rSince :: Lens' (Request Report s r) Date
-rSince = upd.rSince'
-
--- | The end of the date range over which you want to search. This should be
--- in the same format as since.
-rUntil :: Lens' (Request Report s r) Date
-rUntil = upd.rUntil'
-
--- | Specifies the bucket duration for each summation.
---
--- Defaults to monthly.
---
--- Example: A time window of two years (based on since and until) with a
--- rollup of monthly will result in 24 sets of data points being returned
--- (one for each month in the span).
-rSince :: Lens' (Request Report s r) Rollup
-rSince = upd.rSince'
+deriveRecord ''AlertTotals
 
 -- | Get high level statistics about the number of alerts (SMSes, phone calls and
 -- emails) sent for the desired time period, summed daily, weekly or monthly.
@@ -143,10 +136,18 @@ alertsPerTime :: Date -- ^ 'rSince'
               -> Request Report s AlertTotals
 alertsPerTime s u =
     mk Report
-        { _rSince  = s
-        , _rUntil  = u
-        , _rRollup = Monthly
+        { _rSince'  = s
+        , _rUntil'  = u
+        , _rRollup' = Monthly
         } & path .~ reports % "alerts_per_time"
+
+data IncidentReport = IncidentReport
+    { _irStart             :: Date
+    , _irEnd               :: Date
+    , _irNumberOfIncidents :: !Int
+    } deriving (Eq, Show)
+
+deriveRecord ''IncidentReport
 
 -- | Get high level statistics about the number of incidents created for the
 -- desired time period, summed daily, weekly or monthly.
@@ -159,7 +160,8 @@ incidentsPerTime :: Date -- ^ 'rSince'
                  -> Request Report s [IncidentReport]
 incidentsPerTime s u =
     mk Report
-        { _rSince  = s
-        , _rUntil  = u
-        , _rRollup = Monthly
-        } & path .~ reports % "incidents_per_time"
+        { _rSince'  = s
+        , _rUntil'  = u
+        , _rRollup' = Monthly
+        } & path   .~ reports % "incidents_per_time"
+          & unwrap .~ key "incidents"

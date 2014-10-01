@@ -38,7 +38,7 @@ library
       -- , Network.PagerDuty.REST.Incidents
       -- , Network.PagerDuty.REST.LogEntries
       -- , Network.PagerDuty.REST.MaintenanceWindows
-      -- , Network.PagerDuty.REST.Reports
+        Network.PagerDuty.REST.Reports
       -- , Network.PagerDuty.REST.Schedules
       -- , Network.PagerDuty.REST.Services
       -- , Network.PagerDuty.REST.Users
@@ -46,33 +46,34 @@ library
 
 
 --    other-modules:
-        Generics.SOP.Query
+        Network.PagerDuty.Generics
       , Network.PagerDuty.IO
+      , Network.PagerDuty.Options
       , Network.PagerDuty.TH
       , Network.PagerDuty.Types
 
     build-depends:
-        aeson                 >= 0.8   && < 1.0
-      , base                  >= 4.5   && < 5.0
---      , base64-bytestring     >= 1.0   && < 1.1
-      , bytestring            >= 0.9   && < 1.0
+        aeson                 >  0.7   && <= 8.0
+      , base                  >= 4.5   && <  5.0
+--      , base64-bytestring     >= 1.0 && <  1.1
+      , bytestring            >= 0.9   && <  1.0
       , bytestring-conversion >= 0.2.1
       , conduit               >= 0.5.5
-      , mmorph                >= 1.0
-
-      , exceptions            >= 0.6
       , data-default          >= 0.5
-      , http-client           >= 0.3.6 && < 0.5
-      , http-types            >= 0.8   && < 1.0
-      , lens                  >= 4.0   && < 5.0
+      , exceptions            >= 0.6
+      , http-client           >= 0.3.6 && <  0.5
+      , http-types            >= 0.8   && <  1.0
+      , lens                  >= 4.0   && <  5.0
       , lens-aeson            >= 1.0
-      , mtl                   >= 2.2.1 && < 3.0
-      , text                  >= 1.1   && < 2.0
-      , time                  >= 1.4   && < 2.0
-      , transformers          >= 0.3   && < 0.5
+      , mmorph                >= 1.0
+      , mtl                   >= 2.2.1 && <  3.0
+      , old-locale
+      , text                  >= 1.1   && <  2.0
+      , time                  == 1.4.*
+      , transformers          >= 0.4.1 && <  0.5
       , unordered-containers  >= 0.2.3
 
-      , transformers-base
-      , monad-control
-
       , generics-sop
+      , monad-control
+      , template-haskell
+      , transformers-base
