@@ -71,6 +71,7 @@ import           Network.PagerDuty.TH
 
 -- FIXME: Query String parameters vs JSON bodies for GET
 
+-- FIXME: UTCTime: http://developer.pagerduty.com/documentation/rest/types#datetime
 newtype Date = Date { unDate :: ZonedTime }
     deriving (Show)
 
