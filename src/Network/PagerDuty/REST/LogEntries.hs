@@ -491,6 +491,12 @@ newtype GetLog = GetLog
 
 deriveQuery ''GetLog
 
+-- | Time zone in which dates in the result will be rendered.
+--
+-- Defaults to UTC.
+glTimeZone :: Lens' (Request GetLog s b) TimeZone
+glTimeZone = upd.glTimeZone'._TZ
+
 -- | Get details for a specific incident log entry. This method provides additional
 -- information you can use to get at raw event data.
 --
@@ -503,9 +509,3 @@ getLog l =
         { _glTimeZone' = def
         } & path  .~ logs % l
           & query .~ includes
-
--- | Time zone in which dates in the result will be rendered.
---
--- Defaults to UTC.
-glTimeZone :: Lens' (Request GetLog s b) TimeZone
-glTimeZone = upd.glTimeZone'._TZ

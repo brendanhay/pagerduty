@@ -59,6 +59,7 @@ module Network.PagerDuty.REST.Reports
 import Control.Lens
 import Data.Aeson.Lens
 import Data.ByteString.Builder (Builder)
+import Data.Time
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
@@ -85,13 +86,13 @@ deriveQuery ''Report
 
 -- | Start of the date range over which you want to search. The time element
 -- is optional.
-rSince :: Lens' (Request Report s b) Date
-rSince = upd.rSince'
+rSince :: Lens' (Request Report s b) UTCTime
+rSince = upd.rSince'._Date
 
 -- | The end of the date range over which you want to search. This should be
 -- in the same format as since.
-rUntil :: Lens' (Request Report s b) Date
-rUntil = upd.rUntil'
+rUntil :: Lens' (Request Report s b) UTCTime
+rUntil = upd.rUntil'._Date
 
 -- | Specifies the bucket duration for each summation.
 --
@@ -112,7 +113,18 @@ data AlertReport = AlertReport
     , _arNumberOfEmailAlerts :: !Int
     } deriving (Eq, Show)
 
-deriveRecord ''AlertReport
+deriveJSON ''AlertReport
+
+arStart :: Lens' AlertReport UTCTime
+arStart = lens _arStart (\r x -> r { _arStart = x })  ._Date
+
+arEnd :: Lens' AlertReport UTCTime
+arEnd = lens _arEnd (\r x -> r { _arEnd = x })  ._Date
+
+makeLens "_arNumberOfAlerts"      ''AlertReport
+makeLens "_arNumberOfPhoneAlerts" ''AlertReport
+makeLens "_arNumberOfSmsAlerts"   ''AlertReport
+makeLens "_arNumberOfEmailAlerts" ''AlertReport
 
 data AlertTotals = AlertTotals
     { _atAlerts                      :: [AlertReport]
@@ -131,13 +143,13 @@ deriveRecord ''AlertTotals
 -- @GET \/reports\/alerts_per_time@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/reports/alerts_per_time>
-alertsPerTime :: Date -- ^ 'rSince'
-              -> Date -- ^ 'rUntil'
+alertsPerTime :: UTCTime -- ^ 'rSince'
+              -> UTCTime -- ^ 'rUntil'
               -> Request Report s AlertTotals
 alertsPerTime s u =
     mk Report
-        { _rSince'  = s
-        , _rUntil'  = u
+        { _rSince'  = Date s
+        , _rUntil'  = Date u
         , _rRollup' = Monthly
         } & path .~ reports % "alerts_per_time"
 
@@ -147,7 +159,15 @@ data IncidentReport = IncidentReport
     , _irNumberOfIncidents :: !Int
     } deriving (Eq, Show)
 
-deriveRecord ''IncidentReport
+deriveJSON ''IncidentReport
+
+irStart :: Lens' IncidentReport UTCTime
+irStart = lens _irStart (\r x -> r { _irStart = x }) . _Date
+
+irEnd :: Lens' IncidentReport UTCTime
+irEnd = lens _irEnd (\r x -> r { _irEnd = x }) . _Date
+
+makeLens "_irNumberOfIncidents" ''IncidentReport
 
 -- | Get high level statistics about the number of incidents created for the
 -- desired time period, summed daily, weekly or monthly.
@@ -155,13 +175,13 @@ deriveRecord ''IncidentReport
 -- @GET \/reports\/incidents_per_time@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/reports/incidents_per_time>
-incidentsPerTime :: Date -- ^ 'rSince'
-                 -> Date -- ^ 'rUntil'
+incidentsPerTime :: UTCTime -- ^ 'rSince'
+                 -> UTCTime -- ^ 'rUntil'
                  -> Request Report s [IncidentReport]
 incidentsPerTime s u =
     mk Report
-        { _rSince'  = s
-        , _rUntil'  = u
+        { _rSince'  = Date s
+        , _rUntil'  = Date u
         , _rRollup' = Monthly
         } & path   .~ reports % "incidents_per_time"
           & unwrap .~ key "incidents"
