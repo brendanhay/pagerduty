@@ -114,11 +114,12 @@ import           Control.Lens
 import           Data.Aeson
 import           Data.Aeson.Lens
 import           Data.Default
-import qualified Data.HashMap.Strict     as Map
-import           Data.Text               (Text)
-import qualified Data.Text               as Text
+import qualified Data.HashMap.Strict          as Map
+import           Data.Text                    (Text)
+import qualified Data.Text                    as Text
 import           Data.Time
 import           Network.HTTP.Types
+import           Network.PagerDuty.REST.Users (User)
 import           Network.PagerDuty.TH
 import           Network.PagerDuty.Types
 

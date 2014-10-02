@@ -24,8 +24,8 @@ module Network.PagerDuty.REST.MaintenanceWindows
     , lwServiceIds
     , lwFilter
 
-    , ListwindowsResponse
-    , lwMatenanceWindows
+    , ListWindowsResponse
+    , lwMaintenanceWindows
     , lwCounts
 
     -- * Create Window
@@ -146,7 +146,7 @@ deriveRecord ''ListWindowsResponse
 -- | List existing maintenance windows, optionally filtered by service,
 -- or whether they are from the past, present or future.
 --
--- @GET maintenance_windows@
+-- @GET \/maintenance_windows@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/maintenance_windows/list>
 listWindows :: Request ListWindows s ListWindowsResponse
@@ -196,7 +196,7 @@ cwServiceIds = upd.cwMaintenanceWindow'.cwServiceIds'
 -- | Create a new maintenance window for the specified services. No new
 -- incidents will be created for a service that is currently in maintenance.
 --
--- @POST maintenance_windows@
+-- @POST \/maintenance_windows@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/maintenance_windows/create>
 createWindow :: RequesterId
@@ -227,7 +227,7 @@ createWindowBasic s e xs =
 
 -- | Get details about an existing maintenance window.
 --
--- @GET maintenance_windows/:id@
+-- @GET \/maintenance_windows\/\:id@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/maintenance_windows/show>
 getWindow :: WindowId -> Request Empty s MaintenanceWindow
@@ -265,7 +265,7 @@ uwServiceIds = upd.uwServiceIds'
 
 -- | Update an existing maintenance window.
 --
--- @PUT maintenance_windows/:id@
+-- @PUT \/maintenance_windows\/\:id@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/maintenance_windows/update>
 updateWindow :: WindowId -> Request UpdateWindow s MaintenanceWindow
@@ -280,7 +280,7 @@ updateWindow w =
 
 -- | Cancel or delete an existing maintenance window.
 --
--- @DELETE maintenance_windows/:id@
+-- @DELETE \/maintenance_windows\/\:id@
 --
 -- See: <http://developer.pagerduty.com/documentation/rest/maintenance_windows/delete>
 deleteWindow :: WindowId -> Request Empty s Empty
