@@ -37,7 +37,8 @@ module Network.PagerDuty.REST.LogEntries
     , getLog
     , glTimeZone
 
-    -- * Channels
+    -- * Types
+    -- ** Channels
     , Channel (..)
     , _ChanNagios
     , _ChanAPI
@@ -50,7 +51,6 @@ module Network.PagerDuty.REST.LogEntries
     , _ChanAuto
     , _ChanTimeout
 
-    -- ** Nagios
     , NagiosChannel
     , ncSummary
     , ncHost
@@ -58,7 +58,6 @@ module Network.PagerDuty.REST.LogEntries
     , ncState
     , ncDetails
 
-    -- ** API
     , APIChannel
     , acSummary
     , acServiceKey
@@ -66,7 +65,6 @@ module Network.PagerDuty.REST.LogEntries
     , acIncidentKey
     , acDetails
 
-    -- ** Email
     , EmailType (..)
     , EmailChannel
     , ecSummary
@@ -78,18 +76,16 @@ module Network.PagerDuty.REST.LogEntries
     , ecRawUrl
     , ecHtmlUrl
 
-    -- ** Web Trigger
     , WebTriggerChannel
     , wcSummary
     , wcSubject
     , wcDetails
 
-    -- * Entries
+    -- ** Entries
     , Entry (..)
     , _LogEntry
     , _NotifyEntry
 
-    -- ** Logs
     , LogEntryType (..)
     , LogEntry
     , leId
@@ -99,7 +95,6 @@ module Network.PagerDuty.REST.LogEntries
     , leAssignedUser
     , leChannel
 
-    -- ** Notifications
     , NotifyEntry
     , neCreatedAt
     , neUser
