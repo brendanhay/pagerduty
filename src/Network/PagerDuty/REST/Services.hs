@@ -28,10 +28,12 @@
 module Network.PagerDuty.REST.Services
     (
     -- * List Services
-      listServices
+      ListServices
+    , listServices
     , lsTimeZone
 
     -- * Create Service
+    , CreateService
     , createService
     , csName
     , csDescription
@@ -46,6 +48,7 @@ module Network.PagerDuty.REST.Services
     , getService
 
     -- * Update Service
+    , UpdateService
     , updateService
     , usName
     , usEscalationPolicyId

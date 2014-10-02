@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE TypeFamilies      #-}
 
 -- Module      : Network.PagerDuty.REST.EscalationPolicies
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
@@ -18,10 +19,12 @@
 module Network.PagerDuty.REST.EscalationPolicies
     (
     -- * List Policies
-      listPolicies
+      ListPolicies
+    , listPolicies
     , lpQuery
 
     -- * Create Policy
+    , CreatePolicy
     , createPolicy
     , cpName
     , cpRepeatEnabled
@@ -32,6 +35,7 @@ module Network.PagerDuty.REST.EscalationPolicies
     , getPolicy
 
     -- * Update Policy
+    , UpdatePolicy
     , updatePolicy
     , upName
     , upRepeatEnabled
@@ -47,27 +51,27 @@ module Network.PagerDuty.REST.EscalationPolicies
     , _TUser
 
     , ScheduleTarget
-    , stgtId
-    , stgtName
+    , stId
+    , stName
 
     , UserTarget
-    , utgtId
-    , utgtName
-    , utgtEmail
-    , utgtTimeZone
-    , utgtColor
+    , utId
+    , utName
+    , utEmail
+    , utTimeZone
+    , utColor
 
     , Rule
-    , ruleId
-    , ruleEscalationDelayInMinutes
-    , ruleTargets
+    , rId
+    , rEscalationDelayInMinutes
+    , rTargets
 
     , Policy
-    , policyId
-    , policyName
-    , policyNumLoops
-    , policyRules
-    , policyServices
+    , pId
+    , pName
+    , pNumLoops
+    , pRules
+    , pServices
     ) where
 
 import           Control.Applicative             ((<$>))
@@ -77,6 +81,7 @@ import           Data.Aeson.Lens
 import qualified Data.HashMap.Strict             as Map
 import           Data.Text                       (Text)
 import qualified Data.Text                       as Text
+import           Data.Time
 import           Network.HTTP.Types
 import           Network.PagerDuty.REST.Services (Service)
 import           Network.PagerDuty.TH
@@ -86,47 +91,50 @@ policies :: Path
 policies = "escalation_policies"
 
 data ScheduleTarget = ScheduleTarget
-    { _stgtId   :: ScheduleId
-    , _stgtName :: Text
+    { _stId   :: ScheduleId
+    , _stName :: Text
     } deriving (Eq, Show)
 
 deriveJSON ''ScheduleTarget
 
 -- | The id of the target.
-makeLens "_stgtId" ''ScheduleTarget
+makeLens "_stId" ''ScheduleTarget
 
 -- | The name of the target.
-makeLens "_stgtName" ''ScheduleTarget
+makeLens "_stName" ''ScheduleTarget
 
 data UserTarget = UserTarget
-    { _utgtId       :: UserId
-    , _utgtName     :: Text
-    , _utgtEmail    :: Email
-    , _utgtTimeZone :: TimeZone
-    , _utgtColor    :: Text
+    { _utId       :: UserId
+    , _utName     :: Text
+    , _utEmail    :: Address
+    , _utTimeZone :: TZ
+    , _utColor    :: Text
     } deriving (Eq, Show)
 
 deriveJSON ''UserTarget
 
 -- | The id of the user.
-makeLens "_utgtId" ''UserTarget
+makeLens "_utId" ''UserTarget
 
 -- | The name of the user.
-makeLens "_utgtName" ''UserTarget
+makeLens "_utName" ''UserTarget
 
 -- | The user's email address.
-makeLens "_utgtEmail" ''UserTarget
+makeLens "_utEmail" ''UserTarget
 
 -- | The user's personal time zone.
-makeLens "_utgtTimeZone" ''UserTarget
+utTimeZone :: Lens' UserTarget TimeZone
+utTimeZone = lens _utTimeZone (\t x -> t { _utTimeZone = x }) . _TZ
 
 -- | The color used to represent the user in schedules.
-makeLens "_utgtColor" ''UserTarget
+makeLens "_utColor" ''UserTarget
 
 data Target
     = TSchedule ScheduleTarget
     | TUser     UserTarget
       deriving (Eq, Show)
+
+makePrisms ''Target
 
 -- type: A representation of the type of the target.
 -- Will be either schedule or user.
@@ -134,11 +142,9 @@ instance FromJSON Target where
     parseJSON = withObject "target" $ \o -> do
         t <- o .: "type"
         case t of
-            "schedule" -> f o TSchedule
-            "user"     -> f o TUser
+            "schedule" -> TSchedule <$> parseJSON (Object o)
+            "user"     -> TUser     <$> parseJSON (Object o)
             _          -> fail $ "Unrecognised target type: " ++ Text.unpack t
-      where
-        f o g = g <$> parseJSON (Object o)
 
 instance ToJSON Target where
     toJSON t = Object (Map.insert "type" (String k) o)
@@ -147,50 +153,48 @@ instance ToJSON Target where
             TSchedule s -> ("schedule", toJSON s)
             TUser     u -> ("user",     toJSON u)
 
-makePrisms ''Target
-
 data Rule = Rule
-    { _ruleId                       :: RuleId
-    , _ruleEscalationDelayInMinutes :: !Int
-    , _ruleTargets                  :: [Target]
+    { _rId                       :: RuleId
+    , _rEscalationDelayInMinutes :: !Int
+    , _rTargets                  :: [Target]
     } deriving (Eq, Show)
 
 deriveJSON ''Rule
 
 -- | The ID of the escalation rule.
-makeLens "_ruleId" ''Rule
+makeLens "_rId" ''Rule
 
 -- | The amount of time before an incident escalates away from this rule.
-makeLens "_ruleEscalationDelayInMinutes" ''Rule
+makeLens "_rEscalationDelayInMinutes" ''Rule
 
 -- | A list of targets which an incident will be assigned to upon reaching this rule.
-makeLens "_ruleTargets" ''Rule
+makeLens "_rTargets" ''Rule
 
 data Policy = Policy
-    { _policyId       :: PolicyId
-    , _policyName     :: Text
-    , _policyNumLoops :: !Int
-    , _policyRules    :: [Rule]
-    , _policyServices :: [Service]
+    { _pId       :: PolicyId
+    , _pName     :: Text
+    , _pNumLoops :: !Int
+    , _pRules    :: [Rule]
+    , _pServices :: [Service]
     } deriving (Eq, Show)
 
 deriveJSON ''Policy
 
 -- | The ID of the escalation policy.
-makeLens "_policyId" ''Policy
+makeLens "_pId" ''Policy
 
 -- | The name of the escalation policy.
-makeLens "_policyName" ''Policy
+makeLens "_pName" ''Policy
 
 -- | The number of times the escalation policy will repeat after
 -- reaching the end of its escalation.
-makeLens "_policyNumLoops" ''Policy
+makeLens "_pNumLoops" ''Policy
 
 -- | A list of the policy's escalation rules in order of escalation.
-makeLens "_policyRules" ''Policy
+makeLens "_pRules" ''Policy
 
 -- | A list of services using this escalation policy.
-makeLens "_policyServices" ''Policy
+makeLens "_pServices" ''Policy
 
 newtype ListPolicies = ListPolicies
     { _lpQuery' :: Maybe Text
@@ -198,8 +202,12 @@ newtype ListPolicies = ListPolicies
 
 instance Paginate ListPolicies
 
-deriveJSON ''ListPolicies
-makeLenses ''ListPolicies
+deriveQuery ''ListPolicies
+
+-- | Filters the result, showing only the escalation policies
+-- whose names match the query.
+lpQuery :: Lens' (Request ListPolicies s r) (Maybe Text)
+lpQuery = upd.lpQuery'
 
 -- | List all the existing escalation policies.
 --
@@ -213,20 +221,33 @@ listPolicies =
         } & path   .~ policies
           & unwrap .~ key "escalation_policies"
 
--- | Filters the result, showing only the escalation policies
--- whose names match the query.
-lpQuery :: Lens' (Request ListPolicies s r) (Maybe Text)
-lpQuery = upd.lpQuery'
-
 data CreatePolicy = CreatePolicy
     { _cpName'            :: Text
-    , _cpRepeatEnabled'   :: Maybe Bool
+    , _cpRepeatEnabled'   :: Bool'
     , _cpNumLoops'        :: Maybe Int
     , _cpEscalationRules' :: [Rule] -- ^ Should be List1
     } deriving (Eq, Show)
 
-deriveJSON ''CreatePolicy
-makeLenses ''CreatePolicy
+deriveBody ''CreatePolicy
+
+-- | The name of the escalation policy.
+cpName :: Lens' (Request CreatePolicy s r) Text
+cpName = upd.cpName'
+
+-- | Whether or not to allow this policy to repeat its escalation
+-- rules after the last rule is finished.
+--
+-- Defaults to false.
+cpRepeatEnabled :: Lens' (Request CreatePolicy s r) Bool
+cpRepeatEnabled = upd.cpRepeatEnabled'._B
+
+-- | The number of times to loop over the set of rules in this escalation policy.
+cpNumLoops :: Lens' (Request CreatePolicy s r) (Maybe Int)
+cpNumLoops = upd.cpNumLoops'
+
+-- | The escalation rules for this policy.
+cpEscalationRules :: Lens' (Request CreatePolicy s r) [Rule]
+cpEscalationRules = upd.cpEscalationRules'
 
 -- | Creates an existing escalation policy and rules.
 --
@@ -240,31 +261,12 @@ createPolicy :: PolicyId
 createPolicy i n rs =
     mk CreatePolicy
         { _cpName'            = n
-        , _cpRepeatEnabled'   = Nothing
+        , _cpRepeatEnabled'   = B False
         , _cpNumLoops'        = Nothing
         , _cpEscalationRules' = rs
         } & meth   .~ PUT
           & path   .~ policies % i
           & unwrap .~ key "escalation_policy"
-
--- | The name of the escalation policy.
-cpName :: Lens' (Request CreatePolicy s r) Text
-cpName = upd.cpName'
-
--- | Whether or not to allow this policy to repeat its escalation
--- rules after the last rule is finished.
---
--- Defaults to false.
-cpRepeatEnabled :: Lens' (Request CreatePolicy s r) (Maybe Bool)
-cpRepeatEnabled = upd.cpRepeatEnabled'
-
--- | The number of times to loop over the set of rules in this escalation policy.
-cpNumLoops :: Lens' (Request CreatePolicy s r) (Maybe Int)
-cpNumLoops = upd.cpNumLoops'
-
--- | The escalation rules for this policy.
-cpEscalationRules :: Lens' (Request CreatePolicy s r) [Rule]
-cpEscalationRules = upd.cpEscalationRules'
 
 -- | Get information about an existing escalation policy and its rules.
 --
@@ -276,13 +278,29 @@ getPolicy i = empty & path .~ policies % i & unwrap .~ key "escalation_policy"
 
 data UpdatePolicy = UpdatePolicy
     { _upName'            :: Maybe Text
-    , _upRepeatEnabled'   :: Maybe Bool
+    , _upRepeatEnabled'   :: Maybe Bool'
     , _upNumLoops'        :: Maybe Int
     , _upEscalationRules' :: [Rule]
     } deriving (Eq, Show)
 
-deriveJSON ''UpdatePolicy
-makeLenses ''UpdatePolicy
+deriveBody ''UpdatePolicy
+
+-- | The name of the escalation policy.
+upName :: Lens' (Request UpdatePolicy s r) (Maybe Text)
+upName = upd.upName'
+
+-- | Whether or not to allow this policy to repeat its escalation
+-- rules after the last rule is finished.
+upRepeatEnabled :: Lens' (Request UpdatePolicy s r) (Maybe Bool)
+upRepeatEnabled = upd.upRepeatEnabled'.mapping _B
+
+-- | The number of times to loop over the set of rules in this escalation policy.
+upNumLoops :: Lens' (Request UpdatePolicy s r) (Maybe Int)
+upNumLoops = upd.upNumLoops'
+
+-- | The escalation rules for this policy.
+upEscalationRules :: Lens' (Request UpdatePolicy s r) [Rule]
+upEscalationRules = upd.upEscalationRules'
 
 -- | Updates an existing escalation policy and rules.
 --
@@ -299,23 +317,6 @@ updatePolicy i =
         } & meth   .~ PUT
           & path   .~ policies % i
           & unwrap .~ key "escalation_policy"
-
--- | The name of the escalation policy.
-upName :: Lens' (Request UpdatePolicy s r) (Maybe Text)
-upName = upd.upName'
-
--- | Whether or not to allow this policy to repeat its escalation
--- rules after the last rule is finished.
-upRepeatEnabled :: Lens' (Request UpdatePolicy s r) (Maybe Bool)
-upRepeatEnabled = upd.upRepeatEnabled'
-
--- | The number of times to loop over the set of rules in this escalation policy.
-upNumLoops :: Lens' (Request UpdatePolicy s r) (Maybe Int)
-upNumLoops = upd.upNumLoops'
-
--- | The escalation rules for this policy.
-upEscalationRules :: Lens' (Request UpdatePolicy s r) [Rule]
-upEscalationRules = upd.upEscalationRules'
 
 -- | Deletes an existing escalation policy and rules. The escalation policy
 -- must not be in use by any services.

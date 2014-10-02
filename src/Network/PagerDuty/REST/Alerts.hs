@@ -25,7 +25,8 @@
 module Network.PagerDuty.REST.Alerts
     (
     -- * List Alerts
-      listAlerts
+      ListAlerts
+    , listAlerts
     , laSince
     , laUntil
     , laFilter
