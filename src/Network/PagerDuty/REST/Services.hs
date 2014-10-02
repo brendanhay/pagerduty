@@ -324,7 +324,7 @@ makeLens "_svcAcknowledgementTimeout" ''Service
 
 -- | The date/time when this service was created.
 svcCreatedAt :: Lens' Service UTCTime
-svcCreatedAt = lens _svcCreatedAt (\s x -> s { _svcCreatedAt = x }) . _Date
+svcCreatedAt = lens _svcCreatedAt (\s x -> s { _svcCreatedAt = x }) . _D
 
 -- | The current state of the Service.
 makeLens "_svcStatus" ''Service
@@ -333,7 +333,7 @@ makeLens "_svcStatus" ''Service
 svcLastIncidentTimestamp :: Lens' Service (Maybe UTCTime)
 svcLastIncidentTimestamp =
     lens _svcLastIncidentTimestamp
-         (\s x -> s { _svcLastIncidentTimestamp = x }) . mapping _Date
+         (\s x -> s { _svcLastIncidentTimestamp = x }) . mapping _D
 
 -- | If the service is a Generic Email service, this describes what kind of
 -- emails create an incident.

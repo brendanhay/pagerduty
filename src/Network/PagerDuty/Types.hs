@@ -8,6 +8,7 @@
 {-# LANGUAGE RankNTypes                 #-}
 {-# LANGUAGE StandaloneDeriving         #-}
 {-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TupleSections              #-}
 {-# LANGUAGE ViewPatterns               #-}
 
 -- Module      : Network.PagerDuty.Types
@@ -56,9 +57,11 @@ import           Data.Aeson                   hiding (Error)
 import           Data.Aeson.Types             (Parser)
 import           Data.ByteString              (ByteString)
 import qualified Data.ByteString.Char8        as BS
-import           Data.ByteString.Conversion
+import           Data.ByteString.Conversion   hiding (List)
 import           Data.Default
+import           Data.Function                (on)
 import qualified Data.HashMap.Strict          as Map
+import           Data.List                    (deleteBy)
 import           Data.Monoid
 import           Data.String
 import           Data.Text                    (Text)
@@ -67,10 +70,20 @@ import           Data.Time
 import           GHC.TypeLits
 import           Network.HTTP.Types
 import           Network.HTTP.Types.QueryLike
+import           Network.PagerDuty.Query
 import           Network.PagerDuty.TH
 import           System.Locale
 
 -- FIXME: Verify IncidentId/IncidentKey .. *Id/*Key are actually different or needed
+
+newtype List a = L [a]
+    deriving (Eq, Show, Monoid)
+
+deriveJSON ''List
+makePrisms ''List
+
+instance ToQuery a => ToQuery (List a) where
+    queryValues (L xs) = concatMap queryValues xs
 
 newtype Bool' = B Bool
     deriving (Eq, Show)
@@ -78,30 +91,30 @@ newtype Bool' = B Bool
 deriveJSON ''Bool'
 makePrisms ''Bool'
 
-instance QueryValueLike Bool' where
-    toQueryValue (B True)  = Just "true"
-    toQueryValue (B False) = Just "false"
+instance ToByteString Bool' where
+    builder (B True)  = "true"
+    builder (B False) = "false"
 
-newtype Date = Date { unDate :: UTCTime }
+instance ToQuery Bool'
+
+newtype Date = D UTCTime
     deriving (Eq, Ord, Show)
 
 makePrisms ''Date
 
 instance FromJSON Date where
-    parseJSON = fmap Date . parseJSON
+    parseJSON = fmap D . parseJSON
 
 instance ToJSON Date where
-    toJSON = toJSON . unDate
+    toJSON (D d) = toJSON d
 
 instance ToByteString Date where
-    builder = builder
-        . formatTime defaultTimeLocale (iso8601DateFormat $ Just "%XZ")
-        . unDate
+    builder (D d) = builder
+        (formatTime defaultTimeLocale (iso8601DateFormat $ Just "%XZ") d)
 
-instance QueryValueLike Date where
-    toQueryValue = Just . toByteString'
+instance ToQuery Date
 
-newtype TZ = TZ { unTZ :: TimeZone }
+newtype TZ = TZ TimeZone
     deriving (Eq, Show)
 
 makePrisms ''TZ
@@ -113,10 +126,9 @@ instance ToJSON TZ where
     toJSON = toJSON . Text.decodeUtf8 . toByteString'
 
 instance ToByteString TZ where
-    builder = builder . timeZoneName . unTZ
+    builder (TZ tz) = builder (timeZoneName tz)
 
-instance QueryValueLike TZ where
-    toQueryValue = Just . toByteString'
+instance ToQuery TZ
 
 instance Default TZ where
     def = TZ utc
@@ -199,6 +211,8 @@ data Pager = Pager
       -- ^ The limit used in the execution of the query.
     , _pgTotal  :: !Int
       -- ^ The total number of records available.
+    , _pgQuery  :: Maybe Text
+      -- ^ An optional query= value to be added to the query string.
     } deriving (Eq, Show)
 
 makeLenses ''Pager
@@ -214,8 +228,9 @@ instance FromJSON a => FromJSON (a, Maybe Pager) where
            <$> o .: "offset" .!= 0
            -- The number of records returned.
            -- Default (and max limit) is 100 for most APIs.
-           <*> o .: "limit"  .!= 100
-           <*> o .: "total"
+           <*> o .:  "limit"  .!= 100
+           <*> o .:  "total"
+           <*> o .:? "query"
 
 instance ToJSON Pager where
     toJSON p = object
@@ -304,14 +319,24 @@ unwrap f r = f (_rqUnwrap r) <&> \k -> r { _rqUnwrap = g k }
   where
     g k x = maybe (fail "Failed to extract nested keys.") return (x ^? k)
 
--- | Primarily to obtain a constraint for the pagination function, as well as
--- the overrideable flexibility.
+-- | Exists primarily to obtain a constraint for the 'paginate' function.
 class Paginate a where
     next :: Request a s b -> Maybe Pager -> Maybe (Request a s b)
-    next _  Nothing       = Nothing
-    next rq (Just x)
-        | x^.pgTotal == 0 = Nothing
-        | otherwise       = Just (rq & pager ?~ (x & pgOffset +~ x^.pgTotal))
+    next rq = maybe Nothing go
+      where
+        go x | x^.pgTotal == 0 = Nothing
+             | otherwise       = Just $
+                 rq & pager ?~ (x & pgOffset +~ x^.pgTotal)
+                    & query %~ (add . clear)
+          where
+            add :: Query -> Query
+            add = maybe id ((:) . (k,) . Just . Text.encodeUtf8) (x^.pgQuery)
+
+        clear :: Query -> Query
+        clear = deleteBy ((==) `on` fst) (k, Nothing)
+
+        k :: ByteString
+        k = "query"
 
 newtype Key (a :: Symbol) = Key Text
     deriving (Eq, Show, IsString)
@@ -324,6 +349,8 @@ instance ToJSON (Key a) where
 
 instance ToByteString (Key a) where
     builder (Key k) = builder k
+
+instance ToQuery (Key a)
 
 instance QueryValueLike (Key a) where
     toQueryValue = Just . toByteString'
@@ -343,6 +370,8 @@ instance ToJSON (Id a) where
 instance ToByteString (Id a) where
     builder (Id i) = builder i
 
+instance ToQuery (Id a)
+
 instance QueryValueLike (Id a) where
     toQueryValue = Just . toByteString'
 
@@ -357,6 +386,7 @@ type ServiceId     = Id "service"
 type TargetId      = Id "target"
 type UserId        = Id "user"
 type VendorId      = Id "vendor"
+type WindowId      = Id "maintenance-window"
 
 data Empty = Empty
 
@@ -381,19 +411,5 @@ makePrisms ''Address
 instance ToByteString Address where
     builder (Address a) = builder a
 
-instance QueryValueLike Address where
-    toQueryValue = Just . toByteString'
+instance ToQuery Address
 
-data User = User
-    { _userId             :: UserId
-    , _userName           :: Text
-    , _userEmail          :: Address
-    , _userTimeZone       :: TZ
-    , _userColor          :: Text
-    , _userRole           :: Text
-    , _userAvatarUrl      :: Text
-    , _userUrl            :: Text
-    , _userInvitationSent :: Bool'
-    } deriving (Eq, Show)
-
-deriveRecord ''User

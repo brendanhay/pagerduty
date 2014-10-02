@@ -402,7 +402,7 @@ deriveRecord ''NotifyEntry
 
 -- | Time at which the log entry was created
 neCreatedAt :: Lens' NotifyEntry UTCTime
-neCreatedAt = neCreatedAt'._Date
+neCreatedAt = neCreatedAt'._D
 
 -- | User who was notified
 neUser :: Lens' NotifyEntry User
@@ -441,11 +441,11 @@ llTimeZone = upd.llTimeZone'._TZ
 
 -- | The start of the date range over which you want to search.
 llSince :: Lens' (Request ListLogs s b) (Maybe UTCTime)
-llSince = upd.llSince'.mapping _Date
+llSince = upd.llSince'.mapping _D
 
 -- | The end of the date range over which you want to search.
 llUntil :: Lens' (Request ListLogs s b) (Maybe UTCTime)
-llUntil = upd.llUntil'.mapping _Date
+llUntil = upd.llUntil'.mapping _D
 
 -- | If true, will only return log entries of type trigger, acknowlldge, or resolve.
 --

@@ -206,7 +206,7 @@ deriveQuery ''ListPolicies
 
 -- | Filters the result, showing only the escalation policies
 -- whose names match the query.
-lpQuery :: Lens' (Request ListPolicies s r) (Maybe Text)
+lpQuery :: Lens' (Request ListPolicies s b) (Maybe Text)
 lpQuery = upd.lpQuery'
 
 -- | List all the existing escalation policies.
@@ -231,22 +231,22 @@ data CreatePolicy = CreatePolicy
 deriveBody ''CreatePolicy
 
 -- | The name of the escalation policy.
-cpName :: Lens' (Request CreatePolicy s r) Text
+cpName :: Lens' (Request CreatePolicy s b) Text
 cpName = upd.cpName'
 
 -- | Whether or not to allow this policy to repeat its escalation
 -- rules after the last rule is finished.
 --
 -- Defaults to false.
-cpRepeatEnabled :: Lens' (Request CreatePolicy s r) Bool
+cpRepeatEnabled :: Lens' (Request CreatePolicy s b) Bool
 cpRepeatEnabled = upd.cpRepeatEnabled'._B
 
 -- | The number of times to loop over the set of rules in this escalation policy.
-cpNumLoops :: Lens' (Request CreatePolicy s r) (Maybe Int)
+cpNumLoops :: Lens' (Request CreatePolicy s b) (Maybe Int)
 cpNumLoops = upd.cpNumLoops'
 
 -- | The escalation rules for this policy.
-cpEscalationRules :: Lens' (Request CreatePolicy s r) [Rule]
+cpEscalationRules :: Lens' (Request CreatePolicy s b) [Rule]
 cpEscalationRules = upd.cpEscalationRules'
 
 -- | Creates an existing escalation policy and rules.
@@ -286,20 +286,20 @@ data UpdatePolicy = UpdatePolicy
 deriveBody ''UpdatePolicy
 
 -- | The name of the escalation policy.
-upName :: Lens' (Request UpdatePolicy s r) (Maybe Text)
+upName :: Lens' (Request UpdatePolicy s b) (Maybe Text)
 upName = upd.upName'
 
 -- | Whether or not to allow this policy to repeat its escalation
 -- rules after the last rule is finished.
-upRepeatEnabled :: Lens' (Request UpdatePolicy s r) (Maybe Bool)
+upRepeatEnabled :: Lens' (Request UpdatePolicy s b) (Maybe Bool)
 upRepeatEnabled = upd.upRepeatEnabled'.mapping _B
 
 -- | The number of times to loop over the set of rules in this escalation policy.
-upNumLoops :: Lens' (Request UpdatePolicy s r) (Maybe Int)
+upNumLoops :: Lens' (Request UpdatePolicy s b) (Maybe Int)
 upNumLoops = upd.upNumLoops'
 
 -- | The escalation rules for this policy.
-upEscalationRules :: Lens' (Request UpdatePolicy s r) [Rule]
+upEscalationRules :: Lens' (Request UpdatePolicy s b) [Rule]
 upEscalationRules = upd.upEscalationRules'
 
 -- | Updates an existing escalation policy and rules.

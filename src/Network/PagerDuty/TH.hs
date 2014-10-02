@@ -28,8 +28,6 @@ module Network.PagerDuty.TH
 
     -- * Re-exported generics
     , deriveGeneric
-    , gquery
-    , gqueryWith
 
     -- * Re-exported options
     , dropped
@@ -46,7 +44,7 @@ import qualified Data.Text.Encoding           as Text
 import           Generics.SOP.TH
 import           Language.Haskell.TH
 import           Network.HTTP.Types.QueryLike
-import           Network.PagerDuty.Generics
+import           Network.PagerDuty.Query
 import           Network.PagerDuty.Options
 
 deriveNullary :: Name -> Q [Dec]
@@ -55,7 +53,7 @@ deriveNullary = deriveNullaryWith underscored
 deriveNullaryWith :: Options -> Name -> Q [Dec]
 deriveNullaryWith o n = concat <$> sequence
     [ deriveJSONWith o n
-    , [d|instance QueryValueLike $(conT n) where toQueryValue = value . toJSON|]
+    , [d|instance ToQuery $(conT n) where queryValues = value . toJSON|]
     ]
 
 deriveRecord :: Name -> Q [Dec]
@@ -90,6 +88,6 @@ makeLens k = makeLensesWith
     $ lensRulesFor [(k, drop 1 k)]
     & simpleLenses .~ True
 
-value :: Value -> Maybe ByteString
-value (String t) = Just (Text.encodeUtf8 t)
-value _          = Nothing
+value :: Value -> [ByteString]
+value (String t) = [Text.encodeUtf8 t]
+value _          = []

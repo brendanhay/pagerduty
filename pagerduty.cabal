@@ -37,18 +37,17 @@ library
       , Network.PagerDuty.REST.EscalationPolicies
       -- , Network.PagerDuty.REST.Incidents
       , Network.PagerDuty.REST.LogEntries
-      -- , Network.PagerDuty.REST.MaintenanceWindows
+      , Network.PagerDuty.REST.MaintenanceWindows
       , Network.PagerDuty.REST.Reports
       -- , Network.PagerDuty.REST.Schedules
-      , Network.PagerDuty.REST.Services
+     , Network.PagerDuty.REST.Services
       -- , Network.PagerDuty.REST.Users
       -- , Network.PagerDuty.REST.Webhooks
 
-
     other-modules:
-        Network.PagerDuty.Generics
-      , Network.PagerDuty.IO
+        Network.PagerDuty.IO
       , Network.PagerDuty.Options
+      , Network.PagerDuty.Query
       , Network.PagerDuty.TH
       , Network.PagerDuty.Types
 
@@ -56,6 +55,8 @@ library
         aeson                 >  0.7   && <= 8.0
       , base                  >= 4.5   && <  5.0
 --      , base64-bytestring     >= 1.0 && <  1.1
+      , bifunctors
+
       , bytestring            >= 0.9   && <  1.0
       , bytestring-conversion >= 0.2.1
       , conduit               >= 0.5.5

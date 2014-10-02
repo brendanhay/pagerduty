@@ -87,12 +87,12 @@ deriveQuery ''Report
 -- | Start of the date range over which you want to search. The time element
 -- is optional.
 rSince :: Lens' (Request Report s b) UTCTime
-rSince = upd.rSince'._Date
+rSince = upd.rSince'._D
 
 -- | The end of the date range over which you want to search. This should be
 -- in the same format as since.
 rUntil :: Lens' (Request Report s b) UTCTime
-rUntil = upd.rUntil'._Date
+rUntil = upd.rUntil'._D
 
 -- | Specifies the bucket duration for each summation.
 --
@@ -116,10 +116,10 @@ data AlertReport = AlertReport
 deriveJSON ''AlertReport
 
 arStart :: Lens' AlertReport UTCTime
-arStart = lens _arStart (\r x -> r { _arStart = x })  ._Date
+arStart = lens _arStart (\r x -> r { _arStart = x })  ._D
 
 arEnd :: Lens' AlertReport UTCTime
-arEnd = lens _arEnd (\r x -> r { _arEnd = x })  ._Date
+arEnd = lens _arEnd (\r x -> r { _arEnd = x })  ._D
 
 makeLens "_arNumberOfAlerts"      ''AlertReport
 makeLens "_arNumberOfPhoneAlerts" ''AlertReport
@@ -148,8 +148,8 @@ alertsPerTime :: UTCTime -- ^ 'rSince'
               -> Request Report s AlertTotals
 alertsPerTime s u =
     mk Report
-        { _rSince'  = Date s
-        , _rUntil'  = Date u
+        { _rSince'  = D s
+        , _rUntil'  = D u
         , _rRollup' = Monthly
         } & path .~ reports % "alerts_per_time"
 
@@ -162,10 +162,10 @@ data IncidentReport = IncidentReport
 deriveJSON ''IncidentReport
 
 irStart :: Lens' IncidentReport UTCTime
-irStart = lens _irStart (\r x -> r { _irStart = x }) . _Date
+irStart = lens _irStart (\r x -> r { _irStart = x }) . _D
 
 irEnd :: Lens' IncidentReport UTCTime
-irEnd = lens _irEnd (\r x -> r { _irEnd = x }) . _Date
+irEnd = lens _irEnd (\r x -> r { _irEnd = x }) . _D
 
 makeLens "_irNumberOfIncidents" ''IncidentReport
 
@@ -180,8 +180,8 @@ incidentsPerTime :: UTCTime -- ^ 'rSince'
                  -> Request Report s [IncidentReport]
 incidentsPerTime s u =
     mk Report
-        { _rSince'  = Date s
-        , _rUntil'  = Date u
+        { _rSince'  = D s
+        , _rUntil'  = D u
         , _rRollup' = Monthly
         } & path   .~ reports % "incidents_per_time"
           & unwrap .~ key "incidents"

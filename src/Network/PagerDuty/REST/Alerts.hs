@@ -46,6 +46,7 @@ module Network.PagerDuty.REST.Alerts
 import Control.Lens
 import Data.Aeson.Lens
 import Data.Time
+import Network.PagerDuty.REST.Users (User)
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
@@ -101,22 +102,22 @@ listAlerts s u =
           & unwrap .~ key "alerts"
 
 -- | The start of the date range over which you want to search.
-laSince :: Lens' (Request ListAlerts s r) UTCTime
-laSince = upd.laSince'._Date
+laSince :: Lens' (Request ListAlerts s b) UTCTime
+laSince = upd.laSince'._D
 
 -- | The end of the date range over which you want to search.
 -- This should be in the same format as 'since'.
 --
 -- The size of the date range must be less than 3 months.
-laUntil :: Lens' (Request ListAlerts s r) UTCTime
-laUntil = upd.laUntil'._Date
+laUntil :: Lens' (Request ListAlerts s b) UTCTime
+laUntil = upd.laUntil'._D
 
 -- | Returns only the alerts of the said 'AlertType' type.
-laFilter :: Lens' (Request ListAlerts s r) (Maybe AlertType)
+laFilter :: Lens' (Request ListAlerts s b) (Maybe AlertType)
 laFilter = upd.laFilter'
 
 -- | Time zone in which dates in the result will be rendered.
 --
 -- Defaults to account time zone.
-laTimeZone :: Lens' (Request ListAlerts s r) (Maybe TimeZone)
+laTimeZone :: Lens' (Request ListAlerts s b) (Maybe TimeZone)
 laTimeZone = upd.laTimeZone'.mapping _TZ
