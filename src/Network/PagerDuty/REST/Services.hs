@@ -116,6 +116,7 @@ import Control.Lens
 import Data.Aeson.Lens
 import Data.ByteString.Builder (Builder)
 import Data.Text               (Text)
+import Data.Time
 import Network.HTTP.Types
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
@@ -354,7 +355,7 @@ makeLens "_svcEmailFilters" ''Service
 makeLens "_svcSeverityFilter" ''Service
 
 newtype ListServices = ListServices
-    { _lsTimeZone' :: Maybe TimeZone
+    { _lsTimeZone' :: Maybe TZ
     } deriving (Eq, Show)
 
 instance Paginate ListServices
@@ -379,7 +380,7 @@ listServices =
 --
 -- Defaults to account default time zone.
 lsTimeZone :: Lens' (Request ListServices s r) (Maybe TimeZone)
-lsTimeZone = upd.lsTimeZone'
+lsTimeZone = upd.lsTimeZone'._TZ
 
 data CreateService = CreateService
     { _csName'                   :: Text

@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE TypeFamilies      #-}
 
 -- Module      : Network.PagerDuty.REST.Alerts
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
@@ -56,7 +57,7 @@ data AlertType
     | Push
       deriving (Eq, Show)
 
-deriveJSON ''AlertType
+deriveNullary ''AlertType
 
 data Alert = Alert
     { _alertId        :: AlertId
@@ -66,20 +67,18 @@ data Alert = Alert
     , _alertAddress   :: Address
     } deriving (Eq, Show)
 
-deriveJSON ''Alert
-makeLenses ''Alert
+deriveRecord ''Alert
 
 data ListAlerts = ListAlerts
     { _laSince'    :: Date
     , _laUntil'    :: Date
     , _laFilter'   :: Maybe AlertType
-    , _laTimeZone' :: Maybe TimeZone
+    , _laTimeZone' :: Maybe TZ
     } deriving (Eq, Show)
 
 instance Paginate ListAlerts
 
-deriveJSON ''ListAlerts
-makeLenses ''ListAlerts
+deriveQuery ''ListAlerts
 
 -- | List existing alerts for a given time range, optionally filtered by type
 -- (SMS, Email, Phone, or Push).
@@ -100,15 +99,15 @@ listAlerts s u =
           & unwrap .~ key "alerts"
 
 -- | The start of the date range over which you want to search.
-laSince :: Lens' (Request ListAlerts s r) Date
-laSince = upd.laSince'
+laSince :: Lens' (Request ListAlerts s r) UTCTime
+laSince = upd.laSince'._Date
 
 -- | The end of the date range over which you want to search.
 -- This should be in the same format as 'since'.
 --
 -- The size of the date range must be less than 3 months.
-laUntil :: Lens' (Request ListAlerts s r) Date
-laUntil = upd.laUntil'
+laUntil :: Lens' (Request ListAlerts s r) UTCTime
+laUntil = upd.laUntil'._Date
 
 -- | Returns only the alerts of the said 'AlertType' type.
 laFilter :: Lens' (Request ListAlerts s r) (Maybe AlertType)
@@ -118,4 +117,4 @@ laFilter = upd.laFilter'
 --
 -- Defaults to account time zone.
 laTimeZone :: Lens' (Request ListAlerts s r) (Maybe TimeZone)
-laTimeZone = upd.laTimeZone'
+laTimeZone = upd.laTimeZone'._TZ

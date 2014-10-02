@@ -70,8 +70,22 @@ import           Network.HTTP.Types.QueryLike
 import           Network.PagerDuty.TH
 import           System.Locale
 
+-- FIXME: Verify IncidentId/IncidentKey .. *Id/*Key are actually different or needed
+
+newtype Bool' = B Bool
+    deriving (Eq, Show)
+
+deriveJSON ''Bool'
+makePrisms ''Bool'
+
+instance QueryValueLike Bool' where
+    toQueryValue (B True)  = Just "true"
+    toQueryValue (B False) = Just "false"
+
 newtype Date = Date { unDate :: UTCTime }
     deriving (Eq, Ord, Show)
+
+makePrisms ''Date
 
 instance FromJSON Date where
     parseJSON = fmap Date . parseJSON
@@ -88,7 +102,9 @@ instance QueryValueLike Date where
     toQueryValue = Just . toByteString'
 
 newtype TZ = TZ { unTZ :: TimeZone }
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Show)
+
+makePrisms ''TZ
 
 instance FromJSON TZ where
     parseJSON = undefined
@@ -331,6 +347,8 @@ instance QueryValueLike (Id a) where
     toQueryValue = Just . toByteString'
 
 type AlertId       = Id "alert"
+type EmailFilterId = Id "email-filter"
+type LogEntryId    = Id "log-entry"
 type PolicyId      = Id "policy"
 type RequesterId   = Id "requester"
 type RuleId        = Id "rule"
@@ -338,7 +356,6 @@ type ScheduleId    = Id "schedule"
 type ServiceId     = Id "service"
 type TargetId      = Id "target"
 type UserId        = Id "user"
-type EmailFilterId = Id "email-filter"
 type VendorId      = Id "vendor"
 
 data Empty = Empty
@@ -359,6 +376,7 @@ newtype Address = Address Text
     deriving (Eq, Show)
 
 deriveJSON ''Address
+makePrisms ''Address
 
 instance ToByteString Address where
     builder (Address a) = builder a
@@ -375,7 +393,7 @@ data User = User
     , _userRole           :: Text
     , _userAvatarUrl      :: Text
     , _userUrl            :: Text
-    , _userInvitationSent :: Bool
+    , _userInvitationSent :: Bool'
     } deriving (Eq, Show)
 
 deriveRecord ''User

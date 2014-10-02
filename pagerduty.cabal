@@ -33,19 +33,19 @@ library
 --        Control.Monad.Trans.PagerDuty
       -- , Network.PagerDuty.Integration
       -- , Network.PagerDuty.REST
-      -- , Network.PagerDuty.REST.Alerts
+--        Network.PagerDuty.REST.Alerts
       -- , Network.PagerDuty.REST.EscalationPolicies
       -- , Network.PagerDuty.REST.Incidents
-      -- , Network.PagerDuty.REST.LogEntries
+        Network.PagerDuty.REST.LogEntries
       -- , Network.PagerDuty.REST.MaintenanceWindows
-        Network.PagerDuty.REST.Reports
+      , Network.PagerDuty.REST.Reports
       -- , Network.PagerDuty.REST.Schedules
       -- , Network.PagerDuty.REST.Services
       -- , Network.PagerDuty.REST.Users
       -- , Network.PagerDuty.REST.Webhooks
 
 
---    other-modules:
+    other-modules:
         Network.PagerDuty.Generics
       , Network.PagerDuty.IO
       , Network.PagerDuty.Options
