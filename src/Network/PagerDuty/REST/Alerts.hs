@@ -44,6 +44,7 @@ module Network.PagerDuty.REST.Alerts
 
 import Control.Lens
 import Data.Aeson.Lens
+import Data.Time
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
@@ -117,4 +118,4 @@ laFilter = upd.laFilter'
 --
 -- Defaults to account time zone.
 laTimeZone :: Lens' (Request ListAlerts s r) (Maybe TimeZone)
-laTimeZone = upd.laTimeZone'._TZ
+laTimeZone = upd.laTimeZone'.mapping _TZ

@@ -30,17 +30,17 @@ library
     ghc-options:       -Wall
 
     exposed-modules:
---        Control.Monad.Trans.PagerDuty
-      -- , Network.PagerDuty.Integration
-      -- , Network.PagerDuty.REST
---        Network.PagerDuty.REST.Alerts
+        Control.Monad.Trans.PagerDuty
+      , Network.PagerDuty.Integration
+      , Network.PagerDuty.REST
+      , Network.PagerDuty.REST.Alerts
       -- , Network.PagerDuty.REST.EscalationPolicies
       -- , Network.PagerDuty.REST.Incidents
-        Network.PagerDuty.REST.LogEntries
+      , Network.PagerDuty.REST.LogEntries
       -- , Network.PagerDuty.REST.MaintenanceWindows
       , Network.PagerDuty.REST.Reports
       -- , Network.PagerDuty.REST.Schedules
-      -- , Network.PagerDuty.REST.Services
+      , Network.PagerDuty.REST.Services
       -- , Network.PagerDuty.REST.Users
       -- , Network.PagerDuty.REST.Webhooks
 

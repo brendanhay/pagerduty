@@ -14,6 +14,7 @@ module Network.PagerDuty.TH
     (
     -- * Compound expressions
       deriveNullary
+    , deriveNullaryWith
     , deriveRecord
     , deriveQuery
     , deriveBody
@@ -49,8 +50,11 @@ import           Network.PagerDuty.Generics
 import           Network.PagerDuty.Options
 
 deriveNullary :: Name -> Q [Dec]
-deriveNullary n = concat <$> sequence
-    [ deriveJSON n
+deriveNullary = deriveNullaryWith underscored
+
+deriveNullaryWith :: Options -> Name -> Q [Dec]
+deriveNullaryWith o n = concat <$> sequence
+    [ deriveJSONWith o n
     , [d|instance QueryValueLike $(conT n) where toQueryValue = value . toJSON|]
     ]
 

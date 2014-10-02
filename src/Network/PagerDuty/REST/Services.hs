@@ -2,6 +2,7 @@
 {-# LANGUAGE ExtendedDefaultRules       #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeFamilies               #-}
 
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
@@ -139,8 +140,7 @@ data IncidentCounts = IncidentCounts
     , _cntTotal        :: !Int
     } deriving (Eq, Show)
 
-deriveJSON ''IncidentCounts
-makeLenses ''IncidentCounts
+deriveRecord ''IncidentCounts
 
 data EmailIncidentCreation
     = OnNewEmail
@@ -151,7 +151,7 @@ data EmailIncidentCreation
       -- ^ Open a new incident only if an open incident does not already exist.
       deriving (Eq, Show)
 
-deriveJSON ''EmailIncidentCreation
+deriveNullary ''EmailIncidentCreation
 
 data EmailFilterMode
     = AllEmail
@@ -162,7 +162,7 @@ data EmailFilterMode
       -- ^ Accept email only if it matches ALL of the rules below
       deriving (Eq, Show)
 
-deriveJSONWith hyphenated ''EmailFilterMode
+deriveNullaryWith hyphenated ''EmailFilterMode
 
 data ServiceStatus
     = Active
@@ -178,7 +178,7 @@ data ServiceStatus
       -- ^ The service is disabled and will not have any new triggered incidents.
       deriving (Eq, Show)
 
-deriveJSON ''ServiceStatus
+deriveNullary ''ServiceStatus
 
 data ServiceType
     = CloudKick
@@ -191,15 +191,14 @@ data ServiceType
     | SqlMonitor
       deriving (Eq, Show)
 
-deriveJSON ''ServiceType
+deriveNullary ''ServiceType
 
 data PolicyInfo = PolicyInfo
     { _pinfoId   :: PolicyId
     , _pinfoName :: Text
     } deriving (Eq, Show)
 
-makeLenses ''PolicyInfo
-deriveJSON ''PolicyInfo
+deriveRecord ''PolicyInfo
 
 data MatchMode
     = Always
@@ -207,7 +206,7 @@ data MatchMode
     | NoMatch
       deriving (Eq, Show)
 
-deriveJSONWith hyphenated ''MatchMode
+deriveNullaryWith hyphenated ''MatchMode
 
 -- FIXME: Tighten up this type! Make the regex required for match/no-match.
 data EmailFilters = EmailFilters
@@ -271,7 +270,7 @@ data SeverityFilter
       -- ^ SQL Monitor: Incidents are created for with high or medium severity
       deriving (Eq, Show)
 
-deriveJSONWith (dropped 3 underscored) ''SeverityFilter
+deriveNullaryWith (dropped 3 underscored) ''SeverityFilter
 
 data Service = Service
     { _svcId                     :: ServiceId
@@ -321,13 +320,17 @@ makeLens "_svcAutoResolveTimeout" ''Service
 makeLens "_svcAcknowledgementTimeout" ''Service
 
 -- | The date/time when this service was created.
-makeLens "_svcCreatedAt" ''Service
+svcCreatedAt :: Lens' Service UTCTime
+svcCreatedAt = lens _svcCreatedAt (\s x -> s { _svcCreatedAt = x }) . _Date
 
 -- | The current state of the Service.
 makeLens "_svcStatus" ''Service
 
 -- | The date/time when the most recent incident was created for this service.
-makeLens "_svcLastIncidentTimestamp" ''Service
+svcLastIncidentTimestamp :: Lens' Service (Maybe UTCTime)
+svcLastIncidentTimestamp =
+    lens _svcLastIncidentTimestamp
+         (\s x -> s { _svcLastIncidentTimestamp = x }) . mapping _Date
 
 -- | If the service is a Generic Email service, this describes what kind of
 -- emails create an incident.
@@ -360,8 +363,13 @@ newtype ListServices = ListServices
 
 instance Paginate ListServices
 
-deriveJSON ''ListServices
-makeLenses ''ListServices
+deriveQuery ''ListServices
+
+-- | Time zone in which dates in the result will be rendered.
+--
+-- Defaults to account default time zone.
+lsTimeZone :: Lens' (Request ListServices s r) (Maybe TimeZone)
+lsTimeZone = upd.lsTimeZone'.mapping _TZ
 
 -- | List existing services.
 --
@@ -376,12 +384,6 @@ listServices =
           & query  .~ includes
           & unwrap .~ key "escalation_policies"
 
--- | Time zone in which dates in the result will be rendered.
---
--- Defaults to account default time zone.
-lsTimeZone :: Lens' (Request ListServices s r) (Maybe TimeZone)
-lsTimeZone = upd.lsTimeZone'._TZ
-
 data CreateService = CreateService
     { _csName'                   :: Text
     , _csEscalationPolicyId'     :: PolicyId
@@ -393,30 +395,7 @@ data CreateService = CreateService
     , _csSeverityFilter'         :: Maybe SeverityFilter
     } deriving (Eq, Show)
 
-deriveJSON ''CreateService
-makeLenses ''CreateService
-
--- | Creates a new service.
---
--- @POST \/services@
---
--- See: <http://developer.pagerduty.com/documentation/rest/services/create>
-createService :: Text
-              -> PolicyId
-              -> ServiceType
-              -> Request CreateService s Service
-createService n p t =
-    mk CreateService
-        { _csName'                   = n
-        , _csEscalationPolicyId'     = p
-        , _csType'                   = t
-        , _csVendorId'               = Nothing
-        , _csDescription'            = Nothing
-        , _csAcknowledgementTimeout' = Nothing
-        , _csAutoResolveTimeout'     = Nothing
-        , _csSeverityFilter'         = Nothing
-        } & path   .~ services
-          & unwrap .~ key "service"
+deriveBody ''CreateService
 
 -- | The name of the service.
 csName :: Lens' (Request CreateService s r) Text
@@ -456,6 +435,28 @@ csAutoResolveTimeout = upd.csAutoResolveTimeout'
 csSeverityFilter :: Lens' (Request CreateService s r) (Maybe SeverityFilter)
 csSeverityFilter = upd.csSeverityFilter'
 
+-- | Creates a new service.
+--
+-- @POST \/services@
+--
+-- See: <http://developer.pagerduty.com/documentation/rest/services/create>
+createService :: Text
+              -> PolicyId
+              -> ServiceType
+              -> Request CreateService s Service
+createService n p t =
+    mk CreateService
+        { _csName'                   = n
+        , _csEscalationPolicyId'     = p
+        , _csType'                   = t
+        , _csVendorId'               = Nothing
+        , _csDescription'            = Nothing
+        , _csAcknowledgementTimeout' = Nothing
+        , _csAutoResolveTimeout'     = Nothing
+        , _csSeverityFilter'         = Nothing
+        } & path   .~ services
+          & unwrap .~ key "service"
+
 -- | Get details about an existing service.
 --
 -- @GET services\/\:id@
@@ -476,26 +477,7 @@ data UpdateService = UpdateService
     , _usSeverityFilter'         :: Maybe SeverityFilter
     } deriving (Eq, Show)
 
-deriveJSON ''UpdateService
-makeLenses ''UpdateService
-
--- | Update an existing service.
---
--- @PUT services\/\:id@
---
--- See: <http://developer.pagerduty.com/documentation/rest/services/update>
-updateService :: ServiceId -> Request UpdateService s Service
-updateService i =
-    mk UpdateService
-        { _usName'                   = Nothing
-        , _usEscalationPolicyId'     = Nothing
-        , _usDescription'            = Nothing
-        , _usAcknowledgementTimeout' = Nothing
-        , _usAutoResolveTimeout'     = Nothing
-        , _usSeverityFilter'         = Nothing
-        } & meth   .~ PUT
-          & path   .~ services % i
-          & unwrap .~ key "service"
+deriveBody ''UpdateService
 
 -- | The name of the service.
 usName :: Lens' (Request UpdateService s r) (Maybe Text)
@@ -525,6 +507,24 @@ usAutoResolveTimeout = upd.usAutoResolveTimeout'
 -- | Specifies what severity levels will create a new open incident.
 usSeverityFilter :: Lens' (Request UpdateService s r) (Maybe SeverityFilter)
 usSeverityFilter = upd.usSeverityFilter'
+
+-- | Update an existing service.
+--
+-- @PUT services\/\:id@
+--
+-- See: <http://developer.pagerduty.com/documentation/rest/services/update>
+updateService :: ServiceId -> Request UpdateService s Service
+updateService i =
+    mk UpdateService
+        { _usName'                   = Nothing
+        , _usEscalationPolicyId'     = Nothing
+        , _usDescription'            = Nothing
+        , _usAcknowledgementTimeout' = Nothing
+        , _usAutoResolveTimeout'     = Nothing
+        , _usSeverityFilter'         = Nothing
+        } & meth   .~ PUT
+          & path   .~ services % i
+          & unwrap .~ key "service"
 
 -- | Delete an existing service. Once the service is deleted, it will not be
 -- accessible from the web UI and new incidents won't be able to be created
