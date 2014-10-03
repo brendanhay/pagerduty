@@ -22,7 +22,7 @@
 -- acknowledged or resolved it, amongst a few other things.
 module Network.PagerDuty.REST.LogEntries
     (
-    -- * List Log Entries
+    -- * List Logs
       ListLogs
     , listLogs
     , listUserLogs
@@ -32,7 +32,7 @@ module Network.PagerDuty.REST.LogEntries
     , llUntil
     , llIsOverview
 
-    -- * Get Log Entry
+    -- * Get Log
     , GetLog
     , getLog
     , glTimeZone

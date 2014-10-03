@@ -26,12 +26,12 @@ module Network.PagerDuty.REST.Reports
     -- * Incidents Per Time
     , incidentsPerTime
 
-    -- * Lenses
+    -- * Types
+    , Report
     , rSince
     , rUntil
     , rRollup
 
-    -- * Types
     , Rollup (..)
 
     , AlertReport
