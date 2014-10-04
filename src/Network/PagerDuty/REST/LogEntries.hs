@@ -436,7 +436,7 @@ deriveQuery ''ListLogs
 
 -- | Time zone in which dates in the result will be rendered.
 --
--- Defaults to UTC.
+-- _Default:_ UTC.
 llTimeZone :: Lens' (Request ListLogs s b) TimeZone
 llTimeZone = upd.llTimeZone'._TZ
 
@@ -450,7 +450,7 @@ llUntil = upd.llUntil'.mapping _D
 
 -- | If true, will only return log entries of type trigger, acknowlldge, or resolve.
 --
--- Defaults to false.
+-- _Default:_ false.
 llIsOverview :: Lens' (Request ListLogs s b) Bool
 llIsOverview = upd.llIsOverview'._B
 
@@ -458,7 +458,7 @@ llIsOverview = upd.llIsOverview'._B
 --
 -- @GET \/log_entries@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/log_entries/list>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/log_entries/list>
 listLogs :: Request ListLogs s [LogEntry]
 listLogs =
     mk ListLogs
@@ -474,7 +474,7 @@ listLogs =
 --
 -- @GET \/users\/\:user_id\/log_entries@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/log_entries/user_log_entries>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/log_entries/user_log_entries>
 listUserLogs :: UserId -> Request ListLogs s [LogEntry]
 listUserLogs u = listLogs & path .~ "users" % u % logs
 
@@ -482,7 +482,7 @@ listUserLogs u = listLogs & path .~ "users" % u % logs
 --
 -- @GET \/incidents\/\:incident_id\/log_entries@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/log_entries/incident_log_entries>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/log_entries/incident_log_entries>
 listIncidentLogs :: IncidentKey -> Request ListLogs s [LogEntry]
 listIncidentLogs i = listLogs & path .~ "incidents" % i % logs
 
@@ -494,7 +494,7 @@ deriveQuery ''GetLog
 
 -- | Time zone in which dates in the result will be rendered.
 --
--- Defaults to UTC.
+-- _Default:_ UTC.
 glTimeZone :: Lens' (Request GetLog s b) TimeZone
 glTimeZone = upd.glTimeZone'._TZ
 
@@ -503,7 +503,7 @@ glTimeZone = upd.glTimeZone'._TZ
 --
 -- @GET \/log_entries\/\:id@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/log_entries/show>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/log_entries/show>
 getLog :: LogEntryId -> Request GetLog s LogEntry
 getLog l =
     mk GetLog

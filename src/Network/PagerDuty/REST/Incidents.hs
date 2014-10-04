@@ -53,7 +53,7 @@ incidents = "incidents"
 --
 -- @GET \/incidents@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/incidents/list>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/incidents/list>
 listIncidents = undefined
 
 -- | Get detailed information about an incident. Accepts either an incident id,
@@ -61,7 +61,7 @@ listIncidents = undefined
 --
 -- @GET \/incidents\/\:id@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/incidents/show>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/incidents/show>
 getIncident = undefined
 
 -- | Use this query if you are simply looking for the count of incidents that
@@ -70,33 +70,33 @@ getIncident = undefined
 --
 -- @GET \/incidents\/count@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/incidents/count>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/incidents/count>
 countIncidents = undefined
 
 -- | Acknowledge, resolve, escalate or reassign one or more incidents.
 --
 -- @PUT \/incidents@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/incidents/update>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/incidents/update>
 updateIncidents = undefined
 
 -- | Resolve an incident.
 --
 -- @PUT \/incidents\/\:id\/resolve@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/incidents/resolve>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/incidents/resolve>
 resolveIncident = undefined
 
 -- | Acknowledge an incident.
 --
 -- @PUT \/incidents\/\:id\/acknowledge@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/incidents/acknowledge>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/incidents/acknowledge>
 acknowledgeIncident = undefined
 
 -- | Reassign an incident.
 --
 -- @PUT \/incidents\/\:id\/reassign@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/incidents/reassign>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/incidents/reassign>
 reassignIncident = undefined

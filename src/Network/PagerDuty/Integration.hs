@@ -33,7 +33,7 @@
 -- The same event-based API can also be used to integrate a PagerDuty
 -- service with ticketing systems and various other software tools.
 --
--- See: <http://developer.pagerduty.com/documentation/integration/events>
+-- _See:_ <http://developer.pagerduty.com/documentation/integration/events>
 module Network.PagerDuty.Integration
     (
     -- * Events

@@ -21,7 +21,7 @@
 -- This API allows you to access read-only data regarding what alerts have been
 -- sent to your users.
 --
--- See: <http://developer.pagerduty.com/documentation/rest/alerts>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/alerts>
 module Network.PagerDuty.REST.Alerts
     (
     -- * List Alerts
@@ -88,7 +88,7 @@ deriveQuery ''ListAlerts
 --
 -- @GET \/alerts@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/alerts/list>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/alerts/list>
 listAlerts :: Date -- ^ 'laSince'
            -> Date -- ^ 'laUntil'
            -> Request ListAlerts s [Alert]
@@ -118,6 +118,6 @@ laFilter = upd.laFilter'
 
 -- | Time zone in which dates in the result will be rendered.
 --
--- Defaults to account time zone.
+-- _Default:_ account time zone.
 laTimeZone :: Lens' (Request ListAlerts s b) (Maybe TimeZone)
 laTimeZone = upd.laTimeZone'.mapping _TZ

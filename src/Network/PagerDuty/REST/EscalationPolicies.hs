@@ -15,7 +15,7 @@
 
 -- | This API lets you access and manipulate escalation policies and rules.
 --
--- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/escalation_policies>
 module Network.PagerDuty.REST.EscalationPolicies
     (
     -- * List Policies
@@ -213,7 +213,7 @@ lpQuery = upd.lpQuery'
 --
 -- @GET \/escalation_policies@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/list>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/escalation_policies/list>
 listPolicies :: Request ListPolicies s [Policy]
 listPolicies =
     mk ListPolicies
@@ -237,7 +237,7 @@ cpName = upd.cpName'
 -- | Whether or not to allow this policy to repeat its escalation
 -- rules after the last rule is finished.
 --
--- Defaults to false.
+-- _Default:_ false.
 cpRepeatEnabled :: Lens' (Request CreatePolicy s b) Bool
 cpRepeatEnabled = upd.cpRepeatEnabled'._B
 
@@ -253,7 +253,7 @@ cpEscalationRules = upd.cpEscalationRules'
 --
 -- @POST \/escalation_policies@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/create>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/escalation_policies/create>
 createPolicy :: PolicyId
              -> Text   -- ^ 'creName'
              -> [Rule] -- ^ 'creEscalationRules'
@@ -272,7 +272,7 @@ createPolicy i n rs =
 --
 -- @GET \/escalation_policies\/\:id@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/show>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/escalation_policies/show>
 getPolicy :: PolicyId -> Request Empty s Policy
 getPolicy i = empty & path .~ policies % i & unwrap .~ key "escalation_policy"
 
@@ -306,7 +306,7 @@ upEscalationRules = upd.upEscalationRules'
 --
 -- @PUT \/escalation_policies\/\:id@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/update>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/escalation_policies/update>
 updatePolicy :: PolicyId -> Request UpdatePolicy s Policy
 updatePolicy i =
     mk UpdatePolicy
@@ -323,6 +323,6 @@ updatePolicy i =
 --
 -- @DELETE \/escalation_policies\/\:id@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/escalation_policies/delete>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/escalation_policies/delete>
 deletePolicy :: PolicyId -> Request Empty s Empty
 deletePolicy i = empty & meth .~ DELETE & path .~ policies % i

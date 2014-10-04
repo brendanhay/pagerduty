@@ -24,7 +24,7 @@
 -- When a service is shown inlined in other resources, a deleted service will
 -- have its @html_url@ attribute set to 'Nothing'.
 --
--- See: <http://developer.pagerduty.com/documentation/rest/services>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/services>
 module Network.PagerDuty.REST.Services
     (
     -- * List Services
@@ -231,7 +231,7 @@ makeLens "_efsId" ''EmailFilters
 -- the email trigger by subject, filter it if the email subject matches the
 -- given regex, or filter if it doesn't match the given regex.
 --
--- Defaults to always.
+-- _Default:_ always.
 makeLens "_efsSubjectMode" ''EmailFilters
 
 -- | The regex to be used when subject_mode is match or no-match.
@@ -242,7 +242,7 @@ makeLens "_efsSubjectRegex" ''EmailFilters
 -- the email trigger by body, filter it if the body email matches the given regex,
 -- or filter if it doesn't match the given regex.
 --
--- Defaults to always.
+-- _Default:_ always.
 makeLens "_efsBodyMode" ''EmailFilters
 
 -- | The regex to be used when body_mode is match or no-match.
@@ -253,7 +253,7 @@ makeLens "_efsBodyRegex" ''EmailFilters
 -- the email trigger by its from address, filter it if the email from address
 -- matches the given regex, or filter if it doesn't match the given regex.
 --
--- Defaults to always.
+-- _Default:_ always.
 makeLens "_efsFromEmailMode" ''EmailFilters
 
 -- | The regex to be used when from_email_mode is match or no-match.
@@ -370,7 +370,7 @@ deriveQuery ''ListServices
 
 -- | Time zone in which dates in the result will be rendered.
 --
--- Defaults to account default time zone.
+-- _Default:_ account default time zone.
 lsTimeZone :: Lens' (Request ListServices s r) (Maybe TimeZone)
 lsTimeZone = upd.lsTimeZone'.mapping _TZ
 
@@ -378,7 +378,7 @@ lsTimeZone = upd.lsTimeZone'.mapping _TZ
 --
 -- @GET \/services@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/services/list>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/services/list>
 listServices :: Request ListServices s [Service]
 listServices =
     mk ListServices
@@ -424,13 +424,13 @@ csEscalationPolicyId = upd.csEscalationPolicyId'
 -- | The duration in seconds before an incidents acknowledged in this service
 -- become triggered again.
 --
--- Defaults to 30 minutes.
+-- _Default:_ 30 minutes.
 csAcknowledgementTimeout :: Lens' (Request CreateService s r) (Maybe Int)
 csAcknowledgementTimeout = upd.csAcknowledgementTimeout'
 
 -- | The duration in seconds before a triggered incident auto-resolves itself.
 --
--- Defaults to 4 hours.
+-- _Default:_ 4 hours.
 csAutoResolveTimeout :: Lens' (Request CreateService s r) (Maybe Int)
 csAutoResolveTimeout = upd.csAutoResolveTimeout'
 
@@ -442,7 +442,7 @@ csSeverityFilter = upd.csSeverityFilter'
 --
 -- @POST \/services@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/services/create>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/services/create>
 createService :: Text
               -> PolicyId
               -> ServiceType
@@ -464,7 +464,7 @@ createService n p t =
 --
 -- @GET services\/\:id@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/services/show>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/services/show>
 getService :: ServiceId -> Request Empty s Service
 getService i = empty
     & path   .~ services % i
@@ -497,13 +497,13 @@ usEscalationPolicyId = upd.usEscalationPolicyId'
 -- | The duration in seconds before an incidents acknowledged in this service
 -- become triggered again.
 --
--- Defaults to 30 minutes.
+-- _Default:_ 30 minutes.
 usAcknowledgementTimeout :: Lens' (Request UpdateService s r) (Maybe Int)
 usAcknowledgementTimeout = upd.usAcknowledgementTimeout'
 
 -- | The duration in seconds before a triggered incident auto-resolves itself.
 --
--- Defaults to 4 hours.
+-- _Default:_ 4 hours.
 usAutoResolveTimeout :: Lens' (Request UpdateService s r) (Maybe Int)
 usAutoResolveTimeout = upd.usAutoResolveTimeout'
 
@@ -515,7 +515,7 @@ usSeverityFilter = upd.usSeverityFilter'
 --
 -- @PUT services\/\:id@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/services/update>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/services/update>
 updateService :: ServiceId -> Request UpdateService s Service
 updateService i =
     mk UpdateService
@@ -535,7 +535,7 @@ updateService i =
 --
 -- @DELETE \/services/:id@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/services/delete>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/services/delete>
 deleteService :: ServiceId -> Request Empty s Empty
 deleteService i = empty & meth .~ DELETE & path .~ services % i
 
@@ -543,7 +543,7 @@ deleteService i = empty & meth .~ DELETE & path .~ services % i
 --
 -- @PUT services\/\:id\/enable@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/services/enable>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/services/enable>
 enableService :: RequesterId -> ServiceId -> Request Empty s Empty
 enableService r i = auth (enableServiceBasic i) & query .~ [("requester_id", r)]
 
@@ -557,7 +557,7 @@ enableServiceBasic i = empty & meth .~ PUT & path .~ services % i % "enable"
 --
 -- @PUT services\/\:id\/disable@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/services/disable>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/services/disable>
 disableService :: RequesterId -> ServiceId -> Request Empty s Empty
 disableService r i = auth (disableServiceBasic i) & query .~ [("requester_id", r)]
 
@@ -573,6 +573,6 @@ disableServiceBasic i = empty & meth .~ PUT & path .~ services % i % "disable"
 --
 -- @POST services\/\:id\/regenerate_key@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/services/regenerate_key>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/services/regenerate_key>
 regenerateKey :: ServiceId -> Request Empty s Service
 regenerateKey i = empty & meth .~ POST & path .~ services % i % "regenerate_key"

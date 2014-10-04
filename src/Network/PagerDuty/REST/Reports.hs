@@ -96,7 +96,7 @@ rUntil = upd.rUntil'._D
 
 -- | Specifies the bucket duration for each summation.
 --
--- Defaults to monthly.
+-- _Default:_ monthly.
 --
 -- Example: A time window of two years (based on since and until) with a
 -- rollup of monthly will result in 24 sets of data points being returned
@@ -142,7 +142,7 @@ deriveRecord ''AlertTotals
 --
 -- @GET \/reports\/alerts_per_time@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/reports/alerts_per_time>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/reports/alerts_per_time>
 alertsPerTime :: UTCTime -- ^ 'rSince'
               -> UTCTime -- ^ 'rUntil'
               -> Request Report s AlertTotals
@@ -174,7 +174,7 @@ makeLens "_irNumberOfIncidents" ''IncidentReport
 --
 -- @GET \/reports\/incidents_per_time@
 --
--- See: <http://developer.pagerduty.com/documentation/rest/reports/incidents_per_time>
+-- _See:_ <http://developer.pagerduty.com/documentation/rest/reports/incidents_per_time>
 incidentsPerTime :: UTCTime -- ^ 'rSince'
                  -> UTCTime -- ^ 'rUntil'
                  -> Request Report s [IncidentReport]

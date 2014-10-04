@@ -378,7 +378,7 @@ instance QueryValueLike (Id a) where
 type AlertId       = Id "alert"
 type EmailFilterId = Id "email-filter"
 type LogEntryId    = Id "log-entry"
-type PolicyId      = Id "policy"
+type PolicyId      = Id "escalation-policy"
 type RequesterId   = Id "requester"
 type RuleId        = Id "rule"
 type ScheduleId    = Id "schedule"
@@ -412,4 +412,3 @@ instance ToByteString Address where
     builder (Address a) = builder a
 
 instance ToQuery Address
-
