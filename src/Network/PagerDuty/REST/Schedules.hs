@@ -113,7 +113,7 @@ import Data.Aeson
 import Data.ByteString.Builder      (Builder)
 import Data.Text                    (Text)
 import Data.Time
-import Network.HTTP.Types.QueryLike
+import Network.HTTP.Types
 import Network.PagerDuty.REST.Users (User)
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
@@ -489,7 +489,8 @@ createSchedule n z ls =
         , _csOverflow'       = F
         , _csTimeZone'       = TZ z
         , _csScheduleLayers' = ls
-        } & path .~ schedules
+        } & meth .~ POST
+          & path .~ schedules
 
 data UpdateSchedule = UpdateSchedule
     { _usOverflow'       :: !Bool'
@@ -544,7 +545,8 @@ updateSchedule s z ls =
         { _usOverflow'       = F
         , _usTimeZone'       = TZ z
         , _usScheduleLayers' = ls
-        } & path .~ schedules % s
+        } & meth .~ PUT
+          & path .~ schedules % s
 
 data PreviewSchedule = PreviewSchedule
     { _psSince'          :: Maybe Date
@@ -623,7 +625,8 @@ previewSchedule n z ls =
         , _psOverflow'       = F
         , _psTimeZone'       = TZ z
         , _psScheduleLayers' = ls
-        } & path .~ schedules % "preview"
+        } & meth .~ POST
+          & path .~ schedules % "preview"
 
 -- | Delete an on-call schedule.
 --
@@ -631,4 +634,4 @@ previewSchedule n z ls =
 --
 -- _See:_ <http://developer.pagerduty.com/documentation/rest/schedules/delete>
 deleteSchedule :: ScheduleId -> Request Empty s Empty
-deleteSchedule s = empty & path .~ schedules % s
+deleteSchedule s = empty & meth .~ DELETE & path .~ schedules % s

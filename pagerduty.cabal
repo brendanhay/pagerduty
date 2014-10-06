@@ -40,7 +40,7 @@ library
       -- , Network.PagerDuty.REST.MaintenanceWindows
       -- , Network.PagerDuty.REST.Reports
       , Network.PagerDuty.REST.Schedules
-      -- , Network.PagerDuty.REST.Schedules.Overrides
+      , Network.PagerDuty.REST.Schedules.Overrides
       -- , Network.PagerDuty.REST.Services
       -- , Network.PagerDuty.REST.Users
       -- , Network.PagerDuty.REST.Webhooks

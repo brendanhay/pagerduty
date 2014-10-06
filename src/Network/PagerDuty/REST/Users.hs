@@ -18,12 +18,9 @@ module Network.PagerDuty.REST.Users
     (
 
     -- * Types
-      User
-    , uId
-    , uName
-    , uEmail
-    , uTimeZone
-    , uColor
+      HasUserInfo (..)
+    , UserInfo
+    , User
     , uRole
     , uAvatarUrl
     , uUrl
@@ -41,31 +38,51 @@ import Network.PagerDuty.Types
 users :: Path
 users = "users"
 
-data User = User
-    { _uId             :: UserId
-    , _uName           :: Text
-    , _uEmail          :: Address
-    , _uTimeZone       :: TZ
-    , _uColor          :: Text
-    , _uRole           :: Text
-    , _uAvatarUrl      :: Text
-    , _uUrl            :: Text
-    , _uInvitationSent :: Bool'
+data UserInfo = UserInfo
+    { _uId'       :: UserId
+    , _uName'     :: Text
+    , _uEmail'    :: Address
+    , _uColor'    :: Text
+    , _uTimeZone' :: Maybe TZ
     } deriving (Eq, Show)
 
-deriveJSON ''User
+deriveRecord ''UserInfo
 
-makeLens "_uId"        ''User
-makeLens "_uName"      ''User
-makeLens "_uEmail"     ''User
-makeLens "_uColor"     ''User
-makeLens "_uRole"      ''User
-makeLens "_uAvatarUrl" ''User
-makeLens "_uUrl"       ''User
+class HasUserInfo a where
+    userInfo  :: Lens' a UserInfo
 
-uTimeZone :: Lens' User TimeZone
-uTimeZone = lens _uTimeZone (\u x -> u { _uTimeZone = x }) . _TZ
+    -- | The id of the user.
+    uId       :: Lens' a UserId
+    -- | The name of the user.
+    uName     :: Lens' a Text
+    -- | The user's email address.
+    uEmail    :: Lens' a Address
+    -- | The color used to represent the user in schedules.
+    uColor    :: Lens' a Text
+    -- | The user's personal time zone.
+    uTimeZone :: Lens' a (Maybe TimeZone)
+
+    uId       = userInfo.uId'
+    uName     = userInfo.uName'
+    uEmail    = userInfo.uEmail'
+    uColor    = userInfo.uColor'
+    uTimeZone = userInfo.uTimeZone'.mapping _TZ
+
+instance HasUserInfo UserInfo where
+    userInfo = id
+
+data User = User
+    { _uInfo'           :: UserInfo
+    , _uRole            :: Text
+    , _uAvatarUrl       :: Text
+    , _uUrl             :: Text
+    , _uInvitationSent' :: !Bool'
+    } deriving (Eq, Show)
+
+deriveRecord ''User
+
+instance HasUserInfo User where
+    userInfo = uInfo'
 
 uInvitationSent :: Lens' User Bool
-uInvitationSent =
-    lens _uInvitationSent (\u x -> u { _uInvitationSent = x }) . _B
+uInvitationSent = uInvitationSent'._B

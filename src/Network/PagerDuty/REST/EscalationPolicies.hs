@@ -84,6 +84,7 @@ import qualified Data.Text                       as Text
 import           Data.Time
 import           Network.HTTP.Types
 import           Network.PagerDuty.REST.Services (Service)
+import           Network.PagerDuty.REST.Users
 import           Network.PagerDuty.TH
 import           Network.PagerDuty.Types
 
@@ -103,35 +104,9 @@ makeLens "_stId" ''ScheduleTarget
 -- | The name of the target.
 makeLens "_stName" ''ScheduleTarget
 
-data UserTarget = UserTarget
-    { _utId       :: UserId
-    , _utName     :: Text
-    , _utEmail    :: Address
-    , _utTimeZone :: TZ
-    , _utColor    :: Text
-    } deriving (Eq, Show)
-
-deriveJSON ''UserTarget
-
--- | The id of the user.
-makeLens "_utId" ''UserTarget
-
--- | The name of the user.
-makeLens "_utName" ''UserTarget
-
--- | The user's email address.
-makeLens "_utEmail" ''UserTarget
-
--- | The user's personal time zone.
-utTimeZone :: Lens' UserTarget TimeZone
-utTimeZone = lens _utTimeZone (\t x -> t { _utTimeZone = x }) . _TZ
-
--- | The color used to represent the user in schedules.
-makeLens "_utColor" ''UserTarget
-
 data Target
     = TSchedule ScheduleTarget
-    | TUser     UserTarget
+    | TUser     UserInfo
       deriving (Eq, Show)
 
 makePrisms ''Target

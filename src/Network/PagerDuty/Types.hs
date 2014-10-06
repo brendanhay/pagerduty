@@ -382,6 +382,7 @@ instance QueryValueLike (Id a) where
 type AlertId       = Id "alert"
 type EmailFilterId = Id "email-filter"
 type LogEntryId    = Id "log-entry"
+type OverrideId    = Id "schedule-override"
 type PolicyId      = Id "escalation-policy"
 type RequesterId   = Id "requester"
 type RuleId        = Id "rule"
