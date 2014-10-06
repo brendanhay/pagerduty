@@ -81,7 +81,7 @@ data ListAlerts = ListAlerts
 
 instance Paginate ListAlerts
 
-deriveQuery ''ListAlerts
+queryRequest ''ListAlerts
 
 -- | List existing alerts for a given time range, optionally filtered by type
 -- (SMS, Email, Phone, or Push).

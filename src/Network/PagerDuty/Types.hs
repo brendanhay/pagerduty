@@ -5,6 +5,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE KindSignatures             #-}
 {-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE PatternSynonyms            #-}
 {-# LANGUAGE RankNTypes                 #-}
 {-# LANGUAGE StandaloneDeriving         #-}
 {-# LANGUAGE TemplateHaskell            #-}
@@ -96,6 +97,9 @@ instance ToByteString Bool' where
     builder (B False) = "false"
 
 instance ToQuery Bool'
+
+pattern T = B True
+pattern F = B False
 
 newtype Date = D UTCTime
     deriving (Eq, Ord, Show)

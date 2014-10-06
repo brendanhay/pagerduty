@@ -432,7 +432,7 @@ data ListLogs = ListLogs
 
 instance Paginate ListLogs
 
-deriveQuery ''ListLogs
+queryRequest ''ListLogs
 
 -- | Time zone in which dates in the result will be rendered.
 --
@@ -465,7 +465,7 @@ listLogs =
         { _llTimeZone'   = def
         , _llSince'      = Nothing
         , _llUntil'      = Nothing
-        , _llIsOverview' = B False
+        , _llIsOverview' = F
         } & path   .~ logs
           & query  .~ includes
           & unwrap .~ key "log_entries"
@@ -490,7 +490,7 @@ newtype GetLog = GetLog
     { _glTimeZone' :: TZ
     } deriving (Eq, Show)
 
-deriveQuery ''GetLog
+queryRequest ''GetLog
 
 -- | Time zone in which dates in the result will be rendered.
 --

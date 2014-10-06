@@ -82,7 +82,7 @@ data Report = Report
     , _rRollup' :: !Rollup
     } deriving (Eq, Show)
 
-deriveQuery ''Report
+queryRequest ''Report
 
 -- | Start of the date range over which you want to search. The time element
 -- is optional.

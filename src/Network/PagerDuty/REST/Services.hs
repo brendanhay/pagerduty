@@ -366,7 +366,7 @@ newtype ListServices = ListServices
 
 instance Paginate ListServices
 
-deriveQuery ''ListServices
+queryRequest ''ListServices
 
 -- | Time zone in which dates in the result will be rendered.
 --
@@ -398,7 +398,7 @@ data CreateService = CreateService
     , _csSeverityFilter'         :: Maybe SeverityFilter
     } deriving (Eq, Show)
 
-deriveBody ''CreateService
+jsonRequest ''CreateService
 
 -- | The name of the service.
 csName :: Lens' (Request CreateService s r) Text
@@ -480,7 +480,7 @@ data UpdateService = UpdateService
     , _usSeverityFilter'         :: Maybe SeverityFilter
     } deriving (Eq, Show)
 
-deriveBody ''UpdateService
+jsonRequest ''UpdateService
 
 -- | The name of the service.
 usName :: Lens' (Request UpdateService s r) (Maybe Text)

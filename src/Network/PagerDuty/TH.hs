@@ -12,12 +12,14 @@
 
 module Network.PagerDuty.TH
     (
+    -- * Requests
+      jsonRequest
+    , queryRequest
+
     -- * Compound expressions
-      deriveNullary
+    , deriveNullary
     , deriveNullaryWith
     , deriveRecord
-    , deriveQuery
-    , deriveBody
 
     -- * JSON
     , deriveJSON
@@ -25,6 +27,7 @@ module Network.PagerDuty.TH
 
     -- * Lenses
     , makeLens
+    , makeFields
 
     -- * Re-exported generics
     , deriveGeneric
@@ -47,6 +50,21 @@ import           Network.HTTP.Types.QueryLike
 import           Network.PagerDuty.Query
 import           Network.PagerDuty.Options
 
+jsonRequest :: Name -> Q [Dec]
+jsonRequest n = concat <$> sequence
+    [ makeLenses n
+    , deriveJSON n
+    , [d|instance QueryLike $(conT n) where toQuery = const []|]
+    ]
+
+queryRequest :: Name -> Q [Dec]
+queryRequest n = concat <$> sequence
+    [ deriveGeneric n
+    , makeLenses n
+    , [d|instance ToJSON $(conT n) where toJSON = const (toJSON (object []))|]
+    , [d|instance QueryLike $(conT n) where toQuery = gquery|]
+    ]
+
 deriveNullary :: Name -> Q [Dec]
 deriveNullary = deriveNullaryWith underscored
 
@@ -60,21 +78,6 @@ deriveRecord :: Name -> Q [Dec]
 deriveRecord n = concat <$> sequence
     [ deriveJSON n
     , makeLenses n
-    ]
-
-deriveBody :: Name -> Q [Dec]
-deriveBody n = concat <$> sequence
-    [ makeLenses n
-    , deriveJSON n
-    , [d|instance QueryLike $(conT n) where toQuery = const []|]
-    ]
-
-deriveQuery :: Name -> Q [Dec]
-deriveQuery n = concat <$> sequence
-    [ deriveGeneric n
-    , makeLenses n
-    , [d|instance ToJSON $(conT n) where toJSON = const (toJSON (object []))|]
-    , [d|instance QueryLike $(conT n) where toQuery = gquery|]
     ]
 
 deriveJSON :: Name -> Q [Dec]

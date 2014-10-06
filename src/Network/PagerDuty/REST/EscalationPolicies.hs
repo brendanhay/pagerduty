@@ -202,7 +202,7 @@ newtype ListPolicies = ListPolicies
 
 instance Paginate ListPolicies
 
-deriveQuery ''ListPolicies
+queryRequest ''ListPolicies
 
 -- | Filters the result, showing only the escalation policies
 -- whose names match the query.
@@ -228,7 +228,7 @@ data CreatePolicy = CreatePolicy
     , _cpEscalationRules' :: [Rule] -- ^ Should be List1
     } deriving (Eq, Show)
 
-deriveBody ''CreatePolicy
+jsonRequest ''CreatePolicy
 
 -- | The name of the escalation policy.
 cpName :: Lens' (Request CreatePolicy s b) Text
@@ -261,7 +261,7 @@ createPolicy :: PolicyId
 createPolicy i n rs =
     mk CreatePolicy
         { _cpName'            = n
-        , _cpRepeatEnabled'   = B False
+        , _cpRepeatEnabled'   = F
         , _cpNumLoops'        = Nothing
         , _cpEscalationRules' = rs
         } & meth   .~ PUT
@@ -283,7 +283,7 @@ data UpdatePolicy = UpdatePolicy
     , _upEscalationRules' :: [Rule]
     } deriving (Eq, Show)
 
-deriveBody ''UpdatePolicy
+jsonRequest ''UpdatePolicy
 
 -- | The name of the escalation policy.
 upName :: Lens' (Request UpdatePolicy s b) (Maybe Text)

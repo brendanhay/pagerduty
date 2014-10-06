@@ -109,7 +109,7 @@ data ListWindows = ListWindows
     , _lwFilter'     :: Maybe Text
     }
 
-deriveQuery ''ListWindows
+queryRequest ''ListWindows
 
 -- | Filters the results, showing only the maintenance windows whose
 -- descriptions contain the query.
@@ -171,7 +171,7 @@ data CreateWindow = CreateWindow
     , _cwMaintenanceWindow' :: CreateWindow'
     } deriving (Eq, Show)
 
-deriveBody ''CreateWindow
+jsonRequest ''CreateWindow
 
 -- | This maintenance window's start time. This is when the services will stop
 -- creating incidents. If this date is in the past, it will be updated to be the
@@ -240,7 +240,7 @@ data UpdateWindow = UpdateWindow
     , _uwServiceIds'  :: Maybe [ServiceId]
     } deriving (Eq, Show)
 
-deriveBody ''UpdateWindow
+jsonRequest ''UpdateWindow
 
 -- | The maintenance window's start time. Can only be updated on future
 -- maintenance windows. If the start_time is set to a date in the past, it will be
