@@ -42,6 +42,14 @@ module Network.PagerDuty.REST.Incidents
 
     ) where
 
+import Control.Lens
+import Data.Monoid
+import Data.Text                    (Text)
+import Data.Time
+import Network.HTTP.Types
+import Network.PagerDuty.TH
+import Network.PagerDuty.Types
+
 incidents :: Path
 incidents = "incidents"
 

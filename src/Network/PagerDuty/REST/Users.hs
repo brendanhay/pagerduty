@@ -86,3 +86,50 @@ instance HasUserInfo User where
 
 uInvitationSent :: Lens' User Bool
 uInvitationSent = uInvitationSent'._B
+
+-- | List users of your PagerDuty account, optionally filtered by a search query.
+--
+-- @GET \/users@
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/users/list>
+listUsers = undefined
+
+-- | Get information about an existing user.
+--
+-- @GET \/users\/\:id@
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/users/show>
+getUser = undefined
+
+-- | Get a user object with that user's current on-call status. If the on-call
+-- object is an empty array, the user is never on-call.
+--
+-- If the start and end of an on-call object are null, then the user is always
+-- on-call for an escalation policy level.
+--
+-- @GET \/users\/\:id\/on_call@
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/users/show_on_call>
+getUserOnCall = undefined
+
+-- | Create a new user for your account. An invite email will be sent asking
+-- the user to choose a password.
+--
+-- @POST \/users@
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/users/create>
+createUser = undefined
+
+-- | Update an existing user.
+--
+-- @PUT \/users\/\:id@
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/users/update>
+updateUser = undefined
+
+-- | Remove an existing user.
+--
+-- @DELETE \/users\/\:id@
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/users/delete>
+deleteUser = undefined
