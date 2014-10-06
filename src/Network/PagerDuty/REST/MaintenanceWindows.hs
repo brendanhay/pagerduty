@@ -148,7 +148,7 @@ deriveRecord ''ListWindowsResponse
 --
 -- @GET \/maintenance_windows@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/maintenance_windows/list>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/maintenance_windows/list>
 listWindows :: Request ListWindows s ListWindowsResponse
 listWindows =
     mk ListWindows
@@ -198,7 +198,7 @@ cwServiceIds = upd.cwMaintenanceWindow'.cwServiceIds'
 --
 -- @POST \/maintenance_windows@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/maintenance_windows/create>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/maintenance_windows/create>
 createWindow :: RequesterId
              -> UTCTime     -- ^ 'cwStartTime'
              -> UTCTime     -- ^ 'cwEndTime'
@@ -229,7 +229,7 @@ createWindowBasic s e xs =
 --
 -- @GET \/maintenance_windows\/\:id@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/maintenance_windows/show>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/maintenance_windows/show>
 getWindow :: WindowId -> Request Empty s MaintenanceWindow
 getWindow w = empty & path .~ windows % w
 
@@ -267,7 +267,7 @@ uwServiceIds = upd.uwServiceIds'
 --
 -- @PUT \/maintenance_windows\/\:id@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/maintenance_windows/update>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/maintenance_windows/update>
 updateWindow :: WindowId -> Request UpdateWindow s MaintenanceWindow
 updateWindow w =
     mk UpdateWindow
@@ -282,6 +282,6 @@ updateWindow w =
 --
 -- @DELETE \/maintenance_windows\/\:id@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/maintenance_windows/delete>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/maintenance_windows/delete>
 deleteWindow :: WindowId -> Request Empty s Empty
 deleteWindow w = empty & meth .~ DELETE & path .~ windows % w

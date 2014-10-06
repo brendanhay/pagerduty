@@ -95,14 +95,14 @@ lsUntil = upd.lsUntil'._D
 -- The result will onlyinclude the id the override if this parameter is present.
 -- Only future overrides are editable.
 --
--- _Default:_ 'False.'
+-- /Default:/ 'False.'
 lsEditable :: Lens' (Request ListOverrides s b) Bool
 lsEditable = upd.lsEditable'._B
 
 -- | Any on-call schedule entries that pass the date range bounds will be
 -- truncated at the bounds, unless @lsEditable .~ True@ is specified.
 --
--- _Default:_ 'False.'
+-- /Default:/ 'False.'
 lsOverflow :: Lens' (Request ListOverrides s b) Bool
 lsOverflow = upd.lsOverflow'._B
 
@@ -110,7 +110,7 @@ lsOverflow = upd.lsOverflow'._B
 --
 -- @GET \/schedules\/\:schedule_id\/overrides@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/schedules/overrides/list>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/schedules/overrides/list>
 listOverrides :: ScheduleId
               -> Date -- ^ 'lsSince'
               -> Date -- ^ 'lsUntil'
@@ -150,11 +150,11 @@ coUserId = upd.coUserId'
 -- If no time zone information is present in the since and until parameters, the
 -- schedule's time zone will be used.
 --
--- _Note:_ You cannot create overrides in the past.
+-- /Note:/ You cannot create overrides in the past.
 --
 -- @POST \/schedules\/\:schedule_id\/overrides@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/schedules/overrides/create>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/schedules/overrides/create>
 createOverride :: ScheduleId
                -> UserId -- ^ 'coUserId'
                -> Date   -- ^ 'coStart'
@@ -178,7 +178,7 @@ createOverride i u s e =
 --
 -- @DELETE \/schedules\/\:schedule_id\/overrides\/\:id@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/schedules/overrides/delete>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/schedules/overrides/delete>
 
 -- FIXME: How to parse whether truncated or deleted?
 deleteOverride :: ScheduleId -> OverrideId -> Request Empty s Empty

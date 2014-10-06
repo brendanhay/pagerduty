@@ -289,7 +289,7 @@ instance Paginate ListSchedules
 --
 -- @GET \/schedules@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/schedules/list>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/schedules/list>
 listSchedules :: RequesterId -> Request ListSchedules s [ScheduleInfo]
 listSchedules r = auth listSchedulesBasic & query .~ [("requester_id", r)]
 
@@ -321,7 +321,7 @@ gsUntil = upd.gsUntil'.mapping _D
 
 -- | Time zone in which dates in the result will be rendered.
 --
--- _Default:_ account time zone.
+-- /Default:/ account time zone.
 gsTimeZone :: Lens' (Request GetSchedule s b) (Maybe TimeZone)
 gsTimeZone = upd.gsTimeZone'.mapping _TZ
 
@@ -330,7 +330,7 @@ gsTimeZone = upd.gsTimeZone'.mapping _TZ
 --
 -- @GET \/schedules\/\:id@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/schedules/show>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/schedules/show>
 getSchedule :: Request GetSchedule s Schedule
 getSchedule =
     mk GetSchedule
@@ -359,7 +359,7 @@ gsuUntil = upd.gsuUntil'.mapping _D
 --
 -- @GET \/schedules\/\:id\/users@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/schedules/users>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/schedules/users>
 getScheduleUsers :: UserId -> Request GetScheduleUsers s [User]
 getScheduleUsers u =
     mk GetScheduleUsers
@@ -417,7 +417,7 @@ gseUserId = upd.gseUserId'
 --
 -- @GET \/schedules\/\:id\/entries@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/schedules/entries>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/schedules/entries>
 getScheduleEntries :: UserId
                    -> Date -- ^ 'gseSince'
                    -> Date -- ^ 'gseUntil'
@@ -478,7 +478,7 @@ csScheduleLayers = upd.csScheduleLayers'
 --
 -- @POST \/schedules@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/schedules/create>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/schedules/create>
 createSchedule :: Text            -- ^ 'csName'
                -> TimeZone        -- ^ 'csTimeZone'
                -> [ScheduleLayer] -- ^ 'csScheduleLayers'
@@ -529,13 +529,13 @@ usScheduleLayers = upd.usScheduleLayers'
 
 -- | Update an existing on-call schedule.
 --
--- _Note:_ You cannot delete schedule layers. You must include all layers in
+-- /Note:/ You cannot delete schedule layers. You must include all layers in
 -- your update request. To delete a layer, set the end parameter to schedule its
 -- termination.
 --
 -- @PUT \/schedules\/\:id@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/schedules/update>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/schedules/update>
 updateSchedule :: ScheduleId
                -> TimeZone        -- ^ 'usTimeZone'
                -> [ScheduleLayer] -- ^ 'usScheduleLayers'
@@ -612,7 +612,7 @@ psScheduleLayers = upd.psScheduleLayers'
 --
 -- @POST \/schedules\/preview@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/schedules/preview>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/schedules/preview>
 previewSchedule :: Text            -- ^ 'psName'
                 -> TimeZone        -- ^ 'psTimeZone'
                 -> [ScheduleLayer] -- ^ 'psScheduleLayers'
@@ -632,6 +632,6 @@ previewSchedule n z ls =
 --
 -- @DELETE \/schedules\/\:id@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/schedules/delete>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/schedules/delete>
 deleteSchedule :: ScheduleId -> Request Empty s Empty
 deleteSchedule s = empty & meth .~ DELETE & path .~ schedules % s

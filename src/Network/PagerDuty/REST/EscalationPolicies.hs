@@ -15,7 +15,7 @@
 
 -- | This API lets you access and manipulate escalation policies and rules.
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/escalation_policies>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies>
 module Network.PagerDuty.REST.EscalationPolicies
     (
     -- * List Policies
@@ -46,20 +46,14 @@ module Network.PagerDuty.REST.EscalationPolicies
     , deletePolicy
 
     -- * Types
-    , Target (..)
+    , HasUserInfo (..)
+    , Target      (..)
     , _TSchedule
     , _TUser
 
     , ScheduleTarget
     , stId
     , stName
-
-    , UserTarget
-    , utId
-    , utName
-    , utEmail
-    , utTimeZone
-    , utColor
 
     , Rule
     , rId
@@ -81,7 +75,6 @@ import           Data.Aeson.Lens
 import qualified Data.HashMap.Strict             as Map
 import           Data.Text                       (Text)
 import qualified Data.Text                       as Text
-import           Data.Time
 import           Network.HTTP.Types
 import           Network.PagerDuty.REST.Services (Service)
 import           Network.PagerDuty.REST.Users
@@ -188,7 +181,7 @@ lpQuery = upd.lpQuery'
 --
 -- @GET \/escalation_policies@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/escalation_policies/list>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/list>
 listPolicies :: Request ListPolicies s [Policy]
 listPolicies =
     mk ListPolicies
@@ -212,7 +205,7 @@ cpName = upd.cpName'
 -- | Whether or not to allow this policy to repeat its escalation
 -- rules after the last rule is finished.
 --
--- _Default:_ false.
+-- /Default:/ false.
 cpRepeatEnabled :: Lens' (Request CreatePolicy s b) Bool
 cpRepeatEnabled = upd.cpRepeatEnabled'._B
 
@@ -228,7 +221,7 @@ cpEscalationRules = upd.cpEscalationRules'
 --
 -- @POST \/escalation_policies@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/escalation_policies/create>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/create>
 createPolicy :: PolicyId
              -> Text   -- ^ 'creName'
              -> [Rule] -- ^ 'creEscalationRules'
@@ -247,7 +240,7 @@ createPolicy i n rs =
 --
 -- @GET \/escalation_policies\/\:id@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/escalation_policies/show>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/show>
 getPolicy :: PolicyId -> Request Empty s Policy
 getPolicy i = empty & path .~ policies % i & unwrap .~ key "escalation_policy"
 
@@ -281,7 +274,7 @@ upEscalationRules = upd.upEscalationRules'
 --
 -- @PUT \/escalation_policies\/\:id@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/escalation_policies/update>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/update>
 updatePolicy :: PolicyId -> Request UpdatePolicy s Policy
 updatePolicy i =
     mk UpdatePolicy
@@ -298,6 +291,6 @@ updatePolicy i =
 --
 -- @DELETE \/escalation_policies\/\:id@
 --
--- _See:_ <http://developer.pagerduty.com/documentation/rest/escalation_policies/delete>
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/delete>
 deletePolicy :: PolicyId -> Request Empty s Empty
 deletePolicy i = empty & meth .~ DELETE & path .~ policies % i

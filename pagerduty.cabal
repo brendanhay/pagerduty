@@ -12,9 +12,10 @@ build-type:            Simple
 cabal-version:         >= 1.10
 
 description:
-    Simple API client that wraps the PagerDuty REST APIs documented here:
+    Client library for the the PagerDuty REST APIs documented here:
     .
-    * Integration API - <http://developer.pagerduty.com/documentation/integration/events>
+    * Integration API - <http://developer.pagerduty.com/documentation/integration>
+    * REST API - <http://developer.pagerduty.com/documentation/rest>
 
 extra-source-files:
     README.md
@@ -35,6 +36,8 @@ library
       , Network.PagerDuty.REST
       , Network.PagerDuty.REST.Alerts
       , Network.PagerDuty.REST.EscalationPolicies
+--     , Network.PagerDuty.REST.EscalationPolicies.EscalationRules
+      -- , Network.PagerDuty.REST.EscalationPolicies.OnCall
 --      , Network.PagerDuty.REST.Incidents
       , Network.PagerDuty.REST.LogEntries
       , Network.PagerDuty.REST.MaintenanceWindows
@@ -42,7 +45,11 @@ library
       , Network.PagerDuty.REST.Schedules
       , Network.PagerDuty.REST.Schedules.Overrides
       , Network.PagerDuty.REST.Services
+      -- , Network.PagerDuty.REST.Services.EmailFilters
 --      , Network.PagerDuty.REST.Users
+--      , Network.PagerDuty.REST.Users.ContactMethods
+--      , Network.PagerDuty.REST.Users.NotificationRules
+--      , Network.PagerDuty.REST.Users.OnCall
 --      , Network.PagerDuty.REST.Webhooks
 
     other-modules:
