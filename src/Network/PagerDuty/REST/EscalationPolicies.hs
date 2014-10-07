@@ -23,6 +23,9 @@ module Network.PagerDuty.REST.EscalationPolicies
     , listPolicies
     , lpQuery
 
+    -- * List On Call Policies
+    , listOnCallPolicies
+
     -- * Create Policy
     , CreatePolicy
     , createPolicy
@@ -122,6 +125,17 @@ listPolicies =
         { _lpQuery' = Nothing
         } & path   .~ policies
           & unwrap .~ key "escalation_policies"
+
+-- | List all the existing escalation policies with currently on-call users.
+--
+-- If the start and end of an on-call object are null, then the user is always
+-- on-call for an escalation policy level.
+--
+-- @GET \/escalation_policies\/on_call@
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/on_call>
+listOnCallPolicies :: Request ListPolicies s [Policy]
+listOnCallPolicies = listPolicies & path .~ policies % "on_call"
 
 data CreatePolicy = CreatePolicy
     { _cpName'            :: Text

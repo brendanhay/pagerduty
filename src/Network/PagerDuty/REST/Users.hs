@@ -28,6 +28,9 @@ module Network.PagerDuty.REST.Users
     , listUsers
     , luQuery
 
+    -- * List On Call Users
+    , listOnCallUsers
+
     -- * Create User
     , CreateUser
     , createUser
@@ -231,6 +234,17 @@ listUsers =
         { _luQuery' = Nothing
         } & path  .~ users
           & query .~ includes
+
+-- | List all the existing escalation policies with currently on-call users.
+--
+-- If the start and end of an on-call object are null, then the user is always
+-- on-call for an escalation policy level.
+--
+-- @GET \/escalation_policies\/on_call@
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/on_call>
+listOnCallUsers :: Request ListUsers s [User]
+listOnCallUsers = listUsers & path .~ users % "on_call"
 
 -- | Get information about an existing user.
 --
