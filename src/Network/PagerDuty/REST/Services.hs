@@ -478,7 +478,8 @@ deleteService i = empty & meth .~ DELETE & path .~ services % i
 --
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/services/enable>
 enableService :: RequesterId -> ServiceId -> Request Empty s Empty
-enableService r i = auth (enableServiceBasic i) & query .~ [("requester_id", r)]
+enableService r i =
+    auth (enableServiceBasic i) & query .~ [("requester_id", r)]
 
 -- | A version of 'enableService' which uses HTTP Basic authentication and
 -- doesn't require a 'RequesterId'.
@@ -492,7 +493,8 @@ enableServiceBasic i = empty & meth .~ PUT & path .~ services % i % "enable"
 --
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/services/disable>
 disableService :: RequesterId -> ServiceId -> Request Empty s Empty
-disableService r i = auth (disableServiceBasic i) & query .~ [("requester_id", r)]
+disableService r i =
+    auth (disableServiceBasic i) & query .~ [("requester_id", r)]
 
 -- | A version of 'disableService' which uses HTTP Basic authentication and
 -- doesn't require a 'RequesterId'.

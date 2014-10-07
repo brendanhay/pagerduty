@@ -66,6 +66,7 @@ import           Data.List                    (deleteBy, intersperse)
 import           Data.Monoid
 import           Data.String
 import           Data.Text                    (Text)
+import qualified Data.Text                    as Text
 import qualified Data.Text.Encoding           as Text
 import           Data.Time
 import           GHC.TypeLits
@@ -82,10 +83,17 @@ newtype CSV a = CSV [a]
 
 makePrisms ''CSV
 
+instance ToByteString a => QueryValues (CSV a)
+
 instance ToByteString a => ToByteString (CSV a) where
     builder (CSV xs) = mconcat . intersperse "," $ map builder xs
 
-instance ToByteString a => QueryValues (CSV a)
+instance FromJSON a => FromJSON (CSV a) where
+    parseJSON = withText "comma_separated_value" $
+        fmap CSV . traverse (parseJSON . String) . Text.split (== ',')
+
+instance ToByteString a => ToJSON (CSV a) where
+    toJSON = String . Text.decodeUtf8 . toByteString'
 
 newtype List a = L [a]
     deriving (Eq, Show, Monoid)

@@ -48,21 +48,111 @@
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/incidents>
 module Network.PagerDuty.REST.Incidents
     (
+    -- * List Incidents
+      ListIncidents
+    , listIncidents
+    , lsSince
+    , lsUntil
+    , lsDateRange
+    , lsStatus
+    , lsIncidentKey
+    , lsService
+    , lsAssignedToUser
+    , lsTimeZone
+    , lsSortBy
 
+    -- * Count Incidents
+    , CountIncidents
+    , countIncidents
+    , cSince
+    , cUntil
+    , cDateRange
+    , cStatus
+    , cIncidentKey
+    , cService
+    , cAssignedToUser
+
+    -- * Get Incident
+    , getIncident
+
+    -- * Update Incidents
+    , UpdateIncidents
+    , updateIncidents
+    , updateIncidentsBasic
+    , uiIncidents
+
+    -- * Resolve Incident
+    , resolveIncident
+    , resolveIncidentBasic
+
+    -- * Acknowledge Incident
+    , acknowledgeIncident
+    , acknowledgeIncidentBasic
+
+    -- * Reassign Incident
+    , ReassignIncident
+    , reassignIncident
+    , riEscalationPolicy
+    , riEscalationLevel
+    , riAssignedToUser
+
+    -- * Types
+    , Sort           (..)
+    , _Desc
+    , _Asc
+
+    , Field          (..)
+
+    , IncidentStatus (..)
+    , UpdateStatus   (..)
+
+    , UpdateIncident
+    , iiId
+    , iiStatus
+    , iiEscalationLevel
+    , iiEscalationPolicy
+    , iiAssignedToUser
+
+    , UpdatedIncidents
+    , uiId
+    , uiStatus
+    , uiIncidentNumber
+    , uiUrl
+    , uiError
+
+    , Assignee
+    , aAt
+    , aObject
+
+    , Incident
+    , iIncidentNumber
+    , iStatus
+    , iCreatedOn
+    , iHtmlUrl
+    , iIncidentKey
+    , iService
+    , iEscalationPolicy
+    , iAssignedTo
+    , iAcknowledgers
+    , iLastStatusChangeBy
+    , iLastStatusChangeOn
+    , iTriggerSummaryData
+    , iTriggerDetailsHtmlUrl
     ) where
 
-import Control.Applicative        hiding (empty)
-import Control.Lens
-import Data.Aeson
-import Data.ByteString.Conversion (ToByteString(..))
-import Data.Default
-import Data.Monoid                hiding (All)
-import Data.Text                  (Text)
-import Data.Time
-import Network.HTTP.Types
-import Network.PagerDuty.Query
-import Network.PagerDuty.TH
-import Network.PagerDuty.Types
+import           Control.Applicative        hiding (empty)
+import           Control.Lens
+import           Data.Aeson
+import           Data.ByteString.Conversion (ToByteString(..), toByteString')
+import           Data.Default
+import           Data.Monoid                hiding (All)
+import           Data.Text                  (Text)
+import qualified Data.Text.Encoding         as Text
+import           Data.Time
+import           Network.HTTP.Types
+import           Network.PagerDuty.Query
+import           Network.PagerDuty.TH
+import           Network.PagerDuty.Types
 
 default (Path)
 
@@ -101,19 +191,28 @@ instance QueryValues Range where
     queryValues All = ["all"]
 
 data IncidentStatus
-    = Triggered
-    | Acknowledged
-    | Resolved
-    | Other Text
+    = ITriggered
+    | IAcknowledged
+    | IResolved
+    | IOther Text
       deriving (Eq, Show)
 
-deriveNullary ''IncidentStatus
-
 instance ToByteString IncidentStatus where
-    builder Triggered    = "triggered"
-    builder Acknowledged = "acknowledged"
-    builder Resolved     = "resolved"
-    builder (Other t)    = builder t
+    builder ITriggered    = "triggered"
+    builder IAcknowledged = "acknowledged"
+    builder IResolved     = "resolved"
+    builder (IOther t)    = builder t
+
+instance FromJSON IncidentStatus where
+    parseJSON = withText "status" $ \t ->
+         return $ case t of
+            "triggered"    -> ITriggered
+            "acknowledged" -> IAcknowledged
+            "resolved"     -> IResolved
+            _              -> IOther t
+
+instance ToJSON IncidentStatus where
+    toJSON = String . Text.decodeUtf8 . toByteString'
 
 data Assignee = Assignee
     { _aAt     :: Date
@@ -392,30 +491,148 @@ countIncidents =
         , _cAssignedToUser' = Nothing
         } & path .~ incidents % "count"
 
+
+data UpdateStatus
+    = UAcknowledged
+    | UResolved
+      deriving (Eq, Show)
+
+deriveNullary ''UpdateStatus
+
+data UpdateIncident = UpdateIncident
+    { _iiId               :: IncidentId
+    , _iiStatus           :: Maybe UpdateStatus
+    , _iiEscalationLevel  :: Maybe Int
+    , _iiEscalationPolicy :: Maybe PolicyId
+    , _iiAssignedToUser   :: Maybe (CSV UserId)
+    } deriving (Eq, Show)
+
+deriveJSON ''UpdateIncident
+
+-- | The id of the incident to update.
+makeLens "_iiId" ''UpdateIncident
+
+-- | The new status of the incident.
+makeLens "_iiStatus" ''UpdateIncident
+
+-- | Escalate incident to this level in the escalation policy.
+makeLens "_iiEscalationLevel" ''UpdateIncident
+
+-- | Delegate this incident to the specified escalation policy id.
+-- This restarts the incident's escalation following the new policy.
+makeLens "_iiEscalationPolicy" ''UpdateIncident
+
+-- | List of user IDs to assign this incident to.
+makeLens "_iiAssignedToUser" ''UpdateIncident
+
+data UpdatedIncidents = UpdatedIncidents
+    { _uiId             :: IncidentId
+    , _uiStatus         :: IncidentStatus
+    , _uiIncidentNumber :: !Int
+    , _uiUrl            :: Text
+    , _uiError          :: Maybe Object
+    } deriving (Eq, Show)
+
+deriveRecord ''UpdatedIncidents
+
+data UpdateIncidents = UpdateIncidents
+    { _uiIncidents' :: [UpdateIncident]
+    } deriving (Eq, Show)
+
+jsonRequest ''UpdateIncidents
+
+uiIncidents :: Lens' (Request UpdateIncidents s b) [UpdateIncident]
+uiIncidents = upd.uiIncidents'
+
 -- | Acknowledge, resolve, escalate or reassign one or more incidents.
 --
 -- @PUT \/incidents@
 --
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/incidents/update>
-updateIncidents = undefined
+updateIncidents :: RequesterId -> Request UpdateIncidents s [UpdatedIncidents]
+updateIncidents r = auth updateIncidentsBasic & query .~ [("requester_id", r)]
+
+-- | A version of 'updateIncidents' which uses HTTP Basic authentication and
+-- doesn't require a 'RequesterId'.
+updateIncidentsBasic :: Request UpdateIncidents Basic [UpdatedIncidents]
+updateIncidentsBasic =
+    mk UpdateIncidents
+        { _uiIncidents' = []
+        } & meth .~ PUT
+          & path .~ incidents
 
 -- | Resolve an incident.
 --
 -- @PUT \/incidents\/\:id\/resolve@
 --
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/incidents/resolve>
-resolveIncident = undefined
+resolveIncident :: IncidentId
+                -> RequesterId
+                -> Request Empty s Empty
+resolveIncident i r =
+    auth (resolveIncidentBasic i) & query .~ [("requester_id", r)]
+
+-- | A version of 'resolveIncident' which uses HTTP Basic authentication and
+-- doesn't require a 'RequesterId'.
+resolveIncidentBasic :: IncidentId -> Request Empty s Empty
+resolveIncidentBasic i = empty & meth .~ PUT & path .~ incidents % i % "resolve"
 
 -- | Acknowledge an incident.
 --
 -- @PUT \/incidents\/\:id\/acknowledge@
 --
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/incidents/acknowledge>
-acknowledgeIncident = undefined
+acknowledgeIncident :: IncidentId
+                    -> RequesterId
+                    -> Request Empty s Empty
+acknowledgeIncident i r =
+    auth (acknowledgeIncidentBasic i) & query .~ [("requester_id", r)]
+
+-- | A version of 'acknowledgeIncident' which uses HTTP Basic authentication and
+-- doesn't require a 'RequesterId'.
+acknowledgeIncidentBasic :: IncidentId -> Request Empty s Empty
+acknowledgeIncidentBasic i =
+    empty & meth .~ PUT & path .~ incidents % i % "acknowledge"
+
+data ReassignIncident = ReassignIncident
+    { _riEscalationPolicy' :: Maybe PolicyId
+    , _riEscalationLevel'  :: Maybe Int
+    , _riAssignedToUser'   :: Maybe (CSV UserId)
+    } deriving (Eq, Show)
+
+jsonRequest ''ReassignIncident
+
+-- | The ID of an escalation policy. Delegate the incident to this escalation
+-- policy.
+riEscalationPolicy :: Lens' (Request ReassignIncident s b) (Maybe PolicyId)
+riEscalationPolicy = upd.riEscalationPolicy'
+
+-- | Escalate incident to this level in the escalation policy.
+riEscalationLevel :: Lens' (Request ReassignIncident s b) (Maybe Int)
+riEscalationLevel = upd.riEscalationLevel'
+
+-- | Comma separated list of user IDs to assign this incident to.
+riAssignedToUser :: Lens' (Request ReassignIncident s b) (Maybe [UserId])
+riAssignedToUser = upd.riAssignedToUser'.mapping _CSV
 
 -- | Reassign an incident.
 --
 -- @PUT \/incidents\/\:id\/reassign@
 --
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/incidents/reassign>
-reassignIncident = undefined
+reassignIncident :: IncidentId
+                 -> RequesterId
+                 -> Request ReassignIncident s Empty
+reassignIncident i r =
+    auth (reassignIncidentBasic i) & query .~ [("requester_id", r)]
+
+-- | A version of 'reassignIncident' which uses HTTP Basic authentication and
+-- doesn't require a 'RequesterId'.
+reassignIncidentBasic :: IncidentId -> Request ReassignIncident s Empty
+reassignIncidentBasic i =
+    mk ReassignIncident
+        { _riEscalationPolicy' = Nothing
+        , _riEscalationLevel'  = Nothing
+        , _riAssignedToUser'   = Nothing
+        } & meth .~ PUT
+          & path .~ incidents % i % "reassign"
