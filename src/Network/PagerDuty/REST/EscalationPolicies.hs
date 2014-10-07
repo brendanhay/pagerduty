@@ -46,20 +46,6 @@ module Network.PagerDuty.REST.EscalationPolicies
     , deletePolicy
 
     -- * Types
-    , HasUserInfo (..)
-    , Target      (..)
-    , _TSchedule
-    , _TUser
-
-    , ScheduleTarget
-    , stId
-    , stName
-
-    , Rule
-    , rId
-    , rEscalationDelayInMinutes
-    , rTargets
-
     , Policy
     , pId
     , pName
@@ -81,62 +67,10 @@ import           Network.PagerDuty.REST.Users
 import           Network.PagerDuty.TH
 import           Network.PagerDuty.Types
 
+import Network.PagerDuty.REST.EscalationPolicies.EscalationRules
+
 policies :: Path
 policies = "escalation_policies"
-
-data ScheduleTarget = ScheduleTarget
-    { _stId   :: ScheduleId
-    , _stName :: Text
-    } deriving (Eq, Show)
-
-deriveJSON ''ScheduleTarget
-
--- | The id of the target.
-makeLens "_stId" ''ScheduleTarget
-
--- | The name of the target.
-makeLens "_stName" ''ScheduleTarget
-
-data Target
-    = TSchedule ScheduleTarget
-    | TUser     UserInfo
-      deriving (Eq, Show)
-
-makePrisms ''Target
-
--- type: A representation of the type of the target.
--- Will be either schedule or user.
-instance FromJSON Target where
-    parseJSON = withObject "target" $ \o -> do
-        t <- o .: "type"
-        case t of
-            "schedule" -> TSchedule <$> parseJSON (Object o)
-            "user"     -> TUser     <$> parseJSON (Object o)
-            _          -> fail $ "Unrecognised target type: " ++ Text.unpack t
-
-instance ToJSON Target where
-    toJSON t = Object (Map.insert "type" (String k) o)
-      where
-        (k, Object o) = case t of
-            TSchedule s -> ("schedule", toJSON s)
-            TUser     u -> ("user",     toJSON u)
-
-data Rule = Rule
-    { _rId                       :: RuleId
-    , _rEscalationDelayInMinutes :: !Int
-    , _rTargets                  :: [Target]
-    } deriving (Eq, Show)
-
-deriveJSON ''Rule
-
--- | The ID of the escalation rule.
-makeLens "_rId" ''Rule
-
--- | The amount of time before an incident escalates away from this rule.
-makeLens "_rEscalationDelayInMinutes" ''Rule
-
--- | A list of targets which an incident will be assigned to upon reaching this rule.
-makeLens "_rTargets" ''Rule
 
 data Policy = Policy
     { _pId       :: PolicyId
