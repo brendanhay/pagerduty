@@ -38,8 +38,8 @@ library
       -- , Network.PagerDuty.REST.EscalationPolicies
 --      , Network.PagerDuty.REST.EscalationPolicies.EscalationRules
 --      , Network.PagerDuty.REST.EscalationPolicies.OnCall
-      , Network.PagerDuty.REST.Incidents
-      , Network.PagerDuty.REST.Incidents.Notes
+      -- , Network.PagerDuty.REST.Incidents
+      -- , Network.PagerDuty.REST.Incidents.Notes
       -- , Network.PagerDuty.REST.LogEntries
       -- , Network.PagerDuty.REST.MaintenanceWindows
       -- , Network.PagerDuty.REST.Reports

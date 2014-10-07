@@ -39,6 +39,8 @@ import           Network.PagerDuty.Types
 
 -- FIXME: verify correct actions are all paginated
 
+-- FIXME: Ensure requesterid parameter is always first
+
 send :: (MonadIO m, FromJSON b)
      => Auth s
      -> SubDomain

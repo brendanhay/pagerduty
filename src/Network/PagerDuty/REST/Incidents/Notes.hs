@@ -1,5 +1,8 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE ExtendedDefaultRules       #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE TemplateHaskell            #-}
+
+{-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
 -- Module      : Network.PagerDuty.REST.Incidents.Notes
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
@@ -16,12 +19,90 @@
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/incidents/notes>
 module Network.PagerDuty.REST.Incidents.Notes
     (
+    -- * List Notes
+      listNotes
+
+    -- * Create Note
+    , CreateNote
+    , createNote
+    , createNoteBasic
+    , cnContent
+
+    -- * Types
+    , Note
+    , nId
+    , nCreatedAt
+    , nUser
+    , nContent
     ) where
 
-import Control.Lens
-import Data.Monoid
+import Control.Lens                 hiding ((.=))
+import Data.Aeson
 import Data.Text                    (Text)
 import Data.Time
 import Network.HTTP.Types
+import Network.PagerDuty.REST.Users
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
+
+default (Path)
+
+notes :: IncidentId -> Path
+notes i = "incidents" % i % "notes"
+
+data Note = Note
+    { _nId        :: NoteId
+    , _nCreatedAt :: Date
+    , _nUser      :: User
+    , _nContent   :: Text
+    } deriving (Eq, Show)
+
+deriveJSON ''Note
+
+makeLens "_nId"      ''Note
+makeLens "_nUser"    ''Note
+makeLens "_nContent" ''Note
+
+nCreatedAt :: Lens' Note UTCTime
+nCreatedAt = lens _nCreatedAt (\n x -> n { _nCreatedAt = x }) . _D
+
+-- | List existing notes for the specified incident.
+--
+-- @GET \/incidents\/\:incident_id\/notes@
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/incidents/notes/create>
+listNotes :: IncidentId -> Request Empty s [Note]
+listNotes i = empty & path .~ notes i
+
+newtype CreateNote = CreateNote
+    { _cnContent' :: Maybe Text
+    } deriving (Eq, Show)
+
+makeLenses ''CreateNote
+
+instance ToJSON CreateNote where
+    toJSON cn = object ["note" .= object ["content" .= _cnContent' cn]]
+
+instance QueryLike CreateNote where
+    toQuery = const []
+
+-- | The note content.
+cnContent :: Lens' (Request CreateNote s b) (Maybe Text)
+cnContent = upd.cnContent'
+
+-- | Create a new note for the specified incident.
+--
+-- @POST \/incidents\/\:incident_id\/notes@
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/incidents/notes/create>
+createNote :: IncidentId -> RequesterId -> Request CreateNote s Note
+createNote i r = auth (createNoteBasic i) & query .~ [("requester_id", r)]
+
+-- | A version of 'createNote' which uses HTTP Basic authentication and
+-- doesn't require a 'RequesterId'.
+createNoteBasic :: IncidentId -> Request CreateNote s Note
+createNoteBasic i =
+    mk CreateNote
+        { _cnContent' = Nothing
+        } & meth .~ POST
+          & path .~ notes i

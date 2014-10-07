@@ -399,7 +399,9 @@ instance QueryValueLike (Id a) where
 
 type AlertId       = Id "alert"
 type EmailFilterId = Id "email-filter"
+type IncidentId    = Id "incident"
 type LogEntryId    = Id "log-entry"
+type NoteId        = Id "note"
 type OverrideId    = Id "schedule-override"
 type PolicyId      = Id "escalation-policy"
 type RequesterId   = Id "requester"
@@ -409,7 +411,6 @@ type ServiceId     = Id "service"
 type UserId        = Id "user"
 type VendorId      = Id "vendor"
 type WindowId      = Id "maintenance-window"
-type IncidentId    = Id "incident"
 
 data Empty = Empty
 
