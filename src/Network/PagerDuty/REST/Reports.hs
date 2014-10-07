@@ -65,7 +65,7 @@ import Data.Time
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
-default (Builder)
+default (Path)
 
 reports :: Path
 reports = "reports"

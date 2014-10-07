@@ -115,7 +115,7 @@ import Network.HTTP.Types
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
-default (Builder)
+default (Path)
 
 services :: Path
 services = "services"

@@ -75,7 +75,7 @@ import           Network.PagerDuty.REST.Users
 import           Network.PagerDuty.TH
 import           Network.PagerDuty.Types
 
-default (Builder)
+default (Path)
 
 rules :: PolicyId -> Path
 rules p = "escalation_policies" % p % "escalation_rules"

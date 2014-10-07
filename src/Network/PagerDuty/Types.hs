@@ -62,7 +62,7 @@ import           Data.ByteString.Conversion   hiding (List)
 import           Data.Default
 import           Data.Function                (on)
 import qualified Data.HashMap.Strict          as Map
-import           Data.List                    (deleteBy)
+import           Data.List                    (deleteBy, intersperse)
 import           Data.Monoid
 import           Data.String
 import           Data.Text                    (Text)
@@ -76,6 +76,16 @@ import           Network.PagerDuty.TH
 import           System.Locale
 
 -- FIXME: Verify IncidentId/IncidentKey .. *Id/*Key are actually different or needed
+
+newtype CSV a = CSV [a]
+    deriving (Eq, Show, Monoid)
+
+makePrisms ''CSV
+
+instance ToByteString a => ToByteString (CSV a) where
+    builder (CSV xs) = mconcat . intersperse "," $ map builder xs
+
+instance ToByteString a => QueryValues (CSV a)
 
 newtype List a = L [a]
     deriving (Eq, Show, Monoid)
@@ -391,6 +401,7 @@ type ServiceId     = Id "service"
 type UserId        = Id "user"
 type VendorId      = Id "vendor"
 type WindowId      = Id "maintenance-window"
+type IncidentId    = Id "incident"
 
 data Empty = Empty
 

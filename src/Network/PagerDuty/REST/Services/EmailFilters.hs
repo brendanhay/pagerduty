@@ -42,7 +42,6 @@ module Network.PagerDuty.REST.Services.EmailFilters
 import Control.Applicative     hiding (empty)
 import Control.Lens            hiding ((.=))
 import Data.Aeson
-import Data.ByteString.Builder (Builder)
 import Data.Default
 import Data.Monoid
 import Data.Text               (Text)
@@ -50,7 +49,7 @@ import Network.HTTP.Types
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
-default (Builder)
+default (Path)
 
 filters :: ServiceId -> Path
 filters s = "services" % s % "email_filters"

@@ -120,7 +120,7 @@ import Network.PagerDuty.REST.Users (User)
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
-default (Builder)
+default (Path)
 
 schedules :: Path
 schedules = "schedules"
