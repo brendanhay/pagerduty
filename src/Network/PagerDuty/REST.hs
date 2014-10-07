@@ -33,6 +33,10 @@ import           Network.HTTP.Types
 import           Network.PagerDuty.IO
 import           Network.PagerDuty.Types
 
+-- | Make the type names consistent, for example:
+-- Suffix with *Details or *Info for results
+-- No suffix for requests if necessary
+
 send :: (MonadIO m, FromJSON b)
      => Auth s
      -> SubDomain

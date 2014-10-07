@@ -83,7 +83,7 @@ newtype List a = L [a]
 deriveJSON ''List
 makePrisms ''List
 
-instance ToQuery a => ToQuery (List a) where
+instance QueryValues a => QueryValues (List a) where
     queryValues (L xs) = concatMap queryValues xs
 
 newtype Bool' = B Bool
@@ -96,7 +96,7 @@ instance ToByteString Bool' where
     builder (B True)  = "true"
     builder (B False) = "false"
 
-instance ToQuery Bool'
+instance QueryValues Bool'
 
 pattern T = B True
 pattern F = B False
@@ -116,7 +116,7 @@ instance ToByteString Date where
     builder (D d) = builder
         (formatTime defaultTimeLocale (iso8601DateFormat $ Just "%XZ") d)
 
-instance ToQuery Date
+instance QueryValues Date
 
 newtype TZ = TZ TimeZone
     deriving (Eq, Show)
@@ -132,7 +132,7 @@ instance ToJSON TZ where
 instance ToByteString TZ where
     builder (TZ tz) = builder (timeZoneName tz)
 
-instance ToQuery TZ
+instance QueryValues TZ
 
 instance Default TZ where
     def = TZ utc
@@ -354,7 +354,7 @@ instance ToJSON (Key a) where
 instance ToByteString (Key a) where
     builder (Key k) = builder k
 
-instance ToQuery (Key a)
+instance QueryValues (Key a)
 
 instance QueryValueLike (Key a) where
     toQueryValue = Just . toByteString'
@@ -374,7 +374,7 @@ instance ToJSON (Id a) where
 instance ToByteString (Id a) where
     builder (Id i) = builder i
 
-instance ToQuery (Id a)
+instance QueryValues (Id a)
 
 instance QueryValueLike (Id a) where
     toQueryValue = Just . toByteString'
@@ -388,7 +388,6 @@ type RequesterId   = Id "requester"
 type RuleId        = Id "rule"
 type ScheduleId    = Id "schedule"
 type ServiceId     = Id "service"
-type TargetId      = Id "target"
 type UserId        = Id "user"
 type VendorId      = Id "vendor"
 type WindowId      = Id "maintenance-window"
@@ -416,4 +415,4 @@ makePrisms ''Address
 instance ToByteString Address where
     builder (Address a) = builder a
 
-instance ToQuery Address
+instance QueryValues Address

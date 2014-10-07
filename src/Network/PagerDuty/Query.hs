@@ -16,7 +16,7 @@
 -- Portability : non-portable (GHC extensions)
 
 module Network.PagerDuty.Query
-    ( ToQuery (..)
+    ( QueryValues (..)
     , gquery
     , gqueryWith
     ) where
@@ -35,25 +35,25 @@ import           Generics.SOP
 import           Network.HTTP.Types
 import           Network.PagerDuty.Options
 
-class ToQuery a where
+class QueryValues a where
     queryValues :: a -> [ByteString]
 
     default queryValues :: ToByteString a => a -> [ByteString]
     queryValues = (:[]) . toByteString'
 
-instance ToQuery a => ToQuery (Maybe a) where
+instance QueryValues a => QueryValues (Maybe a) where
     queryValues (Just x) = queryValues x
     queryValues Nothing  = []
 
-instance ToQuery Text where
+instance QueryValues Text where
     queryValues x = [Text.encodeUtf8 x]
 
-gquery :: forall a. (Generic a, HasDatatypeInfo a, All2 ToQuery (Code a))
+gquery :: forall a. (Generic a, HasDatatypeInfo a, All2 QueryValues (Code a))
        => a
        -> Query
 gquery = gqueryWith underscored
 
-gqueryWith :: forall a. (Generic a, HasDatatypeInfo a, All2 ToQuery (Code a))
+gqueryWith :: forall a. (Generic a, HasDatatypeInfo a, All2 QueryValues (Code a))
        => Options
        -> a
        -> Query
@@ -61,7 +61,7 @@ gqueryWith o a = case datatypeInfo (Proxy :: Proxy a) of
     ADT     _ _ cs -> go cs         (from a)
     Newtype _ _ c  -> go (c :* Nil) (from a)
   where
-    go :: (All2 ToQuery xss, SingI xss)
+    go :: (All2 QueryValues xss, SingI xss)
        => NP ConstructorInfo xss
        -> SOP I xss
        -> Query
@@ -74,7 +74,7 @@ gqueryWith o a = case datatypeInfo (Proxy :: Proxy a) of
         f [(k, v)]     = [(k, Just v)]
         f xs@((k,_):_) = let n = k <> "[]" in map (bimap (const n) Just) xs
 
-gctor :: All ToQuery xs
+gctor :: All QueryValues xs
       => Options
       -> ConstructorInfo xs
       -> NP I xs
@@ -95,7 +95,7 @@ gctor o (Infix n _ _) (x :* y :* Nil) =
 gctor _ (Infix _ _ _) _ =
     error "Network.PagerDuty.Generics.inaccessible"
 
-gfield :: ToQuery a
+gfield :: QueryValues a
        => Options
        -> FieldInfo a
        -> I a
@@ -105,5 +105,5 @@ gfield o (FieldInfo f) (I a) =
   where
     k = BS.pack $ (fieldLabelModifier o) f
 
-p :: Proxy ToQuery
+p :: Proxy QueryValues
 p = Proxy

@@ -55,9 +55,8 @@ import Network.PagerDuty.REST.Users
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
-schedules, overrides :: Path
-schedules = "schedules"
-overrides = "overrides"
+overrides :: ScheduleId -> Path
+overrides i = "schedules" % i % "overrides"
 
 data Override = Override
     { _oId    :: Maybe OverrideId
@@ -121,7 +120,7 @@ listOverrides i s u =
         , _lsUntil'    = u
         , _lsEditable' = F
         , _lsOverflow' = F
-        } & path .~ schedules % i % overrides
+        } & path .~ overrides i
 
 data CreateOverride = CreateOverride
     { _coStart'  :: Date
@@ -166,7 +165,7 @@ createOverride i u s e =
         , _coStart'  = s
         , _coEnd'    = e
         } & meth .~ POST
-          & path .~ schedules % i % overrides
+          & path .~ overrides i
 
 -- | Remove an override.
 --
@@ -184,4 +183,4 @@ createOverride i u s e =
 deleteOverride :: ScheduleId -> OverrideId -> Request Empty s Empty
 deleteOverride i o = empty
     & meth .~ DELETE
-    & path .~ schedules % i % overrides % o
+    & path .~ overrides i % o

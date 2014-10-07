@@ -116,7 +116,7 @@ queryRequest ''ListWindows
 lwQuery :: Lens' (Request ListWindows s b) (Maybe Text)
 lwQuery = upd.lwQuery'
 
--- | An array of service IDs, specifying services whose maintenance
+-- | An list of service IDs, specifying services whose maintenance
 -- windows shall be returned.
 lwServiceIds :: Lens' (Request ListWindows s b) [ServiceId]
 lwServiceIds = upd.lwServiceIds'._L

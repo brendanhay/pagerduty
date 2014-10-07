@@ -240,7 +240,7 @@ class HasScheduleInfo a where
     sTimeZone           :: Lens' a TimeZone
     -- | The current day in the schedule's time zone.
     sToday              :: Lens' a UTCTime
-    -- | An array of all the escalation policies that uses this schedule.
+    -- | An list of all the escalation policies that uses this schedule.
     sEscalationPolicies :: Lens' a [PolicyId]
 
     sId                 = scheduleInfo.siId'

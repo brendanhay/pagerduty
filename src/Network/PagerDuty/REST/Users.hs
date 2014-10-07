@@ -102,7 +102,7 @@ listUsers = undefined
 getUser = undefined
 
 -- | Get a user object with that user's current on-call status. If the on-call
--- object is an empty array, the user is never on-call.
+-- object is an empty list, the user is never on-call.
 --
 -- If the start and end of an on-call object are null, then the user is always
 -- on-call for an escalation policy level.

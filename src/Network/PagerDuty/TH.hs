@@ -71,7 +71,7 @@ deriveNullary = deriveNullaryWith underscored
 deriveNullaryWith :: Options -> Name -> Q [Dec]
 deriveNullaryWith o n = concat <$> sequence
     [ deriveJSONWith o n
-    , [d|instance ToQuery $(conT n) where queryValues = value . toJSON|]
+    , [d|instance QueryValues $(conT n) where queryValues = value . toJSON|]
     ]
 
 deriveRecord :: Name -> Q [Dec]
