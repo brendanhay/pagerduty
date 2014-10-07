@@ -16,6 +16,8 @@
 -- the user.
 --
 -- Access and manipulate the contact methods for a user.
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/users/contact_methods>
 module Network.PagerDuty.REST.Users.ContactMethods
     (
     ) where

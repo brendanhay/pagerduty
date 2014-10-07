@@ -37,6 +37,8 @@
 --
 -- Note: that to create an incident you need to trigger it through the
 -- "Network.PagerDuty.Integration" API.
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/incidents>
 module Network.PagerDuty.REST.Incidents
     (
 

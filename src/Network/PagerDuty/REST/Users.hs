@@ -14,6 +14,8 @@
 -- | Access and manipulate user data for your PagerDuty account. When a user is
 -- shown inlined in other resources, a deleted user will have its @html_url@ attribute
 -- set to null.
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/users>
 module Network.PagerDuty.REST.Users
     (
 
@@ -27,9 +29,11 @@ module Network.PagerDuty.REST.Users
     , uInvitationSent
     ) where
 
-import Control.Lens
+import Control.Applicative     hiding (empty)
+import Control.Lens            hiding ((.=))
+import Data.Aeson
 import Data.Monoid
-import Data.Text                    (Text)
+import Data.Text               (Text)
 import Data.Time
 import Network.HTTP.Types
 import Network.PagerDuty.TH
@@ -53,12 +57,16 @@ class HasUserInfo a where
 
     -- | The id of the user.
     uId       :: Lens' a UserId
+
     -- | The name of the user.
     uName     :: Lens' a Text
+
     -- | The user's email address.
     uEmail    :: Lens' a Address
+
     -- | The color used to represent the user in schedules.
     uColor    :: Lens' a Text
+
     -- | The user's personal time zone.
     uTimeZone :: Lens' a (Maybe TimeZone)
 
@@ -68,21 +76,44 @@ class HasUserInfo a where
     uColor    = userInfo.uColor'
     uTimeZone = userInfo.uTimeZone'.mapping _TZ
 
+instance (QueryLike a, ToJSON a, HasUserInfo a)
+    => HasUserInfo (Request a s b) where
+        userInfo = upd.userInfo
+
 instance HasUserInfo UserInfo where
     userInfo = id
 
 data User = User
-    { _uInfo'           :: UserInfo
+    { _uInfo            :: UserInfo
     , _uRole            :: Text
     , _uAvatarUrl       :: Text
     , _uUrl             :: Text
     , _uInvitationSent' :: !Bool'
     } deriving (Eq, Show)
 
-deriveRecord ''User
+makeLenses ''User
+
+instance FromJSON User where
+    parseJSON = withObject "user" $ \o ->
+        User <$> parseJSON (Object o)
+             <*> o .: "role"
+             <*> o .: "avatar_url"
+             <*> o .: "url"
+             <*> o .: "invitation_sent"
+
+instance ToJSON User where
+    toJSON u = Object (x <> y)
+      where
+        Object x = toJSON (_uInfo u)
+        Object y = object
+            [ "role"            .= _uRole u
+            , "avatar_url"      .= _uAvatarUrl u
+            , "url"             .= _uUrl u
+            , "invitation_sent" .= _uInvitationSent' u
+            ]
 
 instance HasUserInfo User where
-    userInfo = uInfo'
+    userInfo = uInfo
 
 uInvitationSent :: Lens' User Bool
 uInvitationSent = uInvitationSent'._B

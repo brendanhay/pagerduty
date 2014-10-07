@@ -72,7 +72,6 @@ module Network.PagerDuty.REST.Services
     -- * Types
     , EmailFilterMode       (..)
     , EmailIncidentCreation (..)
-    , MatchMode             (..)
     , ServiceStatus         (..)
     , ServiceType           (..)
     , SeverityFilter        (..)
@@ -82,15 +81,6 @@ module Network.PagerDuty.REST.Services
     , cntAcknowledged
     , cntResolved
     , cntTotal
-
-    , EmailFilters          (..)
-    , efsId
-    , efsSubjectMode
-    , efsSubjectRegex
-    , efsBodyMode
-    , efsBodyRegex
-    , efsFromEmailMode
-    , efsFromEmailRegex
 
     , PolicyInfo
     , pinfoId
@@ -202,63 +192,6 @@ data PolicyInfo = PolicyInfo
     } deriving (Eq, Show)
 
 deriveRecord ''PolicyInfo
-
-data MatchMode
-    = Always
-    | Match
-    | NoMatch
-      deriving (Eq, Show)
-
-deriveNullaryWith hyphenated ''MatchMode
-
--- FIXME: Tighten up this type! Make the regex required for match/no-match.
-data EmailFilters = EmailFilters
-    { _efsId             :: EmailFilterId
-    , _efsSubjectMode    :: Maybe MatchMode
-    , _efsSubjectRegex   :: Maybe Text
-    , _efsBodyMode       :: Maybe MatchMode
-    , _efsBodyRegex      :: Maybe Text
-    , _efsFromEmailMode  :: Maybe MatchMode
-    , _efsFromEmailRegex :: Maybe Text
-    } deriving (Eq, Show)
-
-deriveJSON ''EmailFilters
-
--- | The email filter ID.
-makeLens "_efsId" ''EmailFilters
-
--- | One of always, match, no-match, which, respectively, means to not filter
--- the email trigger by subject, filter it if the email subject matches the
--- given regex, or filter if it doesn't match the given regex.
---
--- /Default:/ always.
-makeLens "_efsSubjectMode" ''EmailFilters
-
--- | The regex to be used when subject_mode is match or no-match.
--- It is a required parameter on such cases.
-makeLens "_efsSubjectRegex" ''EmailFilters
-
--- | One of always, match, no-match, which, respectively, means to not filter
--- the email trigger by body, filter it if the body email matches the given regex,
--- or filter if it doesn't match the given regex.
---
--- /Default:/ always.
-makeLens "_efsBodyMode" ''EmailFilters
-
--- | The regex to be used when body_mode is match or no-match.
--- It is a required parameter on such cases.
-makeLens "_efsBodyRegex" ''EmailFilters
-
--- | One of always, match, no-match, which, respectively, means to not filter
--- the email trigger by its from address, filter it if the email from address
--- matches the given regex, or filter if it doesn't match the given regex.
---
--- /Default:/ always.
-makeLens "_efsFromEmailMode" ''EmailFilters
-
--- | The regex to be used when from_email_mode is match or no-match.
--- It is a required parameter on such cases.
-makeLens "_efsFromEmailRegex" ''EmailFilters
 
 data SeverityFilter
     = SevCritical

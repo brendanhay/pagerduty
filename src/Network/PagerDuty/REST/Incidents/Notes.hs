@@ -12,6 +12,8 @@
 -- Portability : non-portable (GHC extensions)
 
 -- | The Incident Notes API allows you to add notes to a specified incident.
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/incidents/notes>
 module Network.PagerDuty.REST.Incidents.Notes
     (
     ) where

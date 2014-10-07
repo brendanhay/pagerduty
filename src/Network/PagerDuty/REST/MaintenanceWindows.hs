@@ -15,6 +15,8 @@
 
 -- | Maintenance windows allow you to schedule service maintenance periods,
 -- during which no incidents will be created.
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/maintenance_windows>
 module Network.PagerDuty.REST.MaintenanceWindows
     (
     -- * List Windows

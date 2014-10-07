@@ -16,6 +16,8 @@
 --
 -- If the start and end of an on-call object are null, then the user is always
 -- on-call for an escalation policy level.
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/users/on_call>
 module Network.PagerDuty.REST.Users.OnCall
     (
     ) where

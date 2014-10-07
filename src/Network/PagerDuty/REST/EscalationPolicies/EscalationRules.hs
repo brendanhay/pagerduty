@@ -17,6 +17,8 @@
 
 -- | This API lets you access and manipulate escalation rules of an existing
 -- escalation policy.
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/escalation_rules>
 module Network.PagerDuty.REST.EscalationPolicies.EscalationRules
     (
     -- * List Rules

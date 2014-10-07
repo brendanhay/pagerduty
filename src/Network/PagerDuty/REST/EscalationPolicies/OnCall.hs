@@ -11,12 +11,11 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
--- | List all the existing escalation policies with currently on-call users.
---
--- If the start and end of an on-call object are null, then the user is always
--- on-call for an escalation policy level.
+-- | List escalation policies for currently on-call users.
 module Network.PagerDuty.REST.EscalationPolicies.OnCall
-    (
+    ( ListOnCallPolicies
+    , listOnCallPolicies
+    , locpQuery
     ) where
 
 import Control.Lens
@@ -26,3 +25,29 @@ import Data.Time
 import Network.HTTP.Types
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
+
+newtype ListOnCallPolicies = ListOnCallPolicies
+    { _locpQuery :: Maybe Text
+    } deriving (Eq, Show)
+
+queryRequest ''ListOnCallPolicies
+
+instance Paginate ListOnCallPolicies
+
+-- | Filters the result, showing only the escalation policies whose names match
+-- the query.
+makeLens "_locpQuery" ''ListOnCallPolicies
+
+-- | List all the existing escalation policies with currently on-call users.
+--
+-- If the start and end of an on-call object are null, then the user is always
+-- on-call for an escalation policy level.
+--
+-- @GET \/escalation_policies\/on_call@
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/on_call>
+listOnCallPolicies :: Request ListOnCallPolicies s [Policy]
+listOnCallPolicies =
+    mk ListOnCallPolicies
+        { _locpQuery = Nothing
+        } & path .~ "policies"

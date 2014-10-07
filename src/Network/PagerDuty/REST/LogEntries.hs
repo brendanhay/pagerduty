@@ -20,6 +20,8 @@
 -- incidents. Log entry data includes details about the event(s) that triggered
 -- the incident, who was notified and when, how they were notified, and who
 -- acknowledged or resolved it, amongst a few other things.
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/log_entries>
 module Network.PagerDuty.REST.LogEntries
     (
     -- * List Logs

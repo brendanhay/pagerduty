@@ -19,6 +19,8 @@
 -- | Schedule overrides are custom, non-recurring exceptions to your regular
 -- on-call schedules. Use them when your team members go on vacation, swap shifts,
 -- or when you simply cannot achieve your normal scheduling with recurring layers.
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/schedules>
 module Network.PagerDuty.REST.Schedules.Overrides
     (
     -- * List Overrides

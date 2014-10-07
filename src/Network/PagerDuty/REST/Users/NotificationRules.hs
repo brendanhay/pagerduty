@@ -16,6 +16,8 @@
 -- long after the incident to do so.
 --
 -- Access and manipulate the notification rules for a user.
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/users/notification_rules>
 module Network.PagerDuty.REST.Users.NotificationRules
     (
     ) where

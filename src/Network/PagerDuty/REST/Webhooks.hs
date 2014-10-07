@@ -21,6 +21,8 @@
 -- certain interesting changes to an incident's state will cause other types of
 -- incident webhook messages to be sent: Generally, any change to the @status@ or
 -- @assigned_to_user@ of an incident will cause an outgoing message to be sent.
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/webhooks>
 module Network.PagerDuty.REST.Webhooks
     (
 

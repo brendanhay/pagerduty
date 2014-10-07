@@ -36,15 +36,15 @@ library
       -- , Network.PagerDuty.REST
       -- , Network.PagerDuty.REST.Alerts
       -- , Network.PagerDuty.REST.EscalationPolicies
-      , Network.PagerDuty.REST.EscalationPolicies.EscalationRules
-      , Network.PagerDuty.REST.EscalationPolicies.OnCall
+--      , Network.PagerDuty.REST.EscalationPolicies.EscalationRules
+--      , Network.PagerDuty.REST.EscalationPolicies.OnCall
       , Network.PagerDuty.REST.Incidents
       , Network.PagerDuty.REST.Incidents.Notes
       -- , Network.PagerDuty.REST.LogEntries
       -- , Network.PagerDuty.REST.MaintenanceWindows
       -- , Network.PagerDuty.REST.Reports
       -- , Network.PagerDuty.REST.Schedules
-      , Network.PagerDuty.REST.Schedules.Overrides
+--      , Network.PagerDuty.REST.Schedules.Overrides
       -- , Network.PagerDuty.REST.Services
       , Network.PagerDuty.REST.Services.EmailFilters
       , Network.PagerDuty.REST.Users

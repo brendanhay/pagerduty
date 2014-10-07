@@ -18,6 +18,8 @@
 
 -- | Access high level reports about alerts and incidents.
 -- Useful for creating graphs.
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/reports>
 module Network.PagerDuty.REST.Reports
     (
     -- * Alerts Per Time

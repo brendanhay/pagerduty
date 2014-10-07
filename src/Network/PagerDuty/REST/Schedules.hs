@@ -20,6 +20,8 @@
 -- a user is on-call he is eligible to receive alerts from incidents.
 --
 -- This API allows users to manipulate on-call schedules.
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/schedules/overrides>
 module Network.PagerDuty.REST.Schedules
     (
     -- * List Schedules
