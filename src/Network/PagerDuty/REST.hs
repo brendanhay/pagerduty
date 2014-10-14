@@ -25,7 +25,7 @@ import           Control.Monad.IO.Class
 import           Control.Monad.Trans
 import           Data.Aeson              (FromJSON)
 import           Data.Conduit
-import           Data.Default
+import           Data.Default.Class
 import           Data.Monoid
 import           Network.HTTP.Client     (Manager)
 import qualified Network.HTTP.Client     as Client

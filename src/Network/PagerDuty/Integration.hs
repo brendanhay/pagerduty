@@ -73,7 +73,7 @@ module Network.PagerDuty.Integration
 import           Control.Lens
 import           Control.Monad.IO.Class
 import           Data.Aeson
-import           Data.Default
+import           Data.Default.Class
 import qualified Data.HashMap.Strict     as Map
 import           Data.Monoid
 import           Data.Text               (Text)

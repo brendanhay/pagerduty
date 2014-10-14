@@ -59,7 +59,7 @@ import           Data.Aeson.Types             (Parser)
 import           Data.ByteString              (ByteString)
 import qualified Data.ByteString.Char8        as BS
 import           Data.ByteString.Conversion   hiding (List)
-import           Data.Default
+import           Data.Default.Class
 import           Data.Function                (on)
 import qualified Data.HashMap.Strict          as Map
 import           Data.List                    (deleteBy, intersperse)
