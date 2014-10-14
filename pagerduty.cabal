@@ -59,26 +59,26 @@ library
       , Network.PagerDuty.Types
 
     build-depends:
-        aeson                 >  0.7   && <= 8.0
+        aeson                 >  0.7   && <= 0.8
       , base                  >= 4.5   && <  5.0
 --      , base64-bytestring     >= 1.0 && <  1.1
       , bifunctors
 
-      , bytestring            >= 0.9   && <  1.0
+      , bytestring            >= 0.9
       , bytestring-conversion >= 0.2.1
       , conduit               >= 0.5.5
-      , data-default          >= 0.5
+      , data-default-class
       , exceptions            >= 0.6
-      , http-client           >= 0.3.6 && <  0.5
-      , http-types            >= 0.8   && <  1.0
-      , lens                  >= 4.0   && <  5.0
+      , http-client           >= 0.3.6
+      , http-types            >= 0.8
+      , lens                  >= 4.0
       , lens-aeson            >= 1.0
       , mmorph                >= 1.0
-      , mtl                   >= 2.2.1 && <  3.0
+      , mtl                   >= 2.2.1
       , old-locale
-      , text                  >= 1.1   && <  2.0
+      , text                  >= 1.1
       , time                  == 1.4.*
-      , transformers          >= 0.4.1 && <  0.5
+      , transformers          >= 0.4.1
       , unordered-containers  >= 0.2.3
 
       , generics-sop

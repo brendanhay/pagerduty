@@ -33,3 +33,37 @@ import Network.PagerDuty.Types
 users :: Path
 users = "users"
 
+-- | List existing notification rules for the specified user.
+--
+-- @GET \/users\/\:user_id\/notification_rules@
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/users/notification_rules/list>
+listNotificationRules
+
+-- | Get details for a notification rule.
+--
+-- @GET \/users\/\:user_id\/notification_rules\/\:id@
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/users/notification_rules/show>
+getNotificationRule
+
+-- | Create a new notification rule for the specified user.
+--
+-- @POST \/users\/\:user_id\/notification_rules@
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/users/notification_rules/create>
+createNotificationRule
+
+-- | Update an existing notification rule.
+--
+-- @PUT \/users\/\:user_id\/notification_rules\/\:id@
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/users/notification_rules/update>
+updateNotificationRule
+
+-- | Remove a notification rule.
+--
+-- @DELETE \/users\/\:user_id\/notification_rules\/\:id@
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/users/notification_rules/delete>
+deleteNotificationRule
