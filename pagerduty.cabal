@@ -61,9 +61,7 @@ library
     build-depends:
         aeson                 >  0.7   && <= 0.8
       , base                  >= 4.5   && <  5.0
---      , base64-bytestring     >= 1.0 && <  1.1
       , bifunctors
-
       , bytestring            >= 0.9
       , bytestring-conversion >= 0.2.1
       , conduit               >= 0.5.5
