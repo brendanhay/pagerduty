@@ -397,21 +397,22 @@ instance QueryValues (Id a)
 instance QueryValueLike (Id a) where
     toQueryValue = Just . toByteString'
 
-type AlertId       = Id "alert"
-type ContactId     = Id "contact"
-type EmailFilterId = Id "email-filter"
-type IncidentId    = Id "incident"
-type LogEntryId    = Id "log-entry"
-type NoteId        = Id "note"
-type OverrideId    = Id "schedule-override"
-type PolicyId      = Id "escalation-policy"
-type RequesterId   = Id "requester"
-type RuleId        = Id "rule"
-type ScheduleId    = Id "schedule"
-type ServiceId     = Id "service"
-type UserId        = Id "user"
-type VendorId      = Id "vendor"
-type WindowId      = Id "maintenance-window"
+type AlertId            = Id "alert"
+type ContactId          = Id "contact"
+type EmailFilterId      = Id "email-filter"
+type EscalationPolicyId = Id "escalation-policy"
+type EscalationRuleId   = Id "escalation-rule"
+type IncidentId         = Id "incident"
+type LogEntryId         = Id "log-entry"
+type NoteId             = Id "note"
+type NotificationRuleId = Id "notification-rule"
+type OverrideId         = Id "schedule-override"
+type RequesterId        = Id "requester"
+type ScheduleId         = Id "schedule"
+type ServiceId          = Id "service"
+type UserId             = Id "user"
+type VendorId           = Id "vendor"
+type WindowId           = Id "maintenance-window"
 
 data Empty = Empty
 

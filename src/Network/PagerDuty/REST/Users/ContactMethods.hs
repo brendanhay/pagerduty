@@ -1,5 +1,8 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE ExtendedDefaultRules       #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE TemplateHaskell            #-}
+
+{-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
 -- Module      : Network.PagerDuty.REST.Users.ContactMethods
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
@@ -49,25 +52,18 @@ module Network.PagerDuty.REST.Users.ContactMethods
     -- * Types
     , ContactType (..)
 
+    , HasContact  (..)
     , Contact
-    , cId
-    , cUserId
-    , cLabel
-    , cAddress
-    , cType
-    , cCountryCode
-    , cSendShortEmail
-    , cBlacklisted
     ) where
 
 import Control.Lens
 import Data.Aeson.Lens
-import Data.Monoid
 import Data.Text               (Text)
-import Data.Time
 import Network.HTTP.Types
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
+
+default (Path)
 
 contacts :: UserId -> Path
 contacts u = "users" % u % "contact_methods"
@@ -91,7 +87,8 @@ data Contact = Contact
     , _cBlacklisted    :: Maybe Bool'
     } deriving (Eq, Show)
 
-deriveRecord ''Contact
+deriveJSON ''Contact
+makeClassy ''Contact
 
 -- | List existing contact methods for the specified user.
 --

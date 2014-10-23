@@ -76,7 +76,7 @@ policies :: Path
 policies = "escalation_policies"
 
 data Policy = Policy
-    { _pId       :: PolicyId
+    { _pId       :: EscalationPolicyId
     , _pName     :: Text
     , _pNumLoops :: !Int
     , _pRules    :: [Rule]
@@ -170,7 +170,7 @@ cpEscalationRules = upd.cpEscalationRules'
 -- @POST \/escalation_policies@
 --
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/create>
-createPolicy :: PolicyId
+createPolicy :: EscalationPolicyId
              -> Text   -- ^ 'creName'
              -> [Rule] -- ^ 'creEscalationRules'
              -> Request CreatePolicy s Policy
@@ -189,7 +189,7 @@ createPolicy i n rs =
 -- @GET \/escalation_policies\/\:id@
 --
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/show>
-getPolicy :: PolicyId -> Request Empty s Policy
+getPolicy :: EscalationPolicyId -> Request Empty s Policy
 getPolicy i = empty & path .~ policies % i & unwrap .~ key "escalation_policy"
 
 data UpdatePolicy = UpdatePolicy
@@ -223,7 +223,7 @@ upEscalationRules = upd.upEscalationRules'
 -- @PUT \/escalation_policies\/\:id@
 --
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/update>
-updatePolicy :: PolicyId -> Request UpdatePolicy s Policy
+updatePolicy :: EscalationPolicyId -> Request UpdatePolicy s Policy
 updatePolicy i =
     mk UpdatePolicy
         { _upName'            = Nothing
@@ -240,5 +240,5 @@ updatePolicy i =
 -- @DELETE \/escalation_policies\/\:id@
 --
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/delete>
-deletePolicy :: PolicyId -> Request Empty s Empty
+deletePolicy :: EscalationPolicyId -> Request Empty s Empty
 deletePolicy i = empty & meth .~ DELETE & path .~ policies % i

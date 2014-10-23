@@ -503,7 +503,7 @@ data UpdateIncident = UpdateIncident
     { _iiId               :: IncidentId
     , _iiStatus           :: Maybe UpdateStatus
     , _iiEscalationLevel  :: Maybe Int
-    , _iiEscalationPolicy :: Maybe PolicyId
+    , _iiEscalationPolicy :: Maybe EscalationPolicyId
     , _iiAssignedToUser   :: Maybe (CSV UserId)
     } deriving (Eq, Show)
 
@@ -595,7 +595,7 @@ acknowledgeIncidentBasic i =
     empty & meth .~ PUT & path .~ incidents % i % "acknowledge"
 
 data ReassignIncident = ReassignIncident
-    { _riEscalationPolicy' :: Maybe PolicyId
+    { _riEscalationPolicy' :: Maybe EscalationPolicyId
     , _riEscalationLevel'  :: Maybe Int
     , _riAssignedToUser'   :: Maybe (CSV UserId)
     } deriving (Eq, Show)
@@ -604,7 +604,7 @@ jsonRequest ''ReassignIncident
 
 -- | The ID of an escalation policy. Delegate the incident to this escalation
 -- policy.
-riEscalationPolicy :: Lens' (Request ReassignIncident s b) (Maybe PolicyId)
+riEscalationPolicy :: Lens' (Request ReassignIncident s b) (Maybe EscalationPolicyId)
 riEscalationPolicy = upd.riEscalationPolicy'
 
 -- | Escalate incident to this level in the escalation policy.

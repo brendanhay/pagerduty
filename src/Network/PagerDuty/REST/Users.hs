@@ -144,7 +144,7 @@ instance HasUserInfo UserInfo where
     userInfo = id
 
 data PolicyInfo = PolicyInfo
-    { _piId   :: PolicyId
+    { _piId   :: EscalationPolicyId
     , _piName :: Text
     } deriving (Eq, Show)
 

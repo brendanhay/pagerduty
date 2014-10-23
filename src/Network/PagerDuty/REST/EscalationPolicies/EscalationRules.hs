@@ -77,7 +77,9 @@ import           Network.PagerDuty.Types
 
 default (Path)
 
-rules :: PolicyId -> Path
+-- FIXME: The lenses here need to operate over (Request x s b) using upd
+
+rules :: EscalationPolicyId -> Path
 rules p = "escalation_policies" % p % "escalation_rules"
 
 data TargetType
@@ -137,7 +139,7 @@ instance ToJSON Target where
             TUser     u -> ("user",     toJSON u)
 
 data Rule = Rule
-    { _rId                       :: RuleId
+    { _rId                       :: EscalationRuleId
     , _rEscalationDelayInMinutes :: !Int
     , _rTargets                  :: [Target]
     } deriving (Eq, Show)
@@ -158,7 +160,7 @@ makeLens "_rTargets" ''Rule
 -- @GET \/escalation_policies\/\:escalation_policy_id\/escalation_rules@
 --
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/escalation_rules/list>
-listRules :: PolicyId -> Request Empty s [Rule]
+listRules :: EscalationPolicyId -> Request Empty s [Rule]
 listRules p = empty & path .~ rules p
 
 -- | Show the escalation rule for an existing escalation policy.
@@ -166,7 +168,7 @@ listRules p = empty & path .~ rules p
 -- @GET \/escalation_policies\/:escalation_policy_id\/escalation_rules\/\:id@
 --
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/escalation_rules/show>
-getRule :: PolicyId -> RuleId -> Request Empty s Rule
+getRule :: EscalationPolicyId -> EscalationRuleId -> Request Empty s Rule
 getRule p r = empty & path .~ rules p % r
 
 data CreateRule = CreateRule
@@ -194,7 +196,7 @@ makeLens "_crTargets" ''CreateRule
 -- @POST \/escalation_policies\/\:escalation_policy_id\/escalation_rules@
 --
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/escalation_rules/create>
-createRule :: PolicyId
+createRule :: EscalationPolicyId
            -> Int                        -- ^ 'crEscalationDelayInMinutes'
            -> [TargetId] -- ^ 'crTargets'
            -> Request CreateRule s Rule
@@ -225,7 +227,7 @@ makeLens "_urEscalationRules" ''UpdateRules
 -- @PUT \/escalation_policies\/\:escalation_policy_id\/escalation_rules@
 --
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/escalation_rules/multi_update>
-updateRules :: PolicyId
+updateRules :: EscalationPolicyId
             -> [TargetId] -- ^ 'urEscalationRules'
             -> Request UpdateRules s [Rule]
 updateRules p rs =
@@ -258,7 +260,7 @@ makeLens "_urTargets" ''UpdateRule
 -- @PUT \/escalation_policies\/\:escalation_policy_id\/escalation_rules\/\:id@
 --
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/escalation_rules/update>
-updateRule :: PolicyId -> RuleId -> Request UpdateRule s Rule
+updateRule :: EscalationPolicyId -> EscalationRuleId -> Request UpdateRule s Rule
 updateRule p r =
     mk UpdateRule
         { _urEscalationDelayInMinutes = Nothing
@@ -272,5 +274,5 @@ updateRule p r =
 -- @DELETE \/escalation_policies\/\:escalation_policy_id\/escalation_rules\/\:id@
 --
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/escalation_policies/escalation_rules/delete>
-deleteRule :: PolicyId -> RuleId -> Request Empty s Empty
+deleteRule :: EscalationPolicyId -> EscalationRuleId -> Request Empty s Empty
 deleteRule p r = empty & meth .~ DELETE & path .~ rules p % r

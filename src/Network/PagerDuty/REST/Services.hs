@@ -187,7 +187,7 @@ data ServiceType
 deriveNullary ''ServiceType
 
 data PolicyInfo = PolicyInfo
-    { _pinfoId   :: PolicyId
+    { _pinfoId   :: EscalationPolicyId
     , _pinfoName :: Text
     } deriving (Eq, Show)
 
@@ -322,7 +322,7 @@ listServices =
 
 data CreateService = CreateService
     { _csName'                   :: Text
-    , _csEscalationPolicyId'     :: PolicyId
+    , _csEscalationPolicyId'     :: EscalationPolicyId
     , _csType'                   :: !ServiceType
     , _csVendorId'               :: Maybe VendorId
     , _csDescription'            :: Maybe Text
@@ -351,7 +351,7 @@ csVendorId :: Lens' (Request CreateService s r) (Maybe VendorId)
 csVendorId = upd.csVendorId'
 
 -- | The id of the escalation policy to be used by this service.
-csEscalationPolicyId :: Lens' (Request CreateService s r) PolicyId
+csEscalationPolicyId :: Lens' (Request CreateService s r) EscalationPolicyId
 csEscalationPolicyId = upd.csEscalationPolicyId'
 
 -- | The duration in seconds before an incidents acknowledged in this service
@@ -377,7 +377,7 @@ csSeverityFilter = upd.csSeverityFilter'
 --
 -- /See:/ <http://developer.pagerduty.com/documentation/rest/services/create>
 createService :: Text
-              -> PolicyId
+              -> EscalationPolicyId
               -> ServiceType
               -> Request CreateService s Service
 createService n p t =
@@ -407,7 +407,7 @@ getService i = empty
 data UpdateService = UpdateService
     { _usName'                   :: Maybe Text
     , _usDescription'            :: Maybe Text
-    , _usEscalationPolicyId'     :: Maybe PolicyId
+    , _usEscalationPolicyId'     :: Maybe EscalationPolicyId
     , _usAcknowledgementTimeout' :: Maybe Int
     , _usAutoResolveTimeout'     :: Maybe Int
     , _usSeverityFilter'         :: Maybe SeverityFilter
@@ -424,7 +424,7 @@ usDescription :: Lens' (Request UpdateService s r) (Maybe Text)
 usDescription = upd.usDescription'
 
 -- | The id of the escalation policy to be used by this service.
-usEscalationPolicyId :: Lens' (Request UpdateService s r) (Maybe PolicyId)
+usEscalationPolicyId :: Lens' (Request UpdateService s r) (Maybe EscalationPolicyId)
 usEscalationPolicyId = upd.usEscalationPolicyId'
 
 -- | The duration in seconds before an incidents acknowledged in this service
