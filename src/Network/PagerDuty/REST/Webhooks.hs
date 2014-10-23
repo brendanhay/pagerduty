@@ -30,7 +30,6 @@ module Network.PagerDuty.REST.Webhooks
     , wId
     , wType
     , wCreatedOn
-    , wData
     ) where
 
 import           Control.Applicative              hiding (empty)

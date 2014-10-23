@@ -108,10 +108,10 @@ module Network.PagerDuty.REST.Services
 
 import Control.Lens
 import Data.Aeson.Lens
-import Data.ByteString.Builder (Builder)
-import Data.Text               (Text)
+import Data.Text                                    (Text)
 import Data.Time
 import Network.HTTP.Types
+import Network.PagerDuty.REST.Services.EmailFilters
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
 
@@ -223,8 +223,8 @@ data Service = Service
     , _svcIncidentCounts         :: IncidentCounts
     , _svcEmailFilterMode        :: EmailFilterMode
     , _svcType                   :: ServiceType
-    , _svcEscalationPolicy       :: Maybe PolicyInfo   -- FIXME: extract from inline.
-    , _svcEmailFilters           :: Maybe EmailFilters -- FIXME: extract from inline.
+    , _svcEscalationPolicy       :: Maybe PolicyInfo        -- FIXME: extract from inline.
+    , _svcEmailFilters           :: Maybe [EmailFilterInfo] -- FIXME: extract from inline.
     , _svcSeverityFilter         :: Maybe SeverityFilter
     } deriving (Eq, Show)
 

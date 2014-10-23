@@ -85,6 +85,7 @@ import Control.Applicative     hiding (empty)
 import Control.Lens            hiding ((.=))
 import Data.Aeson
 import Data.Default.Class
+import Data.Monoid
 import Data.Text               (Text)
 import Data.Time
 import Network.HTTP.Types
@@ -192,17 +193,17 @@ instance FromJSON User where
              <*> o .:  "invitation_sent"
              <*> o .:? "job_title"
 
--- instance ToJSON User where
---     toJSON u = Object (x <> y)
---       where
---         Object x = toJSON (_uInfo u)
---         Object y = object
---             [ "role"            .= _uRole u
---             , "avatar_url"      .= _uAvatarUrl u
---             , "user_url"        .= _uUserUrl u
---             , "invitation_sent" .= _uInvitationSent' u
---             , "job_title"  
---             ]
+instance ToJSON User where
+    toJSON u = Object (x <> y)
+      where
+        Object x = toJSON (_uInfo u)
+        Object y = object
+            [ "role"            .= _uRole            u
+            , "avatar_url"      .= _uAvatarUrl       u
+            , "user_url"        .= _uUserUrl         u
+            , "invitation_sent" .= _uInvitationSent' u
+            , "job_title"       .= _uJobTitle        u
+            ]
 
 instance HasUserInfo User where
     userInfo = uInfo

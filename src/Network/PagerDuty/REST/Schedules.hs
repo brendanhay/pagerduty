@@ -112,7 +112,6 @@ module Network.PagerDuty.REST.Schedules
 
 import Control.Lens                 hiding ((.=))
 import Data.Aeson
-import Data.ByteString.Builder      (Builder)
 import Data.Text                    (Text)
 import Data.Time
 import Network.HTTP.Types

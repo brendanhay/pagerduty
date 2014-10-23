@@ -1,7 +1,10 @@
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
-{-# LANGUAGE TypeFamilies      #-}
+{-# LANGUAGE ExtendedDefaultRules       #-}
+{-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeFamilies               #-}
+
+{-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
 -- Module      : Network.PagerDuty.REST.EscalationPolicies
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
@@ -57,20 +60,17 @@ module Network.PagerDuty.REST.EscalationPolicies
     , pServices
     ) where
 
-import           Control.Applicative             ((<$>))
-import           Control.Lens
-import           Data.Aeson
-import           Data.Aeson.Lens
-import qualified Data.HashMap.Strict             as Map
-import           Data.Text                       (Text)
-import qualified Data.Text                       as Text
-import           Network.HTTP.Types
-import           Network.PagerDuty.REST.Services (Service)
-import           Network.PagerDuty.REST.Users
-import           Network.PagerDuty.TH
-import           Network.PagerDuty.Types
+import Control.Lens
+import Data.Aeson.Lens
+import Data.Text                       (Text)
+import Network.HTTP.Types
+import Network.PagerDuty.REST.Services (Service)
+import Network.PagerDuty.TH
+import Network.PagerDuty.Types
 
 import Network.PagerDuty.REST.EscalationPolicies.EscalationRules
+
+default (Path)
 
 policies :: Path
 policies = "escalation_policies"
