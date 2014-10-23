@@ -412,6 +412,7 @@ type ScheduleId         = Id "schedule"
 type ServiceId          = Id "service"
 type UserId             = Id "user"
 type VendorId           = Id "vendor"
+type WebhookId          = Id "webhook"
 type WindowId           = Id "maintenance-window"
 
 data Empty = Empty

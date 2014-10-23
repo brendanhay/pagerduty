@@ -2,6 +2,7 @@
 {-# LANGUAGE ExtendedDefaultRules       #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase                 #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
@@ -144,7 +145,7 @@ import           Control.Applicative        hiding (empty)
 import           Control.Lens
 import           Data.Aeson
 import           Data.ByteString.Conversion (ToByteString(..), toByteString')
-import           Data.Default
+import           Data.Default.Class
 import           Data.Monoid                hiding (All)
 import           Data.Text                  (Text)
 import qualified Data.Text.Encoding         as Text
@@ -198,18 +199,18 @@ data IncidentStatus
       deriving (Eq, Show)
 
 instance ToByteString IncidentStatus where
-    builder ITriggered    = "triggered"
-    builder IAcknowledged = "acknowledged"
-    builder IResolved     = "resolved"
-    builder (IOther t)    = builder t
+    builder = \case
+        ITriggered    -> "triggered"
+        IAcknowledged -> "acknowledged"
+        IResolved     -> "resolved"
+        IOther t      -> builder t
 
 instance FromJSON IncidentStatus where
-    parseJSON = withText "status" $ \t ->
-         return $ case t of
-            "triggered"    -> ITriggered
-            "acknowledged" -> IAcknowledged
-            "resolved"     -> IResolved
-            _              -> IOther t
+    parseJSON = withText "status" $ pure . \case
+        "triggered"    -> ITriggered
+        "acknowledged" -> IAcknowledged
+        "resolved"     -> IResolved
+        t              -> IOther t
 
 instance ToJSON IncidentStatus where
     toJSON = String . Text.decodeUtf8 . toByteString'
@@ -328,13 +329,13 @@ lsUntil = upd.lsUntil'.mapping _D
 -- | When set, the since and until parameters and defaults are
 -- ignored. Use this to get all incidents since the account was created.
 lsDateRange :: Lens' (Request ListIncidents s b) Bool
-lsDateRange = upd . lens get' set'
+lsDateRange = upd . lens get_ set_
   where
-    get' x
+    get_ x
         | Just All <- _lsDateRange' x = True
         | otherwise                   = False
 
-    set' l x = l { _lsDateRange' = if x then Just All else Nothing }
+    set_ l x = l { _lsDateRange' = if x then Just All else Nothing }
 
 -- | Returns only the incidents currently in the passed status(es).
 lsStatus :: Lens' (Request ListIncidents s b) (Maybe [IncidentStatus])
@@ -434,13 +435,13 @@ cUntil = upd.cUntil'.mapping _D
 -- | When set, the since and until parameters and defaults are
 -- ignored. Use this to get all counts since the account was created.
 cDateRange :: Lens' (Request CountIncidents s b) Bool
-cDateRange = upd . lens get' set'
+cDateRange = upd . lens get_ set_
   where
-    get' x
+    get_ x
         | Just All <- _cDateRange' x = True
         | otherwise                   = False
 
-    set' l x = l { _cDateRange' = if x then Just All else Nothing }
+    set_ l x = l { _cDateRange' = if x then Just All else Nothing }
 
 -- | Only counts the incidents currently in the passed status(es).
 cStatus :: Lens' (Request CountIncidents s b) (Maybe [IncidentStatus])

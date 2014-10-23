@@ -84,7 +84,7 @@ module Network.PagerDuty.REST.Users
 import Control.Applicative     hiding (empty)
 import Control.Lens            hiding ((.=))
 import Data.Aeson
-import Data.Default
+import Data.Default.Class
 import Data.Text               (Text)
 import Data.Time
 import Network.HTTP.Types

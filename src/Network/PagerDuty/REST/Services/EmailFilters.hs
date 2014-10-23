@@ -42,7 +42,7 @@ module Network.PagerDuty.REST.Services.EmailFilters
 import Control.Applicative     hiding (empty)
 import Control.Lens            hiding ((.=))
 import Data.Aeson
-import Data.Default
+import Data.Default.Class
 import Data.Monoid
 import Data.Text               (Text)
 import Network.HTTP.Types

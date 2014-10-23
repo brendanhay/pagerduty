@@ -37,7 +37,7 @@ library
       -- , Network.PagerDuty.REST.Alerts
       -- , Network.PagerDuty.REST.EscalationPolicies
 --      , Network.PagerDuty.REST.EscalationPolicies.EscalationRules
-      -- , Network.PagerDuty.REST.Incidents
+      , Network.PagerDuty.REST.Incidents
       -- , Network.PagerDuty.REST.Incidents.Notes
       -- , Network.PagerDuty.REST.LogEntries
       -- , Network.PagerDuty.REST.MaintenanceWindows

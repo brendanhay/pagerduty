@@ -115,7 +115,7 @@ import           Control.Applicative
 import           Control.Lens
 import           Data.Aeson
 import           Data.Aeson.Lens
-import           Data.Default
+import           Data.Default.Class
 import qualified Data.HashMap.Strict          as Map
 import           Data.Text                    (Text)
 import qualified Data.Text                    as Text
