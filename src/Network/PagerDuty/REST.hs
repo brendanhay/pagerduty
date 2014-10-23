@@ -1,5 +1,6 @@
 {-# LANGUAGE GADTs             #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
 
 -- Module      : Network.PagerDuty.REST
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
@@ -15,7 +16,9 @@ module Network.PagerDuty.REST
     (
     -- * Sending requests
       send
+    , sendWith
     , paginate
+    , paginateWith
     ) where
 
 import           Control.Applicative
@@ -35,43 +38,54 @@ import           Network.PagerDuty.Internal.Types
 
 -- FIXME: verify correct actions are all paginated
 -- FIXME: Ensure requesterid parameter is always first
+-- FIXME: add smart constructors for all types, for testing purposes
 
 send :: (MonadIO m, FromJSON b)
-     => Auth s
-     -> SubDomain
+     => SubDomain
+     -> Auth s
      -> Manager
      -> Request a s b
      -> m (Either Error b)
-send a s m = liftM (fmap fst) . http a s m
+send d a m = sendWith (prod d a m)
+
+sendWith :: (MonadIO m, FromJSON b)
+         => Env s
+         -> Request a s b
+         -> m (Either Error b)
+sendWith e = liftM (fmap fst) . http e
 
 paginate :: (MonadIO m, Paginate a, FromJSON b)
-         => Auth s
-         -> SubDomain
+         => SubDomain
+         -> Auth s
          -> Manager
          -> Request a s b
          -> Source m (Either Error b)
-paginate a d m = go
+paginate d a m = paginateWith (prod d a m)
+
+paginateWith :: (MonadIO m, Paginate a, FromJSON b)
+             => Env s
+             -> Request a s b
+             -> Source m (Either Error b)
+paginateWith e = go
   where
     go rq = do
-        rs <- lift (http a d m rq)
+        rs <- lift (http e rq)
         yield  (fst <$> rs)
         either (const (return ()))
                (maybe (return ()) go . next rq . snd)
                rs
 
 http :: (MonadIO m, FromJSON b)
-     => Auth s
-     -> SubDomain
-     -> Manager
+     => Env s
      -> Request a s b
      -> m (Either Error (b, Maybe Pager))
-http a (SubDomain h) m rq = request m rq $ raw
-    { Client.host        = h
+http Env{..} rq = request _envManager _envLogger rq $ raw
+    { Client.host        = subDomain _envDomain
     , Client.path        = renderPath (rq ^. path)
     , Client.queryString = renderQuery False (rq ^. query)
     }
   where
-    raw = case a of
+   raw = case _envAuth of
         AuthBasic u p -> Client.applyBasicAuth u p def
         AuthToken t   -> def
             { Client.requestHeaders = [("Authorization", "Token token=" <> t)]

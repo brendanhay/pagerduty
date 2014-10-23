@@ -22,18 +22,18 @@
 module Control.Monad.Trans.PagerDuty
     (
     -- * Transformer
-      PD
-    , PDT
+      PagerDuty
+    , PagerDutyT
 
     -- * Run
-    , runPDT
+    , runPagerDutyT
 
     -- * Environment
     , Env
     , envDomain
     , envAuth
     , envManager
---    , envLogging
+    , envLogger
 
     -- * Integration API
     , submit
@@ -44,7 +44,6 @@ module Control.Monad.Trans.PagerDuty
     ) where
 
 import           Control.Applicative
-import           Control.Lens
 import           Control.Monad.Base
 import           Control.Monad.Catch
 import           Control.Monad.Except
@@ -53,26 +52,16 @@ import           Control.Monad.Reader
 import           Control.Monad.Trans.Control
 import           Data.Aeson
 import           Data.Conduit
-import           Network.HTTP.Client           (Manager)
-import           Network.PagerDuty.Integration (Event, Response)
-import qualified Network.PagerDuty.Integration as Int
-import qualified Network.PagerDuty.REST        as REST
+import           Network.PagerDuty.Integration    (Event, Response)
+import qualified Network.PagerDuty.Integration    as Int
 import           Network.PagerDuty.Internal.Types
+import qualified Network.PagerDuty.REST           as REST
 
-data Env (s :: Security) = Env
-    { _envDomain  :: SubDomain
-    , _envAuth    :: Auth s
-    , _envManager :: Manager
---    , _envLogging ::
-    }
+-- | A convenient alias for 'PagerDutyT' 'IO'.
+type PagerDuty s = PagerDutyT s IO
 
-makeLenses ''Env
-
--- | A convenient alias for 'PDT' 'IO'.
-type PD s = PDT s IO
-
-newtype PDT s m a = PDT
-    { unPDT :: ReaderT (Env s) (ExceptT Error m) a
+newtype PagerDutyT s m a = PagerDutyT
+    { unPagerDutyT :: ReaderT (Env s) (ExceptT Error m) a
     } deriving
         ( Functor
         , Applicative
@@ -84,30 +73,32 @@ newtype PDT s m a = PDT
         , MonadError  Error
         )
 
-instance MonadTrans (PDT s) where
-    lift = PDT . lift . lift
+instance MonadTrans (PagerDutyT s) where
+    lift = PagerDutyT . lift . lift
     {-# INLINE lift #-}
 
-instance MonadBase b m => MonadBase b (PDT s m) where
+instance MonadBase b m => MonadBase b (PagerDutyT s m) where
     liftBase = liftBaseDefault
     {-# INLINE liftBase #-}
 
-instance MonadTransControl (PDT s) where
-    newtype StT (PDT s) a = StTAWS
-        { unStTAWS :: StT (ExceptT Error) (StT (ReaderT (Env s)) a)
+instance MonadTransControl (PagerDutyT s) where
+    newtype StT (PagerDutyT s) a = StTPDT
+        { unStT :: StT (ExceptT Error) (StT (ReaderT (Env s)) a)
         }
 
-    liftWith f = PDT $
+    liftWith f = PagerDutyT $
         liftWith $ \g ->
             liftWith $ \h ->
-                f (liftM StTAWS . h . g . unPDT)
+                f (liftM StTPDT . h . g . unPagerDutyT)
     {-# INLINE liftWith #-}
 
-    restoreT = PDT . restoreT . restoreT . liftM unStTAWS
+    restoreT = PagerDutyT . restoreT . restoreT . liftM unStT
     {-# INLINE restoreT #-}
 
-instance MonadBaseControl b m => MonadBaseControl b (PDT s m) where
-    newtype StM (PDT s m) a = StMPDT { unStMPDT :: ComposeSt (PDT s) m a }
+instance MonadBaseControl b m => MonadBaseControl b (PagerDutyT s m) where
+    newtype StM (PagerDutyT s m) a = StMPDT
+        { unStMPDT :: ComposeSt (PagerDutyT s) m a
+        }
 
     liftBaseWith = defaultLiftBaseWith StMPDT
     {-# INLINE liftBaseWith #-}
@@ -115,16 +106,16 @@ instance MonadBaseControl b m => MonadBaseControl b (PDT s m) where
     restoreM = defaultRestoreM unStMPDT
     {-# INLINE restoreM #-}
 
-instance MFunctor (PDT s) where
-    hoist nat m = PDT (ReaderT (ExceptT . nat . runPDT m))
+instance MFunctor (PagerDutyT s) where
+    hoist nat m = PagerDutyT (ReaderT (ExceptT . nat . runPagerDutyT m))
     {-# INLINE hoist #-}
 
-instance MMonad (PDT s) where
-    embed f m = ask >>= f . runPDT m >>= either throwError return
+instance MMonad (PagerDutyT s) where
+    embed f m = ask >>= f . runPagerDutyT m >>= either throwError return
     {-# INLINE embed #-}
 
-runPDT :: PDT s m a -> Env s -> m (Either Error a)
-runPDT (PDT k) = runExceptT . runReaderT k
+runPagerDutyT :: PagerDutyT s m a -> Env s -> m (Either Error a)
+runPagerDutyT (PagerDutyT k) = runExceptT . runReaderT k
 
 hoistEither :: (MonadError Error m) => Either Error a -> m a
 hoistEither = either throwError return
@@ -147,8 +138,7 @@ submitCatch :: ( MonadIO m
                )
             => a
             -> m (Either Error Response)
-submitCatch x = scoped $ \e ->
-    Int.submit (_envManager e) x
+submitCatch x = scoped $ \e -> Int.submitWith (_envManager e) (_envLogger e) x
 
 send :: ( MonadIO m
         , MonadReader (Env s) m
@@ -165,8 +155,7 @@ sendCatch :: ( MonadIO m
              )
           => Request a s b
           -> m (Either Error b)
-sendCatch x = scoped $ \Env{..} ->
-    REST.send _envAuth _envDomain _envManager x
+sendCatch x = scoped (`REST.sendWith` x)
 
 paginate :: ( MonadIO m
             , MonadReader (Env s) m
@@ -185,5 +174,4 @@ paginateCatch :: ( MonadIO m
                  )
               => Request a s b
               -> Source m (Either Error b)
-paginateCatch x = scoped $ \Env{..} ->
-    REST.paginate _envAuth _envDomain _envManager x
+paginateCatch x = scoped (`REST.paginateWith` x)

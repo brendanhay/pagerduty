@@ -1,4 +1,5 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 -- Module      : Network.PagerDuty.Internal.IO
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
@@ -14,20 +15,25 @@ module Network.PagerDuty.Internal.IO where
 
 import           Control.Monad
 import           Control.Monad.IO.Class
-import           Data.Aeson                hiding (Error)
-import qualified Data.ByteString.Lazy      as LBS
-import           Network.HTTP.Client       (Manager, httpLbs)
-import qualified Network.HTTP.Client       as Client
+import           Data.Aeson                       hiding (Error)
+import qualified Data.ByteString.Lazy             as LBS
+import           Data.Monoid
+import qualified Data.Text                        as Text
+import           Network.HTTP.Client              (Manager, httpLbs)
+import qualified Network.HTTP.Client              as Client
 import           Network.HTTP.Types
 import           Network.PagerDuty.Internal.Types
 
 request :: (MonadIO m, ToJSON a, FromJSON b)
         => Manager
+        -> Logger
         -> a
         -> Client.Request
         -> m (Either Error b)
-request m x rq = liftIO (httpLbs raw m) >>= response
+request m l x rq = msg >> liftIO (httpLbs raw m) >>= response l
   where
+    msg = debug l ("[Raw Request]\n" <> Text.pack (show raw))
+
     raw = rq
         { Client.secure         = True
         , Client.port           = 443
@@ -40,10 +46,11 @@ request m x rq = liftIO (httpLbs raw m) >>= response
         , ("Accept",       "application/json")
         ]
 
-response :: (Monad m, FromJSON b)
-         => Client.Response LBS.ByteString
+response :: forall m b. (MonadIO m, FromJSON b)
+         => Logger
+         -> Client.Response LBS.ByteString
          -> m (Either Error b)
-response rs = case statusCode (Client.responseStatus rs) of
+response l rs = case statusCode (Client.responseStatus rs) of
     200 -> success
     201 -> success
     400 -> failure
@@ -60,7 +67,9 @@ response rs = case statusCode (Client.responseStatus rs) of
         $ "Unable to parse response into a PagerDuty API compatible type: "
         ++ show body
 
-    parse :: (Monad m, FromJSON a) => m (Maybe a)
-    parse = return (decode body)
+    parse :: FromJSON a => m (Maybe a)
+    parse = msg >> return (decode body)
+
+    msg = debug l ("[Raw Response]\n" <> Text.pack (show rs))
 
     body = Client.responseBody rs

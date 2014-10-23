@@ -25,23 +25,25 @@
 module Network.PagerDuty.Internal.Types where
 
 import           Control.Applicative
-import           Control.Lens                 hiding ((.=))
-import           Data.Aeson                   hiding (Error)
-import           Data.Aeson.Types             (Parser)
-import           Data.ByteString              (ByteString)
-import qualified Data.ByteString.Char8        as BS
-import           Data.ByteString.Conversion   hiding (List)
+import           Control.Lens                     hiding ((.=))
+import           Control.Monad.IO.Class
+import           Data.Aeson                       hiding (Error)
+import           Data.Aeson.Types                 (Parser)
+import           Data.ByteString                  (ByteString)
+import qualified Data.ByteString.Char8            as BS
+import           Data.ByteString.Conversion       hiding (List)
 import           Data.Default.Class
-import           Data.Function                (on)
-import qualified Data.HashMap.Strict          as Map
-import           Data.List                    (deleteBy, intersperse)
+import           Data.Function                    (on)
+import qualified Data.HashMap.Strict              as Map
+import           Data.List                        (deleteBy, intersperse)
 import           Data.Monoid
 import           Data.String
-import           Data.Text                    (Text)
-import qualified Data.Text                    as Text
-import qualified Data.Text.Encoding           as Text
+import           Data.Text                        (Text)
+import qualified Data.Text                        as Text
+import qualified Data.Text.Encoding               as Text
 import           Data.Time
 import           GHC.TypeLits
+import           Network.HTTP.Client              (Manager)
 import           Network.HTTP.Types
 import           Network.HTTP.Types.QueryLike
 import           Network.PagerDuty.Internal.Query
@@ -137,7 +139,7 @@ data Auth (a :: Security) where
 deriving instance Eq   (Auth a)
 deriving instance Show (Auth a)
 
-newtype SubDomain = SubDomain ByteString
+newtype SubDomain = SubDomain { subDomain :: ByteString }
     deriving (Eq, Show, IsString)
 
 domain :: SubDomain -> ByteString
@@ -146,6 +148,30 @@ domain (SubDomain s)
     | otherwise              = s <> base
   where
     base = ".pagerduty.com"
+
+-- | The log level and associated logger function.
+data Logger
+    = None
+    | Debug (Text -> IO ())
+
+-- | Log a message using the debug logger, or if none is specified noop.
+debug :: MonadIO m => Logger -> Text -> m ()
+debug None      = const (return ())
+debug (Debug f) = liftIO . f
+
+-- | The environment containing the parameters required to
+-- make PagerDuty requests.
+data Env (s :: Security) = Env
+    { _envDomain  :: SubDomain
+    , _envAuth    :: Auth s
+    , _envManager :: Manager
+    , _envLogger  :: Logger
+    }
+
+makeLenses ''Env
+
+prod :: SubDomain -> Auth s -> Manager -> Env s
+prod d a m = Env d a m None
 
 newtype Code = Code Integer
     deriving (Eq, Show)
