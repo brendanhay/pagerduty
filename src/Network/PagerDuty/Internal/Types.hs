@@ -163,12 +163,15 @@ debug (Debug f) = liftIO . f
 -- make PagerDuty requests.
 data Env (s :: Security) = Env
     { _envDomain  :: SubDomain
-    , _envAuth    :: Auth s
+    , _envAuth'   :: Auth s
     , _envManager :: Manager
     , _envLogger  :: Logger
     }
 
 makeLenses ''Env
+
+envAuth :: forall s s'. Lens (Env s) (Env s') (Auth s) (Auth s')
+envAuth = lens _envAuth' (\s x -> s { _envAuth' = x })
 
 prod :: SubDomain -> Auth s -> Manager -> Env s
 prod d a m = Env d a m None

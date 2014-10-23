@@ -1,6 +1,5 @@
 {-# LANGUAGE GADTs             #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards   #-}
 
 -- Module      : Network.PagerDuty.REST
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
@@ -14,10 +13,21 @@
 
 module Network.PagerDuty.REST
     (
+
     -- * Sending requests
       send
-    , sendWith
     , paginate
+
+    -- * Configuration
+    -- ** Environment
+    , Env
+    , envDomain
+    , envAuth
+    , envManager
+    , envLogger
+
+    -- ** Requests
+    , sendWith
     , paginateWith
     ) where
 
@@ -79,13 +89,13 @@ http :: (MonadIO m, FromJSON b)
      => Env s
      -> Request a s b
      -> m (Either Error (b, Maybe Pager))
-http Env{..} rq = request _envManager _envLogger rq $ raw
-    { Client.host        = subDomain _envDomain
+http e rq = request (e ^. envManager) (e ^. envLogger) rq $ raw
+    { Client.host        = domain (e ^. envDomain)
     , Client.path        = renderPath (rq ^. path)
     , Client.queryString = renderQuery False (rq ^. query)
     }
   where
-   raw = case _envAuth of
+   raw = case (e ^. envAuth) of
         AuthBasic u p -> Client.applyBasicAuth u p def
         AuthToken t   -> def
             { Client.requestHeaders = [("Authorization", "Token token=" <> t)]
