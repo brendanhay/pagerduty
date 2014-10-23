@@ -326,7 +326,7 @@ data LogEntry = LogEntry'
     } deriving (Eq, Show)
 
 instance FromJSON LogEntry where
-    parseJSON = withObject "log_entry" $ \o -> do
+    parseJSON = withObject "log_entry" $ \o ->
         LogEntry' <$> o .:  "id"
                   <*> o .:  "type"
                   <*> o .:  "created_at"
