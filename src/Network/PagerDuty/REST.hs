@@ -33,12 +33,7 @@ import           Network.HTTP.Types
 import           Network.PagerDuty.Internal.IO
 import           Network.PagerDuty.Internal.Types
 
--- Make the type names consistent, for example:
--- Suffix with *Details or *Info for results
--- No suffix for requests if necessary
-
 -- FIXME: verify correct actions are all paginated
-
 -- FIXME: Ensure requesterid parameter is always first
 
 send :: (MonadIO m, FromJSON b)
