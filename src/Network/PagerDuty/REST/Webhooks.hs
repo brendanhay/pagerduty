@@ -101,6 +101,9 @@ data Webhook = Webhook
 
 deriveJSON ''Webhook
 
+instance HasIncident Webhook where
+    incident = lens _wData (\s x -> s { _wData = x })
+
 -- | Uniquely identifies this outgoing webhook message; can be used for
 -- idempotency when processing the messages.
 makeLens "_wId" ''Webhook
@@ -111,6 +114,3 @@ makeLens "_wType" ''Webhook
 -- | The date/time when the incident changed state.
 wCreatedOn :: Lens' Webhook UTCTime
 wCreatedOn = lens _wCreatedOn (\i x -> i { _wCreatedOn = x }) . _D
-
--- | The incident details at the time of the state change.
-makeLens "_wData" ''Webhook

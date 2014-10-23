@@ -226,7 +226,7 @@ data ScheduleInfo = ScheduleInfo
     , _siName'               :: Text
     , _siTimeZone'           :: TZ
     , _siToday'              :: Date
-    , _siEscalationPolicies' :: [PolicyId]
+    , _siEscalationPolicies' :: [EscalationPolicyId]
     } deriving (Eq, Show)
 
 deriveRecord ''ScheduleInfo
@@ -243,7 +243,7 @@ class HasScheduleInfo a where
     -- | The current day in the schedule's time zone.
     sToday              :: Lens' a UTCTime
     -- | An list of all the escalation policies that uses this schedule.
-    sEscalationPolicies :: Lens' a [PolicyId]
+    sEscalationPolicies :: Lens' a [EscalationPolicyId]
 
     sId                 = scheduleInfo.siId'
     sName               = scheduleInfo.siName'

@@ -125,20 +125,8 @@ module Network.PagerDuty.REST.Incidents
     , aAt
     , aObject
 
+    , HasIncident (..)
     , Incident
-    , iIncidentNumber
-    , iStatus
-    , iCreatedOn
-    , iHtmlUrl
-    , iIncidentKey
-    , iService
-    , iEscalationPolicy
-    , iAssignedTo
-    , iAcknowledgers
-    , iLastStatusChangeBy
-    , iLastStatusChangeOn
-    , iTriggerSummaryData
-    , iTriggerDetailsHtmlUrl
     ) where
 
 import           Control.Applicative        hiding (empty)
@@ -223,76 +211,104 @@ data Assignee = Assignee
 deriveRecord ''Assignee
 
 data Incident = Incident
-    { _iIncidentNumber        :: !Int
-    , _iStatus                :: !IncidentStatus
-    , _iCreatedOn             :: Date
-    , _iHtmlUrl               :: Text
-    , _iIncidentKey           :: Maybe IncidentKey
-    , _iService               :: Object
-    , _iEscalationPolicy      :: Maybe Object
-    , _iAssignedTo            :: [Assignee]
-    , _iAcknowledgers         :: [Assignee]
-    , _iLastStatusChangeBy    :: Maybe Assignee
-    , _iLastStatusChangeOn    :: Maybe Date
-    , _iTriggerSummaryData    :: Object
-    , _iTriggerDetailsHtmlUrl :: Text
+    { _iIncidentNumber'        :: !Int
+    , _iStatus'                :: !IncidentStatus
+    , _iCreatedOn'             :: Date
+    , _iHtmlUrl'               :: Text
+    , _iIncidentKey'           :: Maybe IncidentKey
+    , _iService'               :: Object
+    , _iEscalationPolicy'      :: Maybe Object
+    , _iAssignedTo'            :: [Assignee]
+    , _iAcknowledgers'         :: [Assignee]
+    , _iLastStatusChangeBy'    :: Maybe Assignee
+    , _iLastStatusChangeOn'    :: Maybe Date
+    , _iTriggerSummaryData'    :: Object
+    , _iTriggerDetailsHtmlUrl' :: Text
     } deriving (Eq, Show)
 
-deriveJSON ''Incident
+deriveRecord ''Incident
 
--- | The number of the incident. This is unique across your account.
-makeLens "_iIncidentNumber" ''Incident
+class HasIncident a where
+    incident               :: Lens' a Incident
 
--- | The current status of the incident. Valid statuses are:
-makeLens "_iStatus" ''Incident
+    -- | The number of the incident. This is unique across your account.
+    iIncidentNumber        :: Lens' a Int
 
--- | The date/time the incident was triggered.
-iCreatedOn :: Lens' Incident UTCTime
-iCreatedOn = lens _iCreatedOn (\i x -> i { _iCreatedOn = x }) . _D
+    -- | The current status of the incident. Valid statuses are:
+    iStatus                :: Lens' a IncidentStatus
 
--- | The PagerDuty website URL where the incident can be viewed and further
--- actions taken. This is not the resource URL.
-makeLens "_iHtmlUrl" ''Incident
+    -- | The date/time the incident was triggered.
+    iCreatedOn             :: Lens' a UTCTime
 
--- | The incident's de-duplication key. See the PagerDuty Integration API docs
--- for further details.
-makeLens "_iIncidentKey" ''Incident
+    -- | The PagerDuty website URL where the incident can be viewed and further
+    -- actions taken. This is not the resource URL.
+    iHtmlUrl               :: Lens' a Text
 
--- | The PagerDuty service that the incident belongs to. The service will
--- contain fields of its own.
-makeLens "_iService" ''Incident
+    -- | The incident's de-duplication key. See the PagerDuty Integration API
+    -- docs for further details.
+    iIncidentKey           :: Lens' a (Maybe IncidentKey)
 
--- | The escalation policy that the incident belongs to. The policy will
--- contain fields of its own.
-makeLens "_iEscalationPolicy" ''Incident
+    -- | The PagerDuty service that the incident belongs to. The service will
+    -- contain fields of its own.
+    iService               :: Lens' a Object
 
--- | The list of assignments of the incident. An assignment is an object
--- containing the assigned user as well as the date/time the incident was assigned
--- to that user. The user will contain fields of its own. This list is empty if
--- the status of the incident is resolved.
-makeLens "_iAssignedTo" ''Incident
+    -- | The escalation policy that the incident belongs to. The policy will
+    -- contain fields of its own.
+    iEscalationPolicy      :: Lens' a (Maybe Object)
 
--- | The list of acknowledgements of the incident. An acknowledgement is an
--- object containing the acknowleding object (either a user or the integration
--- API) as well as the date/time the incident was acknowledged. This field is only
--- present if the status of the incident is acknowledged. This field is sorted in
--- ascending order by acknowledgement time.
-makeLens "_iAcknowledgers" ''Incident
+    -- | The list of assignments of the incident. An assignment is an object
+    -- containing the assigned user as well as the date/time the incident was
+    -- assigned to that user. The user will contain fields of its own.
+    -- This list is empty if the status of the incident is resolved.
+    iAssignedTo            :: Lens' a [Assignee]
 
--- | The user who is responsible for the incident's last status change. If the incident is in the acknowledged or resolved status, this will be the user that took the first acknowledged or resolved action. If the incident was automatically resolved (say through the Event Integration API), or if the incident is in the triggered state, this will be null. User fields are the same as in the assignedToUser field above.
-makeLens "_iLastStatusChangeBy" ''Incident
+    -- | The list of acknowledgements of the incident. An acknowledgement is an
+    -- object containing the acknowleding object (either a user or the
+    -- integration API) as well as the date/time the incident was acknowledged.
+    -- This field is only present if the status of the incident is acknowledged.
+    -- This field is sorted in ascending order by acknowledgement time.
+    iAcknowledgers         :: Lens' a [Assignee]
 
--- | The date/time the incident's status last changed.
-iLastStatusChangeOn :: Lens' Incident (Maybe UTCTime)
-iLastStatusChangeOn =
-    lens _iLastStatusChangeOn (\i x -> i { _iLastStatusChangeOn = x })
-        . mapping _D
+    -- | The user who is responsible for the incident's last status change. If
+    -- the incident is in the acknowledged or resolved status, this will be the user
+    -- that took the first acknowledged or resolved action. If the incident was
+    -- automatically resolved (say through the Event Integration API), or if the
+    -- incident is in the triggered state, this will be null. User fields are the
+    -- same as in the assignedToUser field above.
+    iLastStatusChangeBy    :: Lens' a (Maybe Assignee)
 
--- | Some condensed information regarding the initial event that triggered this incident. This data will be a set of key/value pairs that vary depending on what sort of event triggered the incident (email, Event API request, etc). For instance, if an email triggered the incident, then the triggerSummaryData will likely contain a subject. There are no guarantees on the full presence of this data for every incident.
-makeLens "_iTriggerSummaryData" ''Incident
+    -- | The date/time the incident's status last changed.
+    iLastStatusChangeOn    :: Lens' a (Maybe UTCTime)
 
--- | The PagerDuty website URL where the full details regarding the initial event that triggered this incident can be found. (This is not the resource URL.)
-makeLens "_iTriggerDetailsHtmlUrl" ''Incident
+    -- | Some condensed information regarding the initial event that triggered
+    -- this incident. This data will be a set of key/value pairs that vary depending
+    -- on what sort of event triggered the incident (email, Event API request,
+    -- etc). For instance, if an email triggered the incident, then the
+    -- triggerSummaryData will likely contain a subject. There are no guarantees
+    -- o nthe full presence of this data for every incident.
+    iTriggerSummaryData    :: Lens' a Object
+
+    -- | The PagerDuty website URL where the full details regarding the initial
+    -- event that triggered this incident can be found. (This is not the resource
+    -- URL.)
+    iTriggerDetailsHtmlUrl :: Lens' a Text
+
+    iIncidentNumber        = incident.iIncidentNumber'
+    iStatus                = incident.iStatus'
+    iCreatedOn             = incident.iCreatedOn'._D
+    iHtmlUrl               = incident.iHtmlUrl'
+    iIncidentKey           = incident.iIncidentKey'
+    iService               = incident.iService'
+    iEscalationPolicy      = incident.iEscalationPolicy'
+    iAssignedTo            = incident.iAssignedTo'
+    iAcknowledgers         = incident.iAcknowledgers'
+    iLastStatusChangeBy    = incident.iLastStatusChangeBy'
+    iLastStatusChangeOn    = incident.iLastStatusChangeOn'.mapping _D
+    iTriggerSummaryData    = incident.iTriggerSummaryData'
+    iTriggerDetailsHtmlUrl = incident.iTriggerDetailsHtmlUrl'
+
+instance HasIncident Incident where
+    incident = id
 
 data ListIncidents = ListIncidents
     { _lsSince'          :: Maybe Date

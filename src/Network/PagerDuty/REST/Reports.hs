@@ -60,7 +60,6 @@ module Network.PagerDuty.REST.Reports
 
 import Control.Lens
 import Data.Aeson.Lens
-import Data.ByteString.Builder (Builder)
 import Data.Time
 import Network.PagerDuty.TH
 import Network.PagerDuty.Types
