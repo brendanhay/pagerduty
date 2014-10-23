@@ -82,7 +82,7 @@ gctor :: All QueryValues xs
 gctor o (Constructor n) args =
     K . concat . hcollapse $ hcliftA p (K . map (k,) . queryValues . unI) args
   where
-    k = BS.pack $ (constructorTagModifier o) n
+    k = BS.pack (constructorTagModifier o n)
 
 gctor o (Record _ ns) args =
     K . concat . hcollapse $ hcliftA2 p (gfield o) ns args
@@ -90,9 +90,9 @@ gctor o (Record _ ns) args =
 gctor o (Infix n _ _) (x :* y :* Nil) =
     K $ map (k,) (queryValues (unI x) ++ queryValues (unI y))
   where
-    k = BS.pack $ (constructorTagModifier o) n
+    k = BS.pack (constructorTagModifier o n)
 
-gctor _ (Infix _ _ _) _ =
+gctor _ Infix{} _ =
     error "Network.PagerDuty.Generics.inaccessible"
 
 gfield :: QueryValues a
@@ -103,7 +103,7 @@ gfield :: QueryValues a
 gfield o (FieldInfo f) (I a) =
     K $ map (k,) (queryValues a)
   where
-    k = BS.pack $ (fieldLabelModifier o) f
+    k = BS.pack (fieldLabelModifier o f)
 
 p :: Proxy QueryValues
 p = Proxy
