@@ -398,6 +398,7 @@ instance QueryValueLike (Id a) where
     toQueryValue = Just . toByteString'
 
 type AlertId       = Id "alert"
+type ContactId     = Id "contact"
 type EmailFilterId = Id "email-filter"
 type IncidentId    = Id "incident"
 type LogEntryId    = Id "log-entry"

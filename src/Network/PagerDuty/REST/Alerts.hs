@@ -83,24 +83,6 @@ instance Paginate ListAlerts
 
 queryRequest ''ListAlerts
 
--- | List existing alerts for a given time range, optionally filtered by type
--- (SMS, Email, Phone, or Push).
---
--- @GET \/alerts@
---
--- /See:/ <http://developer.pagerduty.com/documentation/rest/alerts/list>
-listAlerts :: Date -- ^ 'laSince'
-           -> Date -- ^ 'laUntil'
-           -> Request ListAlerts s [Alert]
-listAlerts s u =
-    mk ListAlerts
-        { _laSince'    = s
-        , _laUntil'    = u
-        , _laFilter'   = Nothing
-        , _laTimeZone' = Nothing
-        } & path   .~ alerts
-          & unwrap .~ key "alerts"
-
 -- | The start of the date range over which you want to search.
 laSince :: Lens' (Request ListAlerts s b) UTCTime
 laSince = upd.laSince'._D
@@ -121,3 +103,21 @@ laFilter = upd.laFilter'
 -- /Default:/ account time zone.
 laTimeZone :: Lens' (Request ListAlerts s b) (Maybe TimeZone)
 laTimeZone = upd.laTimeZone'.mapping _TZ
+
+-- | List existing alerts for a given time range, optionally filtered by type
+-- (SMS, Email, Phone, or Push).
+--
+-- @GET \/alerts@
+--
+-- /See:/ <http://developer.pagerduty.com/documentation/rest/alerts/list>
+listAlerts :: Date -- ^ 'laSince'
+           -> Date -- ^ 'laUntil'
+           -> Request ListAlerts s [Alert]
+listAlerts s u =
+    mk ListAlerts
+        { _laSince'    = s
+        , _laUntil'    = u
+        , _laFilter'   = Nothing
+        , _laTimeZone' = Nothing
+        } & path   .~ alerts
+          & unwrap .~ key "alerts"
