@@ -1,13 +1,13 @@
 name:                  pagerduty
-version:               0.1.0
+version:               0.0.0
 synopsis:              Pager Duty API Client
 homepage:              http://github.com/brendanhay/pagerduty
 license:               OtherLicense
 license-file:          LICENSE
-author:                Brendan Hay, Kim Altintop
-maintainer:            Brendan Hay <brendan.g.hay@gmail.com>, Kim Altintop <kim.altintop@gmail.com>
+author:                Brendan Hay
+maintainer:            Brendan Hay <brendan.g.hay@gmail.com>
 copyright:             Copyright (c) 2013-2014 Brendan Hay, 2014 Kim Altintop
-category:              Network, Monitoring
+category:              Network, Monitoring, Alerting
 build-type:            Simple
 cabal-version:         >= 1.10
 
@@ -16,6 +16,8 @@ description:
     .
     * Integration API - <http://developer.pagerduty.com/documentation/integration>
     * REST API - <http://developer.pagerduty.com/documentation/rest>
+    .
+    /Warning:/ This is a /highly/ experimental preview release, caveat emptor!
 
 extra-source-files:
     README.md
@@ -52,34 +54,33 @@ library
       , Network.PagerDuty.REST.Webhooks
 
     other-modules:
-        Network.PagerDuty.IO
-      , Network.PagerDuty.Options
-      , Network.PagerDuty.Query
-      , Network.PagerDuty.TH
-      , Network.PagerDuty.Types
+        Network.PagerDuty.Internal.IO
+      , Network.PagerDuty.Internal.Options
+      , Network.PagerDuty.Internal.Query
+      , Network.PagerDuty.Internal.TH
+      , Network.PagerDuty.Internal.Types
 
     build-depends:
         aeson                 >  0.7   && <= 0.8
       , base                  >= 4.5   && <  5.0
-      , bifunctors
+      , bifunctors            >= 4
       , bytestring            >= 0.9
       , bytestring-conversion >= 0.2.1
       , conduit               >= 0.5.5
-      , data-default-class
+      , data-default-class    >= 0.1
       , exceptions            >= 0.6
+      , generics-sop          >= 1.0.2
       , http-client           >= 0.3.6
       , http-types            >= 0.8
       , lens                  >= 4.0
       , lens-aeson            >= 1.0
       , mmorph                >= 1.0
+      , monad-control         >= 0.3.2
       , mtl                   >= 2.2.1
-      , old-locale
+      , old-locale            >= 1.0.0.5
+      , template-haskell      >= 2.2
       , text                  >= 1.1
       , time                  == 1.4.*
       , transformers          >= 0.4.1
+      , transformers-base     >= 0.4.1
       , unordered-containers  >= 0.2.3
-
-      , generics-sop
-      , monad-control
-      , template-haskell
-      , transformers-base

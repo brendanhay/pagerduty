@@ -122,8 +122,8 @@ import qualified Data.Text                    as Text
 import           Data.Time
 import           Network.HTTP.Types
 import           Network.PagerDuty.REST.Users (User)
-import           Network.PagerDuty.TH
-import           Network.PagerDuty.Types
+import           Network.PagerDuty.Internal.TH
+import           Network.PagerDuty.Internal.Types
 
 logs :: Path
 logs = "log_entries"

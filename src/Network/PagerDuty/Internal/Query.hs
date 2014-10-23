@@ -5,7 +5,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TupleSections       #-}
 
--- Module      : Network.PagerDuty.Query
+-- Module      : Network.PagerDuty.Internal.Query
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
 -- License     : This Source Code Form is subject to the terms of
 --               the Mozilla Public License, v. 2.0.
@@ -15,7 +15,7 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
-module Network.PagerDuty.Query
+module Network.PagerDuty.Internal.Query
     ( QueryValues (..)
     , gquery
     , gqueryWith
@@ -33,7 +33,7 @@ import           Data.Text                  (Text)
 import qualified Data.Text.Encoding         as Text
 import           Generics.SOP
 import           Network.HTTP.Types
-import           Network.PagerDuty.Options
+import           Network.PagerDuty.Internal.Options
 
 class QueryValues a where
     queryValues :: a -> [ByteString]

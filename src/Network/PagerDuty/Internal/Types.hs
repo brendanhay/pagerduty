@@ -12,7 +12,7 @@
 {-# LANGUAGE TupleSections              #-}
 {-# LANGUAGE ViewPatterns               #-}
 
--- Module      : Network.PagerDuty.Types
+-- Module      : Network.PagerDuty.Internal.Types
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
 -- License     : This Source Code Form is subject to the terms of
 --               the Mozilla Public License, v. 2.0.
@@ -22,35 +22,7 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
-module Network.PagerDuty.Types where
-    -- (
-    -- -- * Requests
-    --   Auth         (..)
-    -- , Cred         (..)
-    -- , Domain       (..)
-
-    -- , Request      (..)
-    -- , Request'
-
-    -- , Paginate     (..)
-
-    -- -- * Errors
-    -- , Code         (..)
-    -- , message
-    -- , RestError (..)
-    -- , Error        (..)
-
-    -- -- * Primitives
-    -- , Key          (..)
-    -- , ServiceKey
-    -- , IncidentKey
-
-    -- , Id           (..)
-    -- , ServiceId
-    -- , RequesterId
-
-    -- , Empty        (..)
-    -- ) where
+module Network.PagerDuty.Internal.Types where
 
 import           Control.Applicative
 import           Control.Lens                 hiding ((.=))
@@ -72,8 +44,8 @@ import           Data.Time
 import           GHC.TypeLits
 import           Network.HTTP.Types
 import           Network.HTTP.Types.QueryLike
-import           Network.PagerDuty.Query
-import           Network.PagerDuty.TH
+import           Network.PagerDuty.Internal.Query
+import           Network.PagerDuty.Internal.TH
 import           System.Locale
 
 -- FIXME: Verify IncidentId/IncidentKey .. *Id/*Key are actually different or needed

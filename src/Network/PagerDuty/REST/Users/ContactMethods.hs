@@ -60,8 +60,8 @@ import Control.Lens
 import Data.Aeson.Lens
 import Data.Text               (Text)
 import Network.HTTP.Types
-import Network.PagerDuty.TH
-import Network.PagerDuty.Types
+import Network.PagerDuty.Internal.TH
+import Network.PagerDuty.Internal.Types
 
 default (Path)
 

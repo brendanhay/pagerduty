@@ -30,8 +30,8 @@ import           Data.Monoid
 import           Network.HTTP.Client     (Manager)
 import qualified Network.HTTP.Client     as Client
 import           Network.HTTP.Types
-import           Network.PagerDuty.IO
-import           Network.PagerDuty.Types
+import           Network.PagerDuty.Internal.IO
+import           Network.PagerDuty.Internal.Types
 
 -- Make the type names consistent, for example:
 -- Suffix with *Details or *Info for results

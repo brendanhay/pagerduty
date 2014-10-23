@@ -80,8 +80,8 @@ import Data.Text                    (Text)
 import Data.Time
 import Network.HTTP.Types
 import Network.PagerDuty.REST.Users (User)
-import Network.PagerDuty.TH
-import Network.PagerDuty.Types
+import Network.PagerDuty.Internal.TH
+import Network.PagerDuty.Internal.Types
 
 windows :: Path
 windows = "maintenance_windows"

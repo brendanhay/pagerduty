@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- Module      : Network.PagerDuty.IO
+-- Module      : Network.PagerDuty.Internal.IO
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
 -- License     : This Source Code Form is subject to the terms of
 --               the Mozilla Public License, v. 2.0.
@@ -10,7 +10,7 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
-module Network.PagerDuty.IO where
+module Network.PagerDuty.Internal.IO where
 
 import           Control.Monad
 import           Control.Monad.IO.Class
@@ -19,7 +19,7 @@ import qualified Data.ByteString.Lazy      as LBS
 import           Network.HTTP.Client       (Manager, httpLbs)
 import qualified Network.HTTP.Client       as Client
 import           Network.HTTP.Types
-import           Network.PagerDuty.Types
+import           Network.PagerDuty.Internal.Types
 
 request :: (MonadIO m, ToJSON a, FromJSON b)
         => Manager

@@ -79,9 +79,9 @@ import           Data.Monoid
 import           Data.Text               (Text)
 import           Network.HTTP.Client     (Manager)
 import qualified Network.HTTP.Client     as Client
-import           Network.PagerDuty.IO
-import           Network.PagerDuty.TH
-import           Network.PagerDuty.Types
+import           Network.PagerDuty.Internal.IO
+import           Network.PagerDuty.Internal.TH
+import           Network.PagerDuty.Internal.Types
 
 data Response = Response
     { _rsStatus      :: Text

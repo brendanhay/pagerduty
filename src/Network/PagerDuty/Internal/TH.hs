@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
--- Module      : Network.PagerDuty.TH
+-- Module      : Network.PagerDuty.Internal.TH
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
 -- License     : This Source Code Form is subject to the terms of
 --               the Mozilla Public License, v. 2.0.
@@ -10,7 +10,7 @@
 -- Stability   : experimental
 -- Portability : non-portable (GHC extensions)
 
-module Network.PagerDuty.TH
+module Network.PagerDuty.Internal.TH
     (
     -- * Requests
       jsonRequest
@@ -47,8 +47,8 @@ import qualified Data.Text.Encoding           as Text
 import           Generics.SOP.TH
 import           Language.Haskell.TH
 import           Network.HTTP.Types.QueryLike
-import           Network.PagerDuty.Query
-import           Network.PagerDuty.Options
+import           Network.PagerDuty.Internal.Query
+import           Network.PagerDuty.Internal.Options
 
 jsonRequest :: Name -> Q [Dec]
 jsonRequest n = concat <$> sequence

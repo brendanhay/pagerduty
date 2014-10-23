@@ -57,7 +57,7 @@ import           Network.HTTP.Client           (Manager)
 import           Network.PagerDuty.Integration (Event, Response)
 import qualified Network.PagerDuty.Integration as Int
 import qualified Network.PagerDuty.REST        as REST
-import           Network.PagerDuty.Types
+import           Network.PagerDuty.Internal.Types
 
 data Env (s :: Security) = Env
     { _envDomain  :: SubDomain

@@ -40,8 +40,8 @@ import           Data.Text                        (Text)
 import qualified Data.Text.Encoding               as Text
 import           Data.Time
 import           Network.PagerDuty.REST.Incidents
-import           Network.PagerDuty.TH
-import           Network.PagerDuty.Types
+import           Network.PagerDuty.Internal.TH
+import           Network.PagerDuty.Internal.Types
 
 data WebhookType
     = WTrigger

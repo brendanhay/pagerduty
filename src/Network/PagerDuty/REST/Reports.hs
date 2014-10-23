@@ -61,8 +61,8 @@ module Network.PagerDuty.REST.Reports
 import Control.Lens
 import Data.Aeson.Lens
 import Data.Time
-import Network.PagerDuty.TH
-import Network.PagerDuty.Types
+import Network.PagerDuty.Internal.TH
+import Network.PagerDuty.Internal.Types
 
 default (Path)
 

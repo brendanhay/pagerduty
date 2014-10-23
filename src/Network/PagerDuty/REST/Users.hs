@@ -89,8 +89,8 @@ import Data.Monoid
 import Data.Text               (Text)
 import Data.Time
 import Network.HTTP.Types
-import Network.PagerDuty.TH
-import Network.PagerDuty.Types
+import Network.PagerDuty.Internal.TH
+import Network.PagerDuty.Internal.Types
 
 default (Path)
 
