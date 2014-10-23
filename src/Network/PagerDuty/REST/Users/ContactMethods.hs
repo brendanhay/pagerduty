@@ -213,7 +213,8 @@ ucLabel = upd.ucLabel'
 ucSendShortEmail :: Lens' (Request UpdateContact s b) (Maybe Bool)
 ucSendShortEmail = upd.ucSendShortEmail'.mapping _B
 
--- | Update an existing contact method of a given user. Note that you cannot change the type of an existing method.
+-- | Update an existing contact method of a given user. Note that you cannot
+-- change the type of an existing method.
 --
 -- @PUT \/users\/\:user_id\/contact_methods\/\:id@
 --
