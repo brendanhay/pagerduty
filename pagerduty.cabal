@@ -67,9 +67,9 @@ library
       , bytestring            >= 0.9
       , bytestring-conversion >= 0.2.1
       , conduit               >= 0.5.5
-      , data-default-class    >= 0.1
+      , data-default-class    >= 0.0.1
       , exceptions            >= 0.6
-      , generics-sop          >= 1.0.2
+      , generics-sop          >= 0.1.0.2
       , http-client           >= 0.3.6
       , http-types            >= 0.8
       , lens                  >= 4.0
