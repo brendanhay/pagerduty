@@ -1,18 +1,23 @@
 name:                  pagerduty
 version:               0.0.0
-synopsis:              Pager Duty API Client
+synopsis:              Client library for PagerDuty Integration and REST APIs.
 homepage:              http://github.com/brendanhay/pagerduty
 license:               OtherLicense
 license-file:          LICENSE
 author:                Brendan Hay
 maintainer:            Brendan Hay <brendan.g.hay@gmail.com>
 copyright:             Copyright (c) 2013-2014 Brendan Hay, 2014 Kim Altintop
-category:              Network, Monitoring, Alerting
+category:              Network, PagerDuty, Monitoring
 build-type:            Simple
 cabal-version:         >= 1.10
 
 description:
-    Client library for the the PagerDuty REST APIs documented here:
+    PagerDuty is an alerting system for IT professionals. PagerDuty connects
+    with a variety of systems (including monitoring tools and ticketing
+    systems) and dispatches alerts via automated phone call, SMS and email.
+
+    This library implements the full PagerDuty Integration and REST APIs which
+    are documented here:
     .
     * Integration API - <http://developer.pagerduty.com/documentation/integration>
     * REST API - <http://developer.pagerduty.com/documentation/rest>
