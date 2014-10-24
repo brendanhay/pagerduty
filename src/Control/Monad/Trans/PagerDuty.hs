@@ -23,7 +23,7 @@ module Control.Monad.Trans.PagerDuty
       PagerDuty
     , PagerDutyT
 
-    -- * Run
+    -- * Running
     , runPagerDutyT
 
     -- * Environment
@@ -44,20 +44,19 @@ module Control.Monad.Trans.PagerDuty
     , _Integration
     , _REST
 
-    -- ** Error types
-    -- *** Integration
+    -- ** Integration
     , IntegrationError
     , status
 
-    -- *** REST
+    -- ** REST
     , RESTError
     , code
 
-    -- ** Error codes
+    -- ** Code
     , Code (..)
     , description
 
-    -- ** Error fields
+    -- ** Fields
     , message
     , errors
 
