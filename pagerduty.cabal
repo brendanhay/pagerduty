@@ -62,8 +62,8 @@ library
       , Network.PagerDuty.Internal.Types
 
     build-depends:
-        aeson                 >  0.7   && <= 0.8
-      , base                  >= 4.5   && <  5.0
+        aeson                 >  0.7     && <= 0.8
+      , base                  >= 4.5     && <  5.0
       , bifunctors            >= 4
       , bytestring            >= 0.9
       , bytestring-conversion >= 0.2.1
