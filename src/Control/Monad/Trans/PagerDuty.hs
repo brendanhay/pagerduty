@@ -26,7 +26,8 @@ module Control.Monad.Trans.PagerDuty
     -- * Running
     , runPagerDutyT
 
-    -- * Environment
+    -- * Configuration
+    -- ** Environment
     , Env
     , envDomain
     , envAuth
@@ -37,6 +38,16 @@ module Control.Monad.Trans.PagerDuty
     -- ** Logging
     , Logger (..)
     , debug
+
+    -- * Integration events
+    , submit
+    , submitCatch
+
+    -- * REST requests
+    , send
+    , sendCatch
+    , paginate
+    , paginateCatch
 
     -- * Errors
     , Error(..)
@@ -62,16 +73,6 @@ module Control.Monad.Trans.PagerDuty
 
     -- ** Lifting
     , hoistError
-
-    -- * Integration API
-    , submit
-    , submitCatch
-
-    -- * REST API
-    , send
-    , sendCatch
-    , paginate
-    , paginateCatch
     ) where
 
 import           Control.Applicative
