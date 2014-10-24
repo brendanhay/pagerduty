@@ -38,7 +38,7 @@
 -- /See:/ <http://developer.pagerduty.com/documentation/integration/events>
 module Network.PagerDuty.Integration
     (
-    -- * Events
+    -- * Sending events
       submit
     , submitWith
 
@@ -56,7 +56,7 @@ module Network.PagerDuty.Integration
     , Resolve
     , resolve
 
-    -- * Fields
+    -- * Event fields
     , HasServiceKey  (..)
     , HasIncidentKey (..)
     , HasDescription (..)

@@ -129,14 +129,15 @@ module Network.PagerDuty.REST.Incidents
     , Incident
     ) where
 
-import           Control.Applicative        hiding (empty)
+import           Control.Applicative              hiding (empty)
 import           Control.Lens
 import           Data.Aeson
-import           Data.ByteString.Conversion (ToByteString(..), toByteString')
+import           Data.ByteString.Conversion       (ToByteString(..), toByteString')
 import           Data.Default.Class
-import           Data.Monoid                hiding (All)
-import           Data.Text                  (Text)
-import qualified Data.Text.Encoding         as Text
+import           Data.Maybe
+import           Data.Monoid                      hiding (All)
+import           Data.Text                        (Text)
+import qualified Data.Text.Encoding               as Text
 import           Data.Time
 import           Network.HTTP.Types
 import           Network.PagerDuty.Internal.Query
@@ -345,13 +346,10 @@ lsUntil = upd.lsUntil'.mapping _D
 -- | When set, the since and until parameters and defaults are
 -- ignored. Use this to get all incidents since the account was created.
 lsDateRange :: Lens' (Request ListIncidents s b) Bool
-lsDateRange = upd . lens get_ set_
+lsDateRange = upd.lens get_ (flip set_)
   where
-    get_ x
-        | Just All <- _lsDateRange' x = True
-        | otherwise                   = False
-
-    set_ l x = l { _lsDateRange' = if x then Just All else Nothing }
+    get_   = (Just All ==) . view lsDateRange'
+    set_ x = lsDateRange' .~ listToMaybe [All | x]
 
 -- | Returns only the incidents currently in the passed status(es).
 lsStatus :: Lens' (Request ListIncidents s b) (Maybe [IncidentStatus])
@@ -451,13 +449,10 @@ cUntil = upd.cUntil'.mapping _D
 -- | When set, the since and until parameters and defaults are
 -- ignored. Use this to get all counts since the account was created.
 cDateRange :: Lens' (Request CountIncidents s b) Bool
-cDateRange = upd . lens get_ set_
+cDateRange = upd.lens get_ (flip set_)
   where
-    get_ x
-        | Just All <- _cDateRange' x = True
-        | otherwise                   = False
-
-    set_ l x = l { _cDateRange' = if x then Just All else Nothing }
+    get_   = (Just All ==) . view cDateRange'
+    set_ x = cDateRange' .~ listToMaybe [All | x]
 
 -- | Only counts the incidents currently in the passed status(es).
 cStatus :: Lens' (Request CountIncidents s b) (Maybe [IncidentStatus])
