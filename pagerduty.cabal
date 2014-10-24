@@ -17,7 +17,8 @@ description:
     * Integration API - <http://developer.pagerduty.com/documentation/integration>
     * REST API - <http://developer.pagerduty.com/documentation/rest>
     .
-    /Warning:/ This is a /highly/ experimental preview release, caveat emptor!
+    /Warning:/ This is an experimental preview release which is still under
+    heavy development and not intended for public consumption, caveat emptor!
 
 extra-source-files:
     README.md
