@@ -47,7 +47,7 @@ import           Network.PagerDuty.Internal.IO
 import           Network.PagerDuty.Internal.Types
 
 -- FIXME: verify correct actions are all paginated
--- FIXME: Ensure requesterid parameter is always first
+-- FIXME: Ensure RequesterId parameter is always most significant param
 -- FIXME: add smart constructors for all types, for testing purposes
 
 send :: (MonadIO m, FromJSON b)
@@ -58,6 +58,7 @@ send :: (MonadIO m, FromJSON b)
      -> m (Either Error b)
 send d a m = sendWith (prod d a m)
 
+-- | /See:/ 'sendWith'
 sendWith :: (MonadIO m, FromJSON b)
          => Env s
          -> Request a s b
@@ -72,6 +73,7 @@ paginate :: (MonadIO m, Paginate a, FromJSON b)
          -> Source m (Either Error b)
 paginate d a m = paginateWith (prod d a m)
 
+-- | /See:/ 'paginateWith'
 paginateWith :: (MonadIO m, Paginate a, FromJSON b)
              => Env s
              -> Request a s b

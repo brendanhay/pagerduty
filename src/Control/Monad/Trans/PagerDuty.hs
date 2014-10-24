@@ -126,17 +126,15 @@ scoped f = ask >>= f
 submit :: ( MonadIO m
           , MonadReader (Env s) m
           , MonadError Error m
-          , Event a
           )
-       => a
+       => Event
        -> m Response
 submit = submitCatch >=> hoistEither
 
 submitCatch :: ( MonadIO m
                , MonadReader (Env s) m
-               , Event a
                )
-            => a
+            => Event
             -> m (Either Error Response)
 submitCatch x = scoped $ \e -> Int.submitWith (_envManager e) (_envLogger e) x
 

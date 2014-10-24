@@ -1,7 +1,9 @@
-{-# LANGUAGE GADTs             #-}
-{-# LANGUAGE DefaultSignatures #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE FlexibleInstances      #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE LambdaCase             #-}
+{-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE OverloadedStrings      #-}
+{-# LANGUAGE TemplateHaskell        #-}
 
 -- Module      : Network.PagerDuty.Integration
 -- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
@@ -43,27 +45,28 @@ module Network.PagerDuty.Integration
     -- ** Trigger
     , Trigger
     , trigger
-    , tDescription
-    , tIncidentKey
-    , tClient
-    , tClientUrl
-    , tDetails
+    , client
+    , clientUrl
 
     -- ** Acknowledge
     , Acknowledge
     , acknowledge
-    , aDescription
-    , aDetails
 
     -- ** Resolve
     , Resolve
     , resolve
-    , rDescription
-    , rDetails
+
+    -- * Fields
+    , HasServiceKey  (..)
+    , HasIncidentKey (..)
+    , HasDescription (..)
+    , HasDetails     (..)
 
     -- * Types
-    , Event
-    , AnyEvent (..)
+    , Event          (..)
+    , _Trigger
+    , _Acknowledge
+    , _Resolve
 
     , Response
     , rsStatus
@@ -75,11 +78,10 @@ import           Control.Lens
 import           Control.Monad.IO.Class
 import           Data.Aeson
 import           Data.Default.Class
-import qualified Data.HashMap.Strict     as Map
-import           Data.Monoid
-import           Data.Text               (Text)
-import           Network.HTTP.Client     (Manager)
-import qualified Network.HTTP.Client     as Client
+import qualified Data.HashMap.Strict              as Map
+import           Data.Text                        (Text)
+import           Network.HTTP.Client              (Manager)
+import qualified Network.HTTP.Client              as Client
 import           Network.PagerDuty.Internal.IO
 import           Network.PagerDuty.Internal.TH
 import           Network.PagerDuty.Internal.Types
@@ -101,127 +103,160 @@ makeLens "_rsMessage" ''Response
 -- | The key of the incident that will be affected by the request.
 makeLens "_rsIncidentKey" ''Response
 
-class Event a where
-    eventType    :: a -> Text
-    eventPayload :: a -> Object
+class HasServiceKey s a | s -> a where
+    -- | The GUID of one of your "Generic API" services. This is the "service key"
+    -- listed on a Generic API's service detail page.
+    serviceKey :: Lens' s a
 
-    default eventPayload :: ToJSON a => a -> Object
-    eventPayload x = let Object o = toJSON x in o
+class HasIncidentKey s a | s -> a where
+    -- | Identifies the incident to which this trigger event should be applied.
+    -- If there's no open (i.e. unresolved) incident with this key, a new one
+    -- will be created. If there's already an open incident with a matching key,
+    -- this event will be appended to that incident's log. The event key provides
+    -- an easy way to "de-dup" problem reports. If this field isn't provided,
+    -- PagerDuty will automatically open a new incident with a unique key.
+    incidentKey :: Lens' s a
 
-data AnyEvent where
-    Event :: Event a => a -> AnyEvent
+class HasDescription s a | s -> a where
+    -- | A short description of the problem that led to this trigger.
+    -- This field (or a truncated version) will be used when generating phone
+    -- calls, SMS messages and alert emails. It will also appear on the incidents
+    -- tables in the PagerDuty UI. The maximum length is 1024 characters.
+    description :: Lens' s a
 
-instance Event AnyEvent where
-    eventType    (Event x) = eventType x
-    eventPayload (Event x) = eventPayload x
+class HasDetails s a | s -> a where
+    -- | An arbitrary JSON object containing any data you'd like included
+    -- in the incident log.
+    details :: Lens' s a
 
-data Generic = Generic
-    { _gServiceKey  :: ServiceKey
-    , _gDescription :: Maybe Text
-    , _gIncidentKey :: IncidentKey
-    , _gDetails     :: Object
+data Trigger = Trigger'
+    { _tServiceKey'  :: ServiceKey
+    , _tIncidentKey' :: IncidentKey
+    , _tDescription' :: Text
+    , _tDetails'     :: Maybe Object
+    , _tClient'      :: Maybe Text
+    , _tClientUrl'   :: Maybe Text
     } deriving (Eq, Show)
 
-deriveJSON ''Generic
+deriveRecord ''Trigger
 
-makeLens "_gDescription" ''Generic
-makeLens "_gDetails"     ''Generic
+instance HasServiceKey  Trigger ServiceKey     where serviceKey  = tServiceKey'
+instance HasIncidentKey Trigger IncidentKey    where incidentKey = tIncidentKey'
+instance HasDescription Trigger Text           where description = tDescription'
+instance HasDetails     Trigger (Maybe Object) where details     = tDetails'
 
-data Trigger = Trigger
-    { _tServiceKey  :: ServiceKey
-    , _tDescription :: Text
-    , _tIncidentKey :: Maybe IncidentKey
-    , _tClient      :: Maybe Text
-    , _tClientUrl   :: Maybe Text
-    , _tDetails     :: Object
+-- | The name of the monitoring client that is triggering this event.
+client :: Lens' Trigger (Maybe Text)
+client = tClient'
+
+-- | The URL of the monitoring client that is triggering this event.
+clientUrl :: Lens' Trigger (Maybe Text)
+clientUrl = tClientUrl'
+
+data Generic = Generic'
+    { _gServiceKey'  :: ServiceKey
+    , _gIncidentKey' :: IncidentKey
+    , _gDescription' :: Maybe Text
+    , _gDetails'     :: Maybe Object
     } deriving (Eq, Show)
 
-deriveJSON ''Trigger
+deriveRecord ''Generic
 
-instance Event Trigger where
-    eventType = const "trigger"
+instance HasServiceKey  Generic ServiceKey     where serviceKey  = gServiceKey'
+instance HasIncidentKey Generic IncidentKey    where incidentKey = gIncidentKey'
+instance HasDescription Generic (Maybe Text)   where description = gDescription'
+instance HasDetails     Generic (Maybe Object) where details     = gDetails'
+
+type Resolve     = Generic
+type Acknowledge = Generic
+
+data Event
+    = Trigger     Trigger -- ^ /See:/ 'trigger'
+    | Acknowledge Generic -- ^ /See:/ 'acknowledge'
+    | Resolve     Generic -- ^ /See:/ 'resolve'
+      deriving (Eq, Show)
+
+makePrisms ''Event
+
+instance HasServiceKey Event ServiceKey where
+    serviceKey = lens f g
+      where
+        f (Trigger     s) = _tServiceKey' s
+        f (Acknowledge s) = _gServiceKey' s
+        f (Resolve     s) = _gServiceKey' s
+
+        g (Trigger     s) x = Trigger     $ s { _tServiceKey' = x }
+        g (Acknowledge s) x = Acknowledge $ s { _gServiceKey' = x }
+        g (Resolve     s) x = Resolve     $ s { _gServiceKey' = x }
+
+instance HasIncidentKey Event IncidentKey where
+    incidentKey = lens f g
+      where
+        f (Trigger     s) = _tIncidentKey' s
+        f (Acknowledge s) = _gIncidentKey' s
+        f (Resolve     s) = _gIncidentKey' s
+
+        g (Trigger     s) x = Trigger     $ s { _tIncidentKey' = x }
+        g (Acknowledge s) x = Acknowledge $ s { _gIncidentKey' = x }
+        g (Resolve     s) x = Resolve     $ s { _gIncidentKey' = x }
+
+instance HasDetails Event (Maybe Object) where
+    details = lens f g
+      where
+        f (Trigger     s) = _tDetails' s
+        f (Acknowledge s) = _gDetails' s
+        f (Resolve     s) = _gDetails' s
+
+        g (Trigger     s) x = Trigger     $ s { _tDetails' = x }
+        g (Acknowledge s) x = Acknowledge $ s { _gDetails' = x }
+        g (Resolve     s) x = Resolve     $ s { _gDetails' = x }
+
+instance ToJSON Event where
+    toJSON = \case
+        Trigger     x -> event "trigger"     x
+        Acknowledge x -> event "acknowledge" x
+        Resolve     x -> event "resolve"     x
+      where
+        event k x =
+            case toJSON x of
+                Object o -> Object (Map.insert "event_type" (String k) o)
+                v        -> v
 
 -- | Your monitoring tools should send PagerDuty a trigger event to report a new
 -- or ongoing problem. When PagerDuty receives a trigger event, it will either open
 -- a new incident, or add a new trigger log entry to an existing incident,
 -- depending on the provided incident_key.
-trigger :: ServiceKey
-        -> Text -- ^ 'tDescription'
-        -> Trigger
-trigger k d =
-    Trigger
-        { _tServiceKey  = k
-        , _tDescription = d
-        , _tIncidentKey = Nothing
-        , _tClient      = Nothing
-        , _tClientUrl   = Nothing
-        , _tDetails     = mempty
+trigger :: ServiceKey  -- ^ 'serviceKey'
+        -> IncidentKey -- ^ 'incidentKey'
+        -> Text        -- ^ 'description'
+        -> Event
+trigger k i d =
+    Trigger Trigger'
+        { _tServiceKey'  = k
+        , _tDescription' = d
+        , _tIncidentKey' = i
+        , _tClient'      = Nothing
+        , _tClientUrl'   = Nothing
+        , _tDetails'     = Nothing
         }
-
--- | A short description of the problem that led to this trigger.
--- This field (or a truncated version) will be used when generating phone
--- calls, SMS messages and alert emails. It will also appear on the incidents
--- tables in the PagerDuty UI. The maximum length is 1024 characters.
-makeLens "_tDescription" ''Trigger
-
--- | Identifies the incident to which this trigger event should be applied.
--- If there's no open (i.e. unresolved) incident with this key, a new one
--- will be created. If there's already an open incident with a matching key,
--- this event will be appended to that incident's log. The event key provides
--- an easy way to "de-dup" problem reports. If this field isn't provided,
--- PagerDuty will automatically open a new incident with a unique key.
-makeLens "_tIncidentKey" ''Trigger
-
--- | The name of the monitoring client that is triggering this event.
-makeLens "_tClient" ''Trigger
-
--- | The URL of the monitoring client that is triggering this event.
-makeLens "_tClientUrl" ''Trigger
-
--- | An arbitrary JSON object containing any data you'd like included
--- in the incident log.
-makeLens "_tDetails" ''Trigger
-
-newtype Acknowledge = Acknowledge Generic
-
-deriveJSON ''Acknowledge
-makePrisms ''Acknowledge
-
-instance Event Acknowledge where
-    eventType = const "acknowledge"
 
 -- | Acknowledge events cause the referenced incident to enter the acknowledged
 -- state.
 --
 -- While an incident is acknowledged, it won't generate any additional
 -- notifications, even if it receives new trigger events. Your monitoring tools
--- should send PagerDuty an acknowledge event when they know someone is presently
--- working on the problem.
-acknowledge :: ServiceKey -> IncidentKey -> Acknowledge
+-- should send PagerDuty an acknowledge event when they know someone is
+-- presently working on the problem.
+acknowledge :: ServiceKey  -- ^ 'serviceKey'
+            -> IncidentKey -- ^ 'incidentKey'
+            -> Event
 acknowledge k i =
-    Acknowledge Generic
-        { _gServiceKey  = k
-        , _gDescription = Nothing
-        , _gIncidentKey = i
-        , _gDetails     = mempty
+    Acknowledge Generic'
+        { _gServiceKey'  = k
+        , _gIncidentKey' = i
+        , _gDescription' = Nothing
+        , _gDetails'     = Nothing
         }
-
--- | Text that will appear in the incident's log associated with this event.
-aDescription :: Lens' Acknowledge (Maybe Text)
-aDescription = _Acknowledge.gDescription
-
--- | An arbitrary JSON object containing any data you'd like included
--- in the incident log.
-aDetails :: Lens' Acknowledge Object
-aDetails = _Acknowledge.gDetails
-
-newtype Resolve = Resolve Generic
-
-deriveJSON ''Resolve
-makePrisms ''Resolve
-
-instance Event Resolve where
-    eventType = const "acknowledge"
 
 -- | Resolve events cause the referenced incident to enter the resolved state.
 --
@@ -230,40 +265,28 @@ instance Event Resolve where
 -- incident won't re-open the incident. Instead, a new incident will be
 -- created. Your monitoring tools should send PagerDuty a resolve event when the
 -- problem that caused the initial trigger event has been fixed.
-resolve :: ServiceKey -> IncidentKey -> Resolve
+resolve :: ServiceKey  -- ^ 'serviceKey'
+        -> IncidentKey -- ^ 'incidentKey'
+        -> Event
 resolve k i =
-    Resolve Generic
-        { _gServiceKey  = k
-        , _gDescription = Nothing
-        , _gIncidentKey = i
-        , _gDetails     = mempty
+    Resolve Generic'
+        { _gServiceKey'  = k
+        , _gIncidentKey' = i
+        , _gDescription' = Nothing
+        , _gDetails'     = Nothing
         }
 
--- | Text that will appear in the incident's log associated with this event.
-rDescription :: Lens' Resolve (Maybe Text)
-rDescription = _Resolve.gDescription
-
--- | An arbitrary JSON object containing any data youd like included
--- in the incident log.
-rDetails :: Lens' Resolve Object
-rDetails = _Resolve.gDetails
-
 -- | Send an event to the integration API.
-submit :: (MonadIO m, Event a)
-       => Manager
-       -> a
-       -> m (Either Error Response)
+submit :: MonadIO m => Manager -> Event -> m (Either Error Response)
 submit m = submitWith m None
 
 -- | /See:/ 'submit'
-submitWith :: (MonadIO m, Event a)
+submitWith :: MonadIO m
            => Manager
            -> Logger
-           -> a
+           -> Event
            -> m (Either Error Response)
-submitWith m l x = request m l (Object payload) $ def
-    { Client.host = "events.pagerduty.com"
-    , Client.path = "/generic/2010-04-15/create_event.json"
-    }
-  where
-    payload = Map.insert "event_type" (String (eventType x)) (eventPayload x)
+submitWith m l e = request m l e $
+    def { Client.host = "events.pagerduty.com"
+        , Client.path = "/generic/2010-04-15/create_event.json"
+        }
