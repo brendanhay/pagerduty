@@ -4,7 +4,7 @@ synopsis:              Client library for PagerDuty Integration and REST APIs.
 homepage:              http://github.com/brendanhay/pagerduty
 license:               OtherLicense
 license-file:          LICENSE
-author:                Brendan Hay
+author:                Brendan Hay <brendan.g.hay@gmail.com>
 maintainer:            Brendan Hay <brendan.g.hay@gmail.com>
 copyright:             Copyright (c) 2013-2014 Brendan Hay, 2014 Kim Altintop
 category:              Network, PagerDuty, Monitoring
