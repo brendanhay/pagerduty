@@ -2,9 +2,7 @@
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE KindSignatures             #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE UndecidableInstances       #-}
@@ -34,13 +32,47 @@ module Control.Monad.Trans.PagerDuty
     , envAuth
     , envManager
     , envLogger
+    , scoped
+
+    -- ** Logging
+    , Logger (..)
+    , debug
+
+    -- * Errors
+    , Error(..)
+    , _Internal
+    , _Integration
+    , _REST
+
+    -- ** Error types
+    -- *** Integration
+    , IntegrationError
+    , status
+
+    -- *** REST
+    , RESTError
+    , code
+
+    -- ** Error codes
+    , Code (..)
+    , description
+
+    -- ** Error fields
+    , message
+    , errors
+
+    -- ** Lifting
+    , hoistError
 
     -- * Integration API
     , submit
+    , submitCatch
 
     -- * REST API
     , send
+    , sendCatch
     , paginate
+    , paginateCatch
     ) where
 
 import           Control.Applicative
@@ -117,8 +149,8 @@ instance MMonad (PagerDutyT s) where
 runPagerDutyT :: PagerDutyT s m a -> Env s -> m (Either Error a)
 runPagerDutyT (PagerDutyT k) = runExceptT . runReaderT k
 
-hoistEither :: (MonadError Error m) => Either Error a -> m a
-hoistEither = either throwError return
+hoistError :: (MonadError Error m) => Either Error a -> m a
+hoistError = either throwError return
 
 scoped :: MonadReader (Env s) m => (Env s -> m a) -> m a
 scoped f = ask >>= f
@@ -129,7 +161,7 @@ submit :: ( MonadIO m
           )
        => Event
        -> m Response
-submit = submitCatch >=> hoistEither
+submit = submitCatch >=> hoistError
 
 submitCatch :: ( MonadIO m
                , MonadReader (Env s) m
@@ -145,7 +177,7 @@ send :: ( MonadIO m
         )
      => Request a s b
      -> m b
-send = sendCatch >=> hoistEither
+send = sendCatch >=> hoistError
 
 sendCatch :: ( MonadIO m
              , MonadReader (Env s) m
@@ -163,7 +195,7 @@ paginate :: ( MonadIO m
             )
          => Request a s b
          -> Source m b
-paginate x = paginateCatch x $= awaitForever (hoistEither >=> yield)
+paginate x = paginateCatch x $= awaitForever (hoistError >=> yield)
 
 paginateCatch :: ( MonadIO m
                  , MonadReader (Env s) m

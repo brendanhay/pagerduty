@@ -97,7 +97,7 @@ http e rq = request (e ^. envManager) (e ^. envLogger) rq $ raw
     , Client.queryString = renderQuery False (rq ^. query)
     }
   where
-   raw = case (e ^. envAuth) of
+   raw = case e ^. envAuth of
         AuthBasic u p -> Client.applyBasicAuth u p def
         AuthToken t   -> def
             { Client.requestHeaders = [("Authorization", "Token token=" <> t)]

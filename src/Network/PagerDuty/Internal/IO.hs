@@ -60,12 +60,13 @@ response l rs = case statusCode (Client.responseStatus rs) of
     success = maybe (Left unknown) Right `liftM` parse
     failure = maybe (Left unknown) Left  `liftM` parse
 
-    unhandled n = Internal
-        $ "PagerDuty returned unhandled status code: " ++ show n
+    unhandled n = Internal $
+        "PagerDuty returned unhandled status code: "
+            <> Text.pack (show n)
 
-    unknown = Internal
-        $ "Unable to parse response into a PagerDuty API compatible type: "
-        ++ show body
+    unknown = Internal $
+        "Unable to parse response into a PagerDuty API compatible type: "
+            <> Text.pack (show body)
 
     parse :: FromJSON a => m (Maybe a)
     parse = msg >> return (decode body)

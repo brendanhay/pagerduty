@@ -1,9 +1,11 @@
 {-# LANGUAGE BangPatterns               #-}
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE FlexibleInstances          #-}
+{-# LANGUAGE FunctionalDependencies     #-}
 {-# LANGUAGE GADTs                      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE KindSignatures             #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE PatternSynonyms            #-}
 {-# LANGUAGE RankNTypes                 #-}
@@ -199,6 +201,15 @@ description (Code c) =
         2012 -> "Your account is expired and cannot use the API"
         _    -> "Unrecognised error code"
 
+class HasMessage s a | s -> a where
+    -- | A short human-readable message describing the error.
+    message :: Lens' s a
+
+class HasErrors s a | s -> a where
+    -- | A list of human-readable reasons for the error. These values,
+    -- and even their format, are subject to change.
+    errors :: Lens' s a
+
 data IntegrationError = IntegrationError
     { _ieStatus  :: Text
     , _ieMessage :: Text
@@ -207,25 +218,52 @@ data IntegrationError = IntegrationError
 
 deriveRecord ''IntegrationError
 
-data RestError = RestError
+instance HasMessage IntegrationError Text   where message = ieMessage
+instance HasErrors  IntegrationError [Text] where errors  = ieErrors
+
+status :: Lens' IntegrationError Text
+status = ieStatus
+
+data RESTError = RESTError
     { _reCode    :: Code
     , _reMessage :: Text
     , _reErrors  :: [Text]
     } deriving (Eq, Show)
 
-deriveRecord ''RestError
+deriveRecord ''RESTError
+
+instance HasMessage RESTError Text   where message = reMessage
+instance HasErrors  RESTError [Text] where errors  = reErrors
+
+-- | In the case of an error, the PagerDuty error code can give further details
+-- on the nature of the error.
+--
+-- /See:/ 'description'
+code :: Lens' RESTError Code
+code = reCode
 
 data Error
-    = Internal    String
+    = Internal    Text
     | Integration IntegrationError
-    | Rest        RestError
+    | REST        RESTError
       deriving (Eq, Show)
 
 instance FromJSON Error where
-    parseJSON o = (Rest <$> parseJSON o)
+    parseJSON o = (REST <$> parseJSON o)
        <|> (Integration <$> parseJSON o)
 
 makePrisms ''Error
+
+instance HasMessage Error Text where
+    message = lens f g
+      where
+        f (Internal    x) = x
+        f (Integration s) = _ieMessage s
+        f (REST        s) = _reMessage s
+
+        g (Internal    _) x = Internal    x
+        g (Integration s) x = Integration $ s { _ieMessage = x }
+        g (REST        s) x = REST        $ s { _reMessage = x }
 
 data Pager = Pager
     { _pgOffset :: !Int
