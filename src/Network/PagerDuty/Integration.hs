@@ -56,7 +56,7 @@ module Network.PagerDuty.Integration
     , Resolve
     , resolve
 
-    -- * Event fields
+    -- * Fields
     , HasServiceKey  (..)
     , HasIncidentKey (..)
     , HasDescription (..)
@@ -72,6 +72,8 @@ module Network.PagerDuty.Integration
     , rsStatus
     , rsMessage
     , rsIncidentKey
+
+    , Generic
 
     -- * Re-exported types
     , module Network.PagerDuty.Types
