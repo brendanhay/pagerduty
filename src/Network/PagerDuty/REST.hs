@@ -20,7 +20,6 @@ module Network.PagerDuty.REST
     , paginate
     , paginateWith
 
-    -- * Re-exported types
     , module Network.PagerDuty.Types
     ) where
 

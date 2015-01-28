@@ -75,7 +75,6 @@ module Network.PagerDuty.Integration
 
     , Generic
 
-    -- * Re-exported types
     , module Network.PagerDuty.Types
     ) where
 

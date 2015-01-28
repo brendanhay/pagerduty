@@ -38,7 +38,6 @@ module Control.Monad.Trans.PagerDuty
     -- ** Lifting errors
     , hoistError
 
-    -- * Re-exported types
     , module Network.PagerDuty.Types
     ) where
 
