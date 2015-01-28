@@ -3,7 +3,6 @@
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE UndecidableInstances       #-}
 
@@ -26,19 +25,6 @@ module Control.Monad.Trans.PagerDuty
     -- * Running
     , runPagerDutyT
 
-    -- * Configuration
-    -- ** Environment
-    , Env
-    , envDomain
-    , envAuth
-    , envManager
-    , envLogger
-    , scoped
-
-    -- ** Logging
-    , Logger (..)
-    , debug
-
     -- * Integration events
     , submit
     , submitCatch
@@ -49,30 +35,11 @@ module Control.Monad.Trans.PagerDuty
     , paginate
     , paginateCatch
 
-    -- * Errors
-    , Error(..)
-    , _Internal
-    , _Integration
-    , _REST
-
-    -- ** Integration
-    , IntegrationError
-    , status
-
-    -- ** REST
-    , RESTError
-    , code
-
-    -- ** Code
-    , Code (..)
-    , description
-
-    -- ** Fields
-    , message
-    , errors
-
-    -- ** Lifting
+    -- ** Lifting errors
     , hoistError
+
+    -- * Re-exported types
+    , module Network.PagerDuty.Types
     ) where
 
 import           Control.Applicative
@@ -88,6 +55,7 @@ import           Network.PagerDuty.Integration    (Event, Response)
 import qualified Network.PagerDuty.Integration    as Int
 import           Network.PagerDuty.Internal.Types
 import qualified Network.PagerDuty.REST           as REST
+import           Network.PagerDuty.Types
 
 -- | A convenient alias for 'PagerDutyT' 'IO'.
 type PagerDuty s = PagerDutyT s IO
@@ -114,28 +82,24 @@ instance MonadBase b m => MonadBase b (PagerDutyT s m) where
     {-# INLINE liftBase #-}
 
 instance MonadTransControl (PagerDutyT s) where
-    newtype StT (PagerDutyT s) a = StTPDT
-        { unStT :: StT (ExceptT Error) (StT (ReaderT (Env s)) a)
-        }
+    type StT (PagerDutyT s) a = StT (ExceptT Error) (StT (ReaderT (Env s)) a)
 
     liftWith f = PagerDutyT $
         liftWith $ \g ->
-            liftWith $ \h ->
-                f (liftM StTPDT . h . g . unPagerDutyT)
+             liftWith $ \h ->
+                 f (h . g . unPagerDutyT)
     {-# INLINE liftWith #-}
 
     restoreT = PagerDutyT . restoreT . restoreT . liftM unStT
     {-# INLINE restoreT #-}
 
 instance MonadBaseControl b m => MonadBaseControl b (PagerDutyT s m) where
-    newtype StM (PagerDutyT s m) a = StMPDT
-        { unStMPDT :: ComposeSt (PagerDutyT s) m a
-        }
+    type StM (PagerDutyT s m) a = ComposeSt (PagerDutyT s) m a
 
-    liftBaseWith = defaultLiftBaseWith StMPDT
+    liftBaseWith = defaultLiftBaseWith
     {-# INLINE liftBaseWith #-}
 
-    restoreM = defaultRestoreM unStMPDT
+    restoreM = defaultRestoreM
     {-# INLINE restoreM #-}
 
 instance MFunctor (PagerDutyT s) where
