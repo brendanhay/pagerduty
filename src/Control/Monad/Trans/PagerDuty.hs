@@ -90,7 +90,7 @@ instance MonadTransControl (PagerDutyT s) where
                  f (h . g . unPagerDutyT)
     {-# INLINE liftWith #-}
 
-    restoreT = PagerDutyT . restoreT . restoreT . liftM unStT
+    restoreT = PagerDutyT . restoreT . restoreT
     {-# INLINE restoreT #-}
 
 instance MonadBaseControl b m => MonadBaseControl b (PagerDutyT s m) where
