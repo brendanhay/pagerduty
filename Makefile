@@ -7,7 +7,9 @@ all:
 	make clean; make install && make build
 
 install: cabal.sandbox.config
-	cabal install $(FLAGS) --only-dependencies
+	cabal install $(FLAGS) \
+ --only-dependencies \
+ --force-reinstalls
 
 clean:
 	cabal clean
