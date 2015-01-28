@@ -1,4 +1,4 @@
-FLAGS := -j --disable-documentation --disable-library-coverage
+FLAGS := -j --disable-documentation
 
 build:
 	cabal build $(addprefix -,$(findstring j,$(MAKEFLAGS)))
