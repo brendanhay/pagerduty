@@ -50,7 +50,6 @@ import           Network.HTTP.Types
 import           Network.HTTP.Types.QueryLike
 import           Network.PagerDuty.Internal.Query
 import           Network.PagerDuty.Internal.TH
-import           System.Locale
 
 newtype CSV a = CSV [a]
     deriving (Eq, Show, Monoid)
