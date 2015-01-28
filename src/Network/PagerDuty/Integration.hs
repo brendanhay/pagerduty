@@ -72,6 +72,9 @@ module Network.PagerDuty.Integration
     , rsStatus
     , rsMessage
     , rsIncidentKey
+
+    -- * Re-exported types
+    , module Network.PagerDuty.Types
     ) where
 
 import           Control.Lens
@@ -85,6 +88,7 @@ import qualified Network.HTTP.Client              as Client
 import           Network.PagerDuty.Internal.IO
 import           Network.PagerDuty.Internal.TH
 import           Network.PagerDuty.Internal.Types
+import           Network.PagerDuty.Types          hiding (description, message)
 
 data Response = Response
     { _rsStatus      :: Text

@@ -16,19 +16,12 @@ module Network.PagerDuty.REST
 
     -- * Sending requests
       send
-    , paginate
-
-    -- * Configuration
-    -- ** Environment
-    , Env
-    , envDomain
-    , envAuth
-    , envManager
-    , envLogger
-
-    -- ** Requests
     , sendWith
+    , paginate
     , paginateWith
+
+    -- * Re-exported types
+    , module Network.PagerDuty.Types
     ) where
 
 import           Control.Applicative
@@ -36,20 +29,22 @@ import           Control.Lens
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans
-import           Data.Aeson              (FromJSON)
+import           Data.Aeson                       (FromJSON)
 import           Data.Conduit
 import           Data.Default.Class
 import           Data.Monoid
-import           Network.HTTP.Client     (Manager)
-import qualified Network.HTTP.Client     as Client
+import           Network.HTTP.Client              (Manager)
+import qualified Network.HTTP.Client              as Client
 import           Network.HTTP.Types
 import           Network.PagerDuty.Internal.IO
 import           Network.PagerDuty.Internal.Types
+import           Network.PagerDuty.Types
 
 -- FIXME: verify correct actions are all paginated
 -- FIXME: Ensure RequesterId parameter is always most significant param
 -- FIXME: add smart constructors for all types, for testing purposes
 
+-- | /See:/ 'sendWith'
 send :: (MonadIO m, FromJSON b)
      => SubDomain
      -> Auth s
@@ -58,13 +53,13 @@ send :: (MonadIO m, FromJSON b)
      -> m (Either Error b)
 send d a m = sendWith (prod d a m)
 
--- | /See:/ 'sendWith'
 sendWith :: (MonadIO m, FromJSON b)
          => Env s
          -> Request a s b
          -> m (Either Error b)
 sendWith e = liftM (fmap fst) . http e
 
+-- | /See:/ 'paginateWith'
 paginate :: (MonadIO m, Paginate a, FromJSON b)
          => SubDomain
          -> Auth s
@@ -73,7 +68,6 @@ paginate :: (MonadIO m, Paginate a, FromJSON b)
          -> Source m (Either Error b)
 paginate d a m = paginateWith (prod d a m)
 
--- | /See:/ 'paginateWith'
 paginateWith :: (MonadIO m, Paginate a, FromJSON b)
              => Env s
              -> Request a s b
