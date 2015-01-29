@@ -6,7 +6,7 @@
 {-# LANGUAGE TemplateHaskell        #-}
 
 -- Module      : Network.PagerDuty.Integration
--- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
+-- Copyright   : (c) 2013-2015 Brendan Hay <brendan.g.hay@gmail.com>
 -- License     : This Source Code Form is subject to the terms of
 --               the Mozilla Public License, v. 2.0.
 --               A copy of the MPL can be found in the LICENSE file or
@@ -56,7 +56,7 @@ module Network.PagerDuty.Integration
     , Resolve
     , resolve
 
-    -- * Event fields
+    -- * Fields
     , HasServiceKey  (..)
     , HasIncidentKey (..)
     , HasDescription (..)
@@ -72,6 +72,10 @@ module Network.PagerDuty.Integration
     , rsStatus
     , rsMessage
     , rsIncidentKey
+
+    , Generic
+
+    , module Network.PagerDuty.Types
     ) where
 
 import           Control.Lens
@@ -85,6 +89,7 @@ import qualified Network.HTTP.Client              as Client
 import           Network.PagerDuty.Internal.IO
 import           Network.PagerDuty.Internal.TH
 import           Network.PagerDuty.Internal.Types
+import           Network.PagerDuty.Types          hiding (description, message)
 
 data Response = Response
     { _rsStatus      :: Text

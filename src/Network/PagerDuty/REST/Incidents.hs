@@ -10,7 +10,7 @@
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
 -- Module      : Network.PagerDuty.REST.Incidents
--- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
+-- Copyright   : (c) 2013-2015 Brendan Hay <brendan.g.hay@gmail.com>
 -- License     : This Source Code Form is subject to the terms of
 --               the Mozilla Public License, v. 2.0.
 --               A copy of the MPL can be found in the LICENSE file or
@@ -436,12 +436,12 @@ cSince = upd.cSince'.mapping _D
 
 -- | The end of the date range over which you want to search.
 --
--- /Note: If you leave off either since or until, a 30 day default range is
+-- /Note:/ If you leave off either since or until, a 30 day default range is
 -- applied to your open ended range. Not including the since parameter will set
--- the date range to until - 30 days. Likewise, if you leave off until,
--- it is set to since + 30 days.
+-- the date range to until @-30@ days. Likewise, if you leave off until,
+-- it is set to since @+30@ days.
 --
--- Defaults to the last 30 days if you leave off both. The size of the date
+-- /Default:/ The last 30 days if you leave off both. The size of the date
 -- range must be less than 180 days.
 cUntil :: Lens' (Request CountIncidents s b) (Maybe UTCTime)
 cUntil = upd.cUntil'.mapping _D

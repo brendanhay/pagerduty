@@ -15,7 +15,7 @@
 {-# LANGUAGE ViewPatterns               #-}
 
 -- Module      : Network.PagerDuty.Internal.Types
--- Copyright   : (c) 2013-2014 Brendan Hay <brendan.g.hay@gmail.com>
+-- Copyright   : (c) 2013-2015 Brendan Hay <brendan.g.hay@gmail.com>
 -- License     : This Source Code Form is subject to the terms of
 --               the Mozilla Public License, v. 2.0.
 --               A copy of the MPL can be found in the LICENSE file or
@@ -50,9 +50,6 @@ import           Network.HTTP.Types
 import           Network.HTTP.Types.QueryLike
 import           Network.PagerDuty.Internal.Query
 import           Network.PagerDuty.Internal.TH
-import           System.Locale
-
--- FIXME: Verify IncidentId/IncidentKey .. *Id/*Key are actually different or needed
 
 newtype CSV a = CSV [a]
     deriving (Eq, Show, Monoid)
@@ -142,7 +139,10 @@ deriving instance Eq   (Auth a)
 deriving instance Show (Auth a)
 
 newtype SubDomain = SubDomain { subDomain :: ByteString }
-    deriving (Eq, Show, IsString)
+    deriving (Eq, Show, IsString, ToByteString)
+
+mkSubDomain :: ByteString -> SubDomain
+mkSubDomain = SubDomain
 
 domain :: SubDomain -> ByteString
 domain (SubDomain s)
@@ -179,7 +179,7 @@ prod :: SubDomain -> Auth s -> Manager -> Env s
 prod d a m = Env d a m None
 
 newtype Code = Code Integer
-    deriving (Eq, Show)
+    deriving (Eq, Show, Num)
 
 deriveJSON ''Code
 
@@ -385,13 +385,13 @@ class Paginate a where
     next :: Request a s b -> Maybe Pager -> Maybe (Request a s b)
     next rq = maybe Nothing go
       where
-        go x | x^.pgTotal == 0 = Nothing
-             | otherwise       = Just $
-                 rq & pager ?~ (x & pgOffset +~ x^.pgTotal)
+        go x | x ^. pgTotal == 0 = Nothing
+             | otherwise         = Just $
+                 rq & pager ?~ (x & pgOffset +~ x ^. pgTotal)
                     & query %~ (add . clear)
           where
             add :: Query -> Query
-            add = maybe id ((:) . (k,) . Just . Text.encodeUtf8) (x^.pgQuery)
+            add = maybe id ((:) . (k,) . Just . Text.encodeUtf8) (x ^. pgQuery)
 
         clear :: Query -> Query
         clear = deleteBy ((==) `on` fst) (k, Nothing)
@@ -401,6 +401,9 @@ class Paginate a where
 
 newtype Key (a :: Symbol) = Key Text
     deriving (Eq, Show, IsString)
+
+mkKey :: Text -> Key a
+mkKey = Key
 
 instance FromJSON (Key a) where
     parseJSON = withText "key" (return . Key)
@@ -421,6 +424,9 @@ type IncidentKey = Key "incident"
 
 newtype Id (a :: Symbol) = Id Text
     deriving (Eq, Show, IsString)
+
+mkId :: Text -> Id a
+mkId = Id
 
 instance FromJSON (Id a) where
     parseJSON = withText "id" (return . Id)
@@ -469,7 +475,10 @@ instance QueryLike Empty where
     toQuery = const []
 
 newtype Address = Address Text
-    deriving (Eq, Show)
+    deriving (Eq, Show, IsString)
+
+mkAddress :: Text -> Address
+mkAddress = Address
 
 deriveJSON ''Address
 makePrisms ''Address
