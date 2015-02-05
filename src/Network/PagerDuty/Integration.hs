@@ -231,19 +231,18 @@ instance ToJSON Event where
 -- or ongoing problem. When PagerDuty receives a trigger event, it will either open
 -- a new incident, or add a new trigger log entry to an existing incident,
 -- depending on the provided incident_key.
-trigger :: ServiceKey   -- ^ 'serviceKey'
-        -> IncidentKey  -- ^ 'incidentKey'
-        -> Text         -- ^ 'description'
-        -> Maybe Object -- ^ 'details'
+trigger :: ServiceKey  -- ^ 'serviceKey'
+        -> IncidentKey -- ^ 'incidentKey'
+        -> Text        -- ^ 'description'
         -> Event
-trigger k i d t =
+trigger k i d =
     Trigger Trigger'
         { _tServiceKey'  = k
         , _tDescription' = d
         , _tIncidentKey' = i
         , _tClient'      = Nothing
         , _tClientUrl'   = Nothing
-        , _tDetails'     = t
+        , _tDetails'     = Nothing
         }
 
 -- | Acknowledge events cause the referenced incident to enter the acknowledged
