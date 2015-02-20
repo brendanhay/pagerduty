@@ -1,5 +1,5 @@
 name:                  pagerduty
-version:               0.0.1
+version:               0.0.1.1
 synopsis:              Client library for PagerDuty Integration and REST APIs.
 homepage:              http://github.com/brendanhay/pagerduty
 license:               OtherLicense
@@ -25,6 +25,8 @@ description:
     .
     /Warning:/ This is an experimental preview release which is still under
     heavy development and not intended for public consumption, caveat emptor!
+    .
+    /Note:/ An alternative source for Haddock documentation can be found <http://brendanhay.nz/pagerduty here>.
 
 extra-source-files:
     README.md
