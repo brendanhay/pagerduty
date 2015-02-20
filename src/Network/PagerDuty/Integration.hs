@@ -292,6 +292,7 @@ submitWith :: MonadIO m
            -> Event
            -> m (Either Error Response)
 submitWith m l e = request m l e $
-    def { Client.host = "events.pagerduty.com"
-        , Client.path = "/generic/2010-04-15/create_event.json"
+    def { Client.host   = "events.pagerduty.com"
+        , Client.path   = "/generic/2010-04-15/create_event.json"
+        , Client.method = "POST"
         }
