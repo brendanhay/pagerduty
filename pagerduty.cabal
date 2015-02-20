@@ -25,6 +25,8 @@ description:
     .
     /Warning:/ This is an experimental preview release which is still under
     heavy development and not intended for public consumption, caveat emptor!
+    .
+    /Note:/ An alternative source for Haddock documentation can be found <here http://brendanhay.nz/pagerduty>.
 
 extra-source-files:
     README.md
