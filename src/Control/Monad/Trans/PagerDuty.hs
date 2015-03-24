@@ -44,10 +44,11 @@ module Control.Monad.Trans.PagerDuty
 import           Control.Applicative
 import           Control.Monad.Base
 import           Control.Monad.Catch
-import           Control.Monad.Except
+import           Control.Monad.Error              (MonadError (..))
 import           Control.Monad.Morph
 import           Control.Monad.Reader
 import           Control.Monad.Trans.Control
+import           Control.Monad.Trans.Except
 import           Data.Aeson
 import           Data.Conduit
 import           Network.PagerDuty.Integration    (Event, Response)
