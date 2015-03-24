@@ -50,6 +50,7 @@ import           Network.HTTP.Types
 import           Network.HTTP.Types.QueryLike
 import           Network.PagerDuty.Internal.Query
 import           Network.PagerDuty.Internal.TH
+import           Data.Time.Locale.Compat
 
 newtype CSV a = CSV [a]
     deriving (Eq, Show, Monoid)
@@ -105,7 +106,7 @@ instance ToJSON Date where
 
 instance ToByteString Date where
     builder (D d) = builder
-        (formatTime defaultTimeLocale (iso8601DateFormat $ Just "%XZ") d)
+        (formatTime defaultTimeLocale ("%Y-%m-%dT%XZ") d)
 
 instance QueryValues Date
 
