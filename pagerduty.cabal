@@ -1,5 +1,5 @@
 name:                  pagerduty
-version:               0.0.1.1
+version:               0.0.2
 synopsis:              Client library for PagerDuty Integration and REST APIs.
 homepage:              http://github.com/brendanhay/pagerduty
 license:               OtherLicense
@@ -86,10 +86,11 @@ library
       , lens-aeson            >= 1
       , mmorph                >= 1       && < 2
       , monad-control         >= 1       && < 2
-      , mtl                   >= 2.2.1   && < 2.3
+      , mtl                   >= 2.1.3.1
       , template-haskell      >= 2.2
       , text                  >= 1.1
       , time                  >= 1.5
-      , transformers          == 0.4.*
+      , transformers          >= 0.2
+      , transformers-compat   >= 0.3
       , transformers-base     >= 0.4.2
       , unordered-containers  >= 0.2.3
