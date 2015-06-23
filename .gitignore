@@ -9,6 +9,7 @@
 cabal.sandbox.config
 
 # Dirs
+.stack-work
 cabal-dev
 bin
 dist
