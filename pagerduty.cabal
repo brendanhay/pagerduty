@@ -1,5 +1,5 @@
 name:                  pagerduty
-version:               0.0.3.3
+version:               0.0.4
 synopsis:              Client library for PagerDuty Integration and REST APIs.
 homepage:              http://github.com/brendanhay/pagerduty
 license:               OtherLicense
