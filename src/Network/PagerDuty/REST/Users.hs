@@ -85,8 +85,6 @@ module Network.PagerDuty.REST.Users
 import           Control.Applicative              hiding (empty)
 import           Control.Lens                     hiding (Empty, (.=))
 import           Data.Aeson
-import           Data.ByteString                  (ByteString)
-import           Data.ByteString.Builder          (Builder)
 import           Data.Default.Class
 import           Data.Monoid
 import           Data.Text                        (Text)
