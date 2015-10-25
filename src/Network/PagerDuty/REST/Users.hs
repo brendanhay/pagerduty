@@ -1,10 +1,11 @@
-{-# LANGUAGE DataKinds                  #-}
-{-# LANGUAGE ExtendedDefaultRules       #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE DataKinds            #-}
+{-# LANGUAGE ExtendedDefaultRules #-}
+{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE TemplateHaskell      #-}
+{-# LANGUAGE TypeFamilies         #-}
 
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
+{-# OPTIONS_GHC -ddump-splices #-}
 
 -- Module      : Network.PagerDuty.REST.Users
 -- Copyright   : (c) 2013-2015 Brendan Hay <brendan.g.hay@gmail.com>
@@ -81,16 +82,18 @@ module Network.PagerDuty.REST.Users
     , uJobTitle
     ) where
 
-import Control.Applicative     hiding (empty)
-import Control.Lens            hiding ((.=))
-import Data.Aeson
-import Data.Default.Class
-import Data.Monoid
-import Data.Text               (Text)
-import Data.Time
-import Network.HTTP.Types
-import Network.PagerDuty.Internal.TH
-import Network.PagerDuty.Internal.Types
+import           Control.Applicative              hiding (empty)
+import           Control.Lens                     hiding (Empty, (.=))
+import           Data.Aeson
+import           Data.ByteString                  (ByteString)
+import           Data.ByteString.Builder          (Builder)
+import           Data.Default.Class
+import           Data.Monoid
+import           Data.Text                        (Text)
+import           Data.Time
+import           Network.HTTP.Types
+import           Network.PagerDuty.Internal.TH
+import           Network.PagerDuty.Internal.Types
 
 default (Path)
 
@@ -315,7 +318,7 @@ createUser r n e = auth (createUserBasic n e) & query .~ [("requester_id", r)]
 -- doesn't require a 'RequesterId'.
 createUserBasic :: Text    -- ^ 'cuName'
                 -> Address -- ^ 'cuEmail'
-                -> Request CreateUser Basic User
+                -> Request CreateUser 'Basic User
 createUserBasic n e =
     mk CreateUser
         { _cuName'     = n

@@ -74,14 +74,14 @@ module Network.PagerDuty.REST.MaintenanceWindows
     , mwServices
     ) where
 
-import Control.Lens
-import Data.Monoid
-import Data.Text                    (Text)
-import Data.Time
-import Network.HTTP.Types
-import Network.PagerDuty.REST.Users (User)
-import Network.PagerDuty.Internal.TH
-import Network.PagerDuty.Internal.Types
+import           Control.Lens                     hiding (Empty)
+import           Data.Monoid
+import           Data.Text                        (Text)
+import           Data.Time
+import           Network.HTTP.Types
+import           Network.PagerDuty.Internal.TH
+import           Network.PagerDuty.Internal.Types
+import           Network.PagerDuty.REST.Users     (User)
 
 windows :: Path
 windows = "maintenance_windows"
@@ -214,7 +214,7 @@ createWindow r s e xs =
 createWindowBasic :: UTCTime     -- ^ 'cwStartTime'
                   -> UTCTime     -- ^ 'cwEndTime'
                   -> [ServiceId] -- ^ 'cwServiceIds'
-                  -> Request CreateWindow Basic MaintenanceWindow
+                  -> Request CreateWindow 'Basic MaintenanceWindow
 createWindowBasic s e xs =
     mk CreateWindow
         { _cwRequesterId'       = Nothing

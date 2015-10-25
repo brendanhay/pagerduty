@@ -130,9 +130,10 @@ module Network.PagerDuty.REST.Incidents
     ) where
 
 import           Control.Applicative              hiding (empty)
-import           Control.Lens
+import           Control.Lens                     hiding (Empty)
 import           Data.Aeson
-import           Data.ByteString.Conversion       (ToByteString(..), toByteString')
+import           Data.ByteString.Conversion       (ToByteString (..),
+                                                   toByteString')
 import           Data.Default.Class
 import           Data.Maybe
 import           Data.Monoid                      hiding (All)
@@ -566,7 +567,7 @@ updateIncidents r = auth updateIncidentsBasic & query .~ [("requester_id", r)]
 
 -- | A version of 'updateIncidents' which uses HTTP Basic authentication and
 -- doesn't require a 'RequesterId'.
-updateIncidentsBasic :: Request UpdateIncidents Basic [UpdatedIncidents]
+updateIncidentsBasic :: Request UpdateIncidents 'Basic [UpdatedIncidents]
 updateIncidentsBasic =
     mk UpdateIncidents
         { _uiIncidents' = []

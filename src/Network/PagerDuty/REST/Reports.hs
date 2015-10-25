@@ -1,8 +1,8 @@
-{-# LANGUAGE DataKinds                  #-}
-{-# LANGUAGE ExtendedDefaultRules       #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE DataKinds            #-}
+{-# LANGUAGE ExtendedDefaultRules #-}
+{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE TemplateHaskell      #-}
+{-# LANGUAGE TypeFamilies         #-}
 
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
@@ -58,11 +58,11 @@ module Network.PagerDuty.REST.Reports
     , irNumberOfIncidents
     ) where
 
-import Control.Lens
-import Data.Aeson.Lens
-import Data.Time
-import Network.PagerDuty.Internal.TH
-import Network.PagerDuty.Internal.Types
+import           Control.Lens                     hiding (Empty)
+import           Data.Aeson.Lens
+import           Data.Time
+import           Network.PagerDuty.Internal.TH
+import           Network.PagerDuty.Internal.Types
 
 default (Path)
 

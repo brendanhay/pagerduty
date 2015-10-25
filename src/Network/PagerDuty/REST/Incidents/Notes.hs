@@ -1,6 +1,6 @@
-{-# LANGUAGE ExtendedDefaultRules       #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE ExtendedDefaultRules #-}
+{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE TemplateHaskell      #-}
 
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
@@ -36,14 +36,14 @@ module Network.PagerDuty.REST.Incidents.Notes
     , nContent
     ) where
 
-import Control.Lens                 hiding ((.=))
-import Data.Aeson
-import Data.Text                    (Text)
-import Data.Time
-import Network.HTTP.Types
-import Network.PagerDuty.REST.Users
-import Network.PagerDuty.Internal.TH
-import Network.PagerDuty.Internal.Types
+import           Control.Lens                     hiding ((.=))
+import           Data.Aeson
+import           Data.Text                        (Text)
+import           Data.Time
+import           Network.HTTP.Types
+import           Network.PagerDuty.Internal.TH
+import           Network.PagerDuty.Internal.Types
+import           Network.PagerDuty.REST.Users
 
 default (Path)
 

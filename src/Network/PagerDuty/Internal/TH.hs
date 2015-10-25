@@ -40,15 +40,15 @@ module Network.PagerDuty.Internal.TH
 
 import           Control.Applicative
 import           Control.Lens
-import qualified Data.Aeson.TH                as Aeson
+import qualified Data.Aeson.TH                      as Aeson
 import           Data.Aeson.Types
-import           Data.ByteString              (ByteString)
-import qualified Data.Text.Encoding           as Text
+import           Data.ByteString                    (ByteString)
+import qualified Data.Text.Encoding                 as Text
 import           Generics.SOP.TH
 import           Language.Haskell.TH
 import           Network.HTTP.Types.QueryLike
-import           Network.PagerDuty.Internal.Query
 import           Network.PagerDuty.Internal.Options
+import           Network.PagerDuty.Internal.Query
 
 jsonRequest :: Name -> Q [Dec]
 jsonRequest n = concat <$> sequence
@@ -61,7 +61,7 @@ queryRequest :: Name -> Q [Dec]
 queryRequest n = concat <$> sequence
     [ deriveGeneric n
     , makeLenses n
-    , [d|instance ToJSON $(conT n) where toJSON = const (toJSON (object []))|]
+    , [d|instance ToJSON $(conT n) where toJSON = const emptyObject|]
     , [d|instance QueryLike $(conT n) where toQuery = gquery|]
     ]
 
