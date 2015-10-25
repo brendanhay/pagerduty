@@ -1,5 +1,1 @@
-flags: {}
-packages:
-- '.'
-extra-deps: []
-resolver: nightly-2015-06-17
+stack-7.10.2.yaml

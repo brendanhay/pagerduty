@@ -35,13 +35,14 @@ module Network.PagerDuty.REST.Webhooks
 import           Control.Applicative              hiding (empty)
 import           Control.Lens
 import           Data.Aeson
-import           Data.ByteString.Conversion       (ToByteString(..), toByteString')
+import           Data.ByteString.Conversion       (ToByteString (..),
+                                                   toByteString')
 import           Data.Text                        (Text)
 import qualified Data.Text.Encoding               as Text
 import           Data.Time
-import           Network.PagerDuty.REST.Incidents
 import           Network.PagerDuty.Internal.TH
 import           Network.PagerDuty.Internal.Types
+import           Network.PagerDuty.REST.Incidents
 
 data WebhookType
     = WTrigger

@@ -1,8 +1,8 @@
-{-# LANGUAGE DataKinds                  #-}
-{-# LANGUAGE ExtendedDefaultRules       #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE DataKinds            #-}
+{-# LANGUAGE ExtendedDefaultRules #-}
+{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE TemplateHaskell      #-}
+{-# LANGUAGE TypeFamilies         #-}
 
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
@@ -106,14 +106,14 @@ module Network.PagerDuty.REST.Services
     , svcSeverityFilter
     ) where
 
-import Control.Lens
-import Data.Aeson.Lens
-import Data.Text                                    (Text)
-import Data.Time
-import Network.HTTP.Types
-import Network.PagerDuty.REST.Services.EmailFilters
-import Network.PagerDuty.Internal.TH
-import Network.PagerDuty.Internal.Types
+import           Control.Lens                                 hiding (Empty)
+import           Data.Aeson.Lens
+import           Data.Text                                    (Text)
+import           Data.Time
+import           Network.HTTP.Types
+import           Network.PagerDuty.Internal.TH
+import           Network.PagerDuty.Internal.Types
+import           Network.PagerDuty.REST.Services.EmailFilters
 
 default (Path)
 
@@ -483,7 +483,7 @@ enableService r i =
 
 -- | A version of 'enableService' which uses HTTP Basic authentication and
 -- doesn't require a 'RequesterId'.
-enableServiceBasic :: ServiceId -> Request Empty Basic Empty
+enableServiceBasic :: ServiceId -> Request Empty 'Basic Empty
 enableServiceBasic i = empty & meth .~ PUT & path .~ services % i % "enable"
 
 -- | Disable a service. Once a service is disabled, it will not be able to
@@ -498,7 +498,7 @@ disableService r i =
 
 -- | A version of 'disableService' which uses HTTP Basic authentication and
 -- doesn't require a 'RequesterId'.
-disableServiceBasic :: ServiceId -> Request Empty Basic Empty
+disableServiceBasic :: ServiceId -> Request Empty 'Basic Empty
 disableServiceBasic i = empty & meth .~ PUT & path .~ services % i % "disable"
 
 -- | Regenerate a new service key for an existing service.

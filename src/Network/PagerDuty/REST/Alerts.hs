@@ -43,12 +43,12 @@ module Network.PagerDuty.REST.Alerts
     , alertAddress
     ) where
 
-import Control.Lens
-import Data.Aeson.Lens
-import Data.Time
-import Network.PagerDuty.REST.Users (User)
-import Network.PagerDuty.Internal.TH
-import Network.PagerDuty.Internal.Types
+import           Control.Lens                     hiding (Empty)
+import           Data.Aeson.Lens
+import           Data.Time
+import           Network.PagerDuty.Internal.TH
+import           Network.PagerDuty.Internal.Types
+import           Network.PagerDuty.REST.Users     (User)
 
 alerts :: Path
 alerts = "alerts"

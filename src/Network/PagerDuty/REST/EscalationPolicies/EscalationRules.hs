@@ -1,7 +1,7 @@
-{-# LANGUAGE ExtendedDefaultRules       #-}
-{-# LANGUAGE FlexibleInstances          #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE ExtendedDefaultRules #-}
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE TemplateHaskell      #-}
 
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
@@ -64,15 +64,15 @@ module Network.PagerDuty.REST.EscalationPolicies.EscalationRules
     , rTargets
     ) where
 
-import           Control.Applicative          ((<$>))
-import           Control.Lens                 hiding ((.=))
+import           Control.Applicative              ((<$>))
+import           Control.Lens                     hiding ((.=))
 import           Data.Aeson
-import qualified Data.HashMap.Strict          as Map
-import           Data.Text                    (Text)
+import qualified Data.HashMap.Strict              as Map
+import           Data.Text                        (Text)
 import           Network.HTTP.Types
-import           Network.PagerDuty.REST.Users
 import           Network.PagerDuty.Internal.TH
 import           Network.PagerDuty.Internal.Types
+import           Network.PagerDuty.REST.Users
 
 default (Path)
 

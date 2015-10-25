@@ -1,6 +1,6 @@
-{-# LANGUAGE ExtendedDefaultRules       #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE ExtendedDefaultRules #-}
+{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE TemplateHaskell      #-}
 
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
@@ -56,12 +56,12 @@ module Network.PagerDuty.REST.Users.ContactMethods
     , Contact
     ) where
 
-import Control.Lens
-import Data.Aeson.Lens
-import Data.Text               (Text)
-import Network.HTTP.Types
-import Network.PagerDuty.Internal.TH
-import Network.PagerDuty.Internal.Types
+import           Control.Lens
+import           Data.Aeson.Lens
+import           Data.Text                        (Text)
+import           Network.HTTP.Types
+import           Network.PagerDuty.Internal.TH
+import           Network.PagerDuty.Internal.Types
 
 default (Path)
 

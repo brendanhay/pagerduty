@@ -1,6 +1,6 @@
-{-# LANGUAGE ExtendedDefaultRules       #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE ExtendedDefaultRules #-}
+{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE TemplateHaskell      #-}
 
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
@@ -39,15 +39,15 @@ module Network.PagerDuty.REST.Services.EmailFilters
     , efId
     ) where
 
-import Control.Applicative     hiding (empty)
-import Control.Lens            hiding ((.=))
-import Data.Aeson
-import Data.Default.Class
-import Data.Monoid
-import Data.Text               (Text)
-import Network.HTTP.Types
-import Network.PagerDuty.Internal.TH
-import Network.PagerDuty.Internal.Types
+import           Control.Applicative              hiding (empty)
+import           Control.Lens                     hiding ((.=))
+import           Data.Aeson
+import           Data.Default.Class
+import           Data.Monoid
+import           Data.Text                        (Text)
+import           Network.HTTP.Types
+import           Network.PagerDuty.Internal.TH
+import           Network.PagerDuty.Internal.Types
 
 default (Path)
 
@@ -65,7 +65,7 @@ deriveNullaryWith hyphenated ''MatchMode
 -- FIXME: Tighten up this type! Make the regex required for match/no-match and
 -- encode the conditional invariants.
 data EmailFilterInfo = EmailFilterInfo
-    { _efSubjectMode'   :: Maybe MatchMode
+    { _efSubjectMode'    :: Maybe MatchMode
     , _efSubjectRegex'   :: Maybe Text
     , _efBodyMode'       :: Maybe MatchMode
     , _efBodyRegex'      :: Maybe Text

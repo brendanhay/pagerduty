@@ -1,5 +1,6 @@
 {-# LANGUAGE ConstraintKinds     #-}
 {-# LANGUAGE DefaultSignatures   #-}
+{-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE GADTs               #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -23,14 +24,14 @@ module Network.PagerDuty.Internal.Query
 
 import           Data.Aeson.Types
 import           Data.Bifunctor
-import           Data.ByteString            (ByteString)
-import qualified Data.ByteString.Char8      as BS
+import           Data.ByteString                    (ByteString)
+import qualified Data.ByteString.Char8              as BS
 import           Data.ByteString.Conversion
-import           Data.Function              (on)
-import           Data.List                  (groupBy)
-import           Data.Monoid                ((<>))
-import           Data.Text                  (Text)
-import qualified Data.Text.Encoding         as Text
+import           Data.Function                      (on)
+import           Data.List                          (groupBy)
+import           Data.Monoid                        ((<>))
+import           Data.Text                          (Text)
+import qualified Data.Text.Encoding                 as Text
 import           Generics.SOP
 import           Network.HTTP.Types
 import           Network.PagerDuty.Internal.Options
