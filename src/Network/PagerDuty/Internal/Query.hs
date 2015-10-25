@@ -62,11 +62,12 @@ gqueryWith o a = case datatypeInfo (Proxy :: Proxy a) of
     ADT     _ _ cs -> go cs         (from a)
     Newtype _ _ c  -> go (c :* Nil) (from a)
   where
-    go :: (All2 QueryValues xss, SingI xss)
+    go :: (All2 QueryValues xss, SListI xss)
        => NP ConstructorInfo xss
        -> SOP I xss
        -> Query
-    go cs (SOP sop) = group . unI . hcollapse $ hcliftA2' p (gctor o) cs sop
+    go cs (SOP sop) =
+        group . hcollapse $ hcliftA2' p (gctor o) cs sop
 
     group :: [(ByteString, ByteString)] -> Query
     group = concatMap f . groupBy ((==) `on` fst)
