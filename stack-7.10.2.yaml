@@ -1,5 +1,6 @@
 resolver:   nightly-2015-10-24
 flags:      {}
-extra-deps: []
+extra-deps:
+  - generics-sop-0.2.0.0
 packages:
   - '.'
