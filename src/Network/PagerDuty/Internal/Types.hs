@@ -27,7 +27,7 @@
 module Network.PagerDuty.Internal.Types where
 
 import           Control.Applicative
-import           Control.Lens                     hiding ((.=))
+import           Control.Lens                     hiding ((.=), Empty)
 import           Control.Monad.IO.Class
 import           Data.Aeson                       hiding (Error)
 import           Data.Aeson.Types                 (Parser)
@@ -50,7 +50,7 @@ import           Network.HTTP.Types
 import           Network.HTTP.Types.QueryLike
 import           Network.PagerDuty.Internal.Query
 import           Network.PagerDuty.Internal.TH
-import           Data.Time.Locale.Compat
+import           Data.Time.Locale.Compat ()
 
 newtype CSV a = CSV [a]
     deriving (Eq, Show, Monoid)
@@ -133,8 +133,8 @@ data Security = Basic | Token
     deriving (Eq, Show)
 
 data Auth (a :: Security) where
-    AuthBasic :: ByteString -> ByteString -> Auth Basic
-    AuthToken :: ByteString -> Auth Token
+    AuthBasic :: ByteString -> ByteString -> Auth 'Basic
+    AuthToken :: ByteString               -> Auth 'Token
 
 deriving instance Eq   (Auth a)
 deriving instance Show (Auth a)

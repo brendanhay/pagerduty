@@ -1,8 +1,8 @@
-{-# LANGUAGE DataKinds                  #-}
-{-# LANGUAGE ExtendedDefaultRules       #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE DataKinds            #-}
+{-# LANGUAGE ExtendedDefaultRules #-}
+{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE TemplateHaskell      #-}
+{-# LANGUAGE TypeFamilies         #-}
 
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
@@ -50,12 +50,12 @@ module Network.PagerDuty.REST.Schedules.Overrides
     , oUser
     ) where
 
-import Control.Lens
-import Data.Time
-import Network.HTTP.Types
-import Network.PagerDuty.REST.Users
-import Network.PagerDuty.Internal.TH
-import Network.PagerDuty.Internal.Types
+import           Control.Lens
+import           Data.Time
+import           Network.HTTP.Types
+import           Network.PagerDuty.Internal.TH
+import           Network.PagerDuty.Internal.Types
+import           Network.PagerDuty.REST.Users
 
 overrides :: ScheduleId -> Path
 overrides i = "schedules" % i % "overrides"

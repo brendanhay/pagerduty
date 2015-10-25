@@ -1,5 +1,8 @@
-flags: {}
+resolver:   nightly-2015-10-24
+flags:      {}
+extra-deps:
+  - aeson-0.10.0.0
+  - lens-4.13
+  - reflection-2.1
 packages:
-- '.'
-extra-deps: []
-resolver: nightly-2015-06-17
+  - '.'

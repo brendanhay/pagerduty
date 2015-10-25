@@ -1,6 +1,6 @@
-{-# LANGUAGE ExtendedDefaultRules       #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE ExtendedDefaultRules #-}
+{-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE TemplateHaskell      #-}
 
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
@@ -51,12 +51,12 @@ module Network.PagerDuty.REST.Users.NotificationRules
     , rContactMethod
     ) where
 
-import Control.Lens
-import Data.Aeson.Lens
-import Network.HTTP.Types
-import Network.PagerDuty.REST.Users.ContactMethods
-import Network.PagerDuty.Internal.TH
-import Network.PagerDuty.Internal.Types
+import           Control.Lens
+import           Data.Aeson.Lens
+import           Network.HTTP.Types
+import           Network.PagerDuty.Internal.TH
+import           Network.PagerDuty.Internal.Types
+import           Network.PagerDuty.REST.Users.ContactMethods
 
 default (Path)
 

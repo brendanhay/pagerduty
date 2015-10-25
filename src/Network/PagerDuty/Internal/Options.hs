@@ -14,9 +14,9 @@ module Network.PagerDuty.Internal.Options
     , underscored
     ) where
 
-import Data.Aeson.Types
-import Data.Char
-import Data.List
+import           Data.Aeson.Types
+import           Data.Char
+import           Data.List
 
 dropped :: Int -> Options -> Options
 dropped n o = o
