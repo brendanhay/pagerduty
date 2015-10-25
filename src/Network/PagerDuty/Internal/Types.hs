@@ -43,14 +43,14 @@ import           Data.String
 import           Data.Text                        (Text)
 import qualified Data.Text                        as Text
 import qualified Data.Text.Encoding               as Text
-import           Data.Time
+import           Data.Time (UTCTime, TimeZone, formatTime, utc, timeZoneName)
 import           GHC.TypeLits
 import           Network.HTTP.Client              (Manager)
 import           Network.HTTP.Types
 import           Network.HTTP.Types.QueryLike
 import           Network.PagerDuty.Internal.Query
 import           Network.PagerDuty.Internal.TH
-import           Data.Time.Locale.Compat ()
+import           Data.Time.Locale.Compat
 
 newtype CSV a = CSV [a]
     deriving (Eq, Show, Monoid)
