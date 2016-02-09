@@ -1,5 +1,5 @@
 name:                  pagerduty
-version:               0.0.4
+version:               0.0.5
 synopsis:              Client library for PagerDuty Integration and REST APIs.
 homepage:              http://github.com/brendanhay/pagerduty
 license:               OtherLicense
@@ -71,7 +71,7 @@ library
       , Network.PagerDuty.Types
 
     build-depends:
-        aeson                 >= 0.8      && < 0.10
+        aeson                 >= 0.8
       , base                  >= 4.7      && < 5
       , bifunctors            >= 4.1
       , bytestring            >= 0.9
