@@ -279,8 +279,13 @@ data Pager = Pager
 
 makeLenses ''Pager
 
-instance FromJSON a => FromJSON (a, Maybe Pager) where
-    parseJSON = withObject "paginated" $ \o -> (,)
+data Page a = Page
+    { _pgItem  :: a
+    , _pgPager :: Maybe Pager
+    }
+
+instance FromJSON a => FromJSON (Page a) where
+    parseJSON = withObject "paginated" $ \o -> Page
         <$> parseJSON (Object o)
         <*> optional  (parse o)
       where

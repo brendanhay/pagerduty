@@ -13,7 +13,6 @@
 
 module Network.PagerDuty.REST
     (
-
     -- * Sending requests
       send
     , sendWith
@@ -56,7 +55,7 @@ sendWith :: (MonadIO m, FromJSON b)
          => Env s
          -> Request a s b
          -> m (Either Error b)
-sendWith e = liftM (fmap fst) . http e
+sendWith e = liftM (fmap _pgItem) . http e
 
 -- | /See:/ 'paginateWith'
 paginate :: (MonadIO m, Paginate a, FromJSON b)
@@ -75,15 +74,15 @@ paginateWith e = go
   where
     go rq = do
         rs <- lift (http e rq)
-        yield  (fst <$> rs)
+        yield  (_pgItem <$> rs)
         either (const (return ()))
-               (maybe (return ()) go . next rq . snd)
+               (maybe (return ()) go . next rq . _pgPager)
                rs
 
 http :: (MonadIO m, FromJSON b)
      => Env s
      -> Request a s b
-     -> m (Either Error (b, Maybe Pager))
+     -> m (Either Error (Page b))
 http e rq = request (e ^. envManager) (e ^. envLogger) rq $ raw
     { Client.host        = domain (e ^. envDomain)
     , Client.path        = renderPath (rq ^. path)
