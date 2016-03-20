@@ -44,7 +44,7 @@ module Control.Monad.Trans.PagerDuty
 import           Control.Applicative
 import           Control.Monad.Base
 import           Control.Monad.Catch
-import           Control.Monad.Except             (MonadError (..))
+import           Control.Monad.Error              (MonadError (..))
 import           Control.Monad.Morph
 import           Control.Monad.Reader
 import           Control.Monad.Trans.Control
