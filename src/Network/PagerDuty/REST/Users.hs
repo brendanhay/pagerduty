@@ -5,7 +5,6 @@
 {-# LANGUAGE TypeFamilies         #-}
 
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
-{-# OPTIONS_GHC -ddump-splices #-}
 
 -- Module      : Network.PagerDuty.REST.Users
 -- Copyright   : (c) 2013-2015 Brendan Hay <brendan.g.hay@gmail.com>
