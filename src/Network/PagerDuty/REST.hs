@@ -29,7 +29,6 @@ import           Control.Monad.IO.Class
 import           Control.Monad.Trans
 import           Data.Aeson                       (FromJSON)
 import           Data.Conduit
-import           Data.Default.Class
 import           Data.Monoid
 import           Network.HTTP.Client              (Manager)
 import qualified Network.HTTP.Client              as Client
@@ -90,7 +89,7 @@ http e rq = request (e ^. envManager) (e ^. envLogger) rq $ raw
     }
   where
    raw = case e ^. envAuth of
-        AuthBasic u p -> Client.applyBasicAuth u p def
-        AuthToken t   -> def
+        AuthBasic u p -> Client.applyBasicAuth u p Client.defaultRequest
+        AuthToken t   -> Client.defaultRequest
             { Client.requestHeaders = [("Authorization", "Token token=" <> t)]
             }

@@ -81,7 +81,6 @@ module Network.PagerDuty.Integration
 import           Control.Lens
 import           Control.Monad.IO.Class
 import           Data.Aeson
-import           Data.Default.Class
 import qualified Data.HashMap.Strict              as Map
 import           Data.Text                        (Text)
 import           Network.HTTP.Client              (Manager)
@@ -292,7 +291,8 @@ submitWith :: MonadIO m
            -> Event
            -> m (Either Error Response)
 submitWith m l e = request m l e $
-    def { Client.host   = "events.pagerduty.com"
+    Client.defaultRequest
+        { Client.host   = "events.pagerduty.com"
         , Client.path   = "/generic/2010-04-15/create_event.json"
         , Client.method = "POST"
         }

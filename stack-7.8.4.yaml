@@ -1,6 +1,0 @@
-resolver:   lts-2.21
-flags:      {}
-extra-deps:
-  - generics-sop-0.2.0.0
-packages:
-  - '.'
