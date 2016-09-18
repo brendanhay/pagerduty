@@ -72,7 +72,7 @@ library
 
     build-depends:
         aeson                 >= 0.8
-      , base                  >= 4.7      && < 5
+      , base                  >= 4.7 && < 5
       , bifunctors            >= 4.1
       , bytestring            >= 0.9
       , bytestring-conversion >= 0.2.1
@@ -80,7 +80,7 @@ library
       , data-default-class    >= 0.0.1
       , exceptions            >= 0.6
       , generics-sop          >= 0.2.0.0
-      , http-client           >= 0.4.3
+      , http-client           >= 0.5 && < 1
       , http-types            >= 0.8
       , lens                  >= 4.4
       , lens-aeson            >= 1
